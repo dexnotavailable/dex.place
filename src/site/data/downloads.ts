@@ -67,6 +67,9 @@ export interface DownloadEntry {
   readonly caveat?: string;
   /** Its own page with the full install guide (YUKI: /yuki/). */
   readonly guide?: string;
+  /** Before its file is out: what the installer will do (true of the build that ships), listed where the file's notes
+   *  go, so the block keeps its shape and height. */
+  readonly installer?: readonly string[];
 }
 
 export interface InstallStep {
@@ -93,13 +96,13 @@ export function releaseFile(r: YukiRelease | null): DownloadFile | null {
  * them here only once a release has them.
  */
 export function yukiEntry(r: YukiRelease | null): DownloadEntry {
+  const installer = ["Installs for your Windows user, no admin prompt.", "Unsigned, so Windows asks once."];
   return {
     id: "yuki",
     name: "YUKI",
     file: releaseFile(r),
-    notes: r
-      ? ["Installs for your Windows user, no admin prompt.", "Unsigned, so Windows asks once."]
-      : ["No public download yet."],
+    notes: r ? installer : ["No public download yet."],
+    ...(r ? {} : { installer }),
     steps: [
       {
         icon: "download", title: "Download", text: "Your browser may hold it back at first, because the file isn't signed.",

@@ -22,7 +22,8 @@ export const YUKI_FACTS: readonly YukiFact[] = [
   { icon: "window", title: "Any task on your PC", text: "Files, the shell, the browser and your logins, desktop apps, games, and other AI models. Even the roundabout jobs." },
   { icon: "sparkle", title: "Models are tools", text: "Her brain can call an image, video or language model with its own settings, take what it makes, and keep working." },
   { icon: "blob", title: "Yuki never goes busy", text: "You talk to Yuki. She hands the work to her helper agents and keeps talking with you while they run." },
-  { icon: "heart", title: "Your machine, your data", text: "It runs on your own PC and keeps your chats there. Models run as they ship: YUKI adds no filters of its own." },
+  // (Dex 10-26: routing can send a chat to a free or API cloud model, so the chats stay on the PC unless you pick one)
+  { icon: "heart", title: "Your machine, your data", text: "It runs on your own PC, and your chats stay there unless you pick a cloud model. Models run as they ship: YUKI adds no filters of its own." },
 ];
 
 /** A class of PC and the setup YUKI's first run picks for it. `rank` is the badge on its card (the app's stat sheet). */

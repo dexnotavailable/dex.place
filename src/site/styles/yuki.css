@@ -4,29 +4,68 @@
    holds still under reduced motion. */
 
 /* ================================================================== pixel Yuki
-   One layer of each kind shows: the eyes and mouth her data attributes name, ahoge frame 0. Idle (motion welcome): a
-   blink every few seconds (--blink and --blink-at, seeded per stage or per Yuki by yuki-sprite.ts blinkVars, so two on
-   one screen blink out of step), the ahoge sways, she bobs one pixel. A glance is the eye layer moved one pixel
-   sideways (--gx, motion/yuki.ts). Units inside the SVG are her pixels. */
+   The app's mascot (yuki-sprite.ts, her pixels synced from YUKI's own faces): one face shows, the one her data
+   attributes name; the blush turns strong with the eyes that call for it; asleep, the app's zz floats by her. A glance
+   (data-look, motion/yuki.ts: a fine pointer beside her) shows the open eyes looking that way. Pressed (her stage), the
+   head sinks a pixel over still shoulders. Units inside the SVG are her pixels.
+   Motion, the app's own (YUKI ui/mascotFrames.ts, styles/base.css; yuki-faces.ts TIMING, a test keeps these in step):
+   two sprite frames of 650 ms (the ahoge sways), the back hair and head bob a pixel over still shoulders on a clock twice
+   as long, a blink (half, shut, half: 40 / 80 / 40 ms) on each Yuki's own seeded clock (--blink, --blink-at, 4.1-6.3 s:
+   yuki-sprite.ts blinkVars, so two in view blink out of step), a look aside now and then on another (--look, --look-at:
+   13-19 s, held about a second) unless a pointer is steering her eyes, and a hop (.is-hop; or hovering her banner or
+   card): a crouch, up a pixel at a time, down, a squash a pixel deep on landing, her ahoge trailing (frame B at the top). */
 .yk { display: block; overflow: visible; image-rendering: pixelated; }
-.yk .yk__e, .yk .yk__m, .yk .yk__ahoge--1 { display: none; }
-.yk[data-eyes="open"] .yk__e--open, .yk[data-eyes="blink"] .yk__e--blink, .yk[data-eyes="happy"] .yk__e--happy,
-.yk[data-eyes="sleepy"] .yk__e--sleepy { display: inline; }
-.yk[data-mouth="calm"] .yk__m--calm, .yk[data-mouth="smile"] .yk__m--smile, .yk[data-mouth="talk"] .yk__m--talk { display: inline; }
-.yk__eyes { translate: calc(var(--gx, 0) * 1px) 0; transition: translate 90ms steps(1, end); }
+.yk .yk__e, .yk .yk__m, .yk .yk__bl--strong, .yk .yk__zz, .yk .yk__fb, .yk .yk__look--l, .yk .yk__look--r { display: none; }
+.yk[data-eyes="open"] .yk__e--open, .yk[data-eyes="half"] .yk__e--half, .yk[data-eyes="closed"] .yk__e--closed,
+.yk[data-eyes="happy"] .yk__e--happy, .yk[data-eyes="sleepy"] .yk__e--sleepy, .yk[data-eyes="wide"] .yk__e--wide,
+.yk[data-eyes="squeeze"] .yk__e--squeeze { display: inline; }
+.yk[data-mouth="small"] .yk__m--small, .yk[data-mouth="smile"] .yk__m--smile, .yk[data-mouth="open"] .yk__m--open { display: inline; }
+.yk:is([data-eyes="happy"], [data-eyes="wide"], [data-eyes="squeeze"]) .yk__bl--soft { display: none; }
+.yk:is([data-eyes="happy"], [data-eyes="wide"], [data-eyes="squeeze"]) .yk__bl--strong { display: inline; }
+.yk[data-eyes="sleepy"] .yk__zz { display: inline; }
+.yk[data-look="-1"] .yk__look--0, .yk[data-look="1"] .yk__look--0 { display: none; }
+.yk[data-look="-1"] .yk__look--l, .yk[data-look="1"] .yk__look--r { display: inline; }
+.yk.is-press .yk__bob { translate: 0 1px; }
+.yk.is-pop .yk__bob { translate: 0 -1px; }
 @media (prefers-reduced-motion: no-preference) {
-  .yk[data-eyes="open"] .yk__e--open { animation: yk-open var(--blink, 4.7s) steps(1, end) var(--blink-at, 0s) infinite; }
-  .yk[data-eyes="open"] .yk__e--blink { display: inline; visibility: hidden; animation: yk-shut var(--blink, 4.7s) steps(1, end) var(--blink-at, 0s) infinite; }
-  .yk .yk__ahoge--0 { animation: yk-ah0 2.6s steps(1, end) infinite; }
-  .yk .yk__ahoge--1 { display: inline; visibility: hidden; animation: yk-ah1 2.6s steps(1, end) infinite; }
-  .yk .yk__body { animation: yk-bob 2.6s steps(1, end) infinite; }
-  .yk[data-eyes="sleepy"] .yk__body { animation-duration: 4.4s; }
+  .yk .yk__fa { animation: yk-fa 1.3s steps(1, end) infinite; }
+  .yk .yk__fb { display: inline; visibility: hidden; animation: yk-fb 1.3s steps(1, end) infinite; }
+  .yk .yk__bob { animation: yk-bob 2.6s steps(1, end) infinite; }
+  .yk[data-eyes="open"] .yk__e--open { animation: yk-blink-open var(--blink, 5.2s) steps(1, end) var(--blink-at, 0s) infinite; }
+  .yk[data-eyes="open"] .yk__e--half { display: inline; visibility: hidden; animation: yk-blink-half var(--blink, 5.2s) steps(1, end) var(--blink-at, 0s) infinite; }
+  .yk[data-eyes="open"] .yk__e--closed { display: inline; visibility: hidden; animation: yk-blink-shut var(--blink, 5.2s) steps(1, end) var(--blink-at, 0s) infinite; }
+  .yk:not([data-look]) .yk__look--0 { animation: yk-look-0 var(--look, 16s) steps(1, end) var(--look-at, 0s) infinite; }
+  .yk:not([data-look]) .yk__look--l { display: inline; visibility: hidden; animation: yk-look-l var(--look, 16s) steps(1, end) var(--look-at, 0s) infinite; }
+  .yk:not([data-look]) .yk__look--r { display: inline; visibility: hidden; animation: yk-look-r var(--look, 16s) steps(1, end) var(--look-at, 0s) infinite; }
+  .yk.is-hop .yk__hop { animation: yk-hop 500ms steps(1, end); }
+  .yk.is-hop .yk__fa { animation: yk-fa 1.3s steps(1, end) infinite, yk-hop-a 500ms steps(1, end); }
+  .yk.is-hop .yk__fb { animation: yk-fb 1.3s steps(1, end) infinite, yk-hop-b 500ms steps(1, end); }
+  .yk:is(.is-press, .is-pop) .yk__bob { animation: none; }
+  /* her banner and her card answer the pointer as her button does in the app: she hops once */
+  @media (hover: hover) {
+    :is(.pban, .pcard):hover .yk .yk__hop { animation: yk-hover 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__fa { animation: yk-fa 1.3s steps(1, end) infinite, yk-hover-a 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__fb { animation: yk-fb 1.3s steps(1, end) infinite, yk-hover-b 500ms steps(1, end); }
+  }
 }
-@keyframes yk-open { 0%, 93% { visibility: visible; } 94%, 97% { visibility: hidden; } 98%, 100% { visibility: visible; } }
-@keyframes yk-shut { 0%, 93% { visibility: hidden; } 94%, 97% { visibility: visible; } 98%, 100% { visibility: hidden; } }
-@keyframes yk-ah0 { 0%, 49% { visibility: visible; } 50%, 100% { visibility: hidden; } }
-@keyframes yk-ah1 { 0%, 49% { visibility: hidden; } 50%, 100% { visibility: visible; } }
-@keyframes yk-bob { 0%, 49% { translate: 0 0; } 50%, 100% { translate: 0 1px; } }
+@keyframes yk-fa { 0% { visibility: visible; } 50% { visibility: hidden; } }
+@keyframes yk-fb { 0% { visibility: hidden; } 50% { visibility: visible; } }
+@keyframes yk-bob { 0% { translate: 0 0; } 50% { translate: 0 1px; } }
+/* (the blink sits at the end of each clock: at 5.2 s, 96.9-97.7% is 42 ms, 97.7-99.2% is 78 ms, 99.2-100% is 42 ms) */
+@keyframes yk-blink-open { 0% { opacity: 1; } 96.9% { opacity: 0; } }
+@keyframes yk-blink-half { 0% { visibility: hidden; } 96.9% { visibility: visible; } 97.7% { visibility: hidden; } 99.2% { visibility: visible; } }
+@keyframes yk-blink-shut { 0% { visibility: hidden; } 97.7% { visibility: visible; } 99.2% { visibility: hidden; } }
+/* (a look aside: left at 34-40%, about 0.9 s at 16 s; right at 78-84%) */
+@keyframes yk-look-0 { 0% { visibility: visible; } 34% { visibility: hidden; } 40% { visibility: visible; } 78% { visibility: hidden; } 84% { visibility: visible; } }
+@keyframes yk-look-l { 0% { visibility: hidden; } 34% { visibility: visible; } 40% { visibility: hidden; } }
+@keyframes yk-look-r { 0% { visibility: hidden; } 78% { visibility: visible; } 84% { visibility: hidden; } }
+@keyframes yk-hop { 0% { translate: 0 1px; } 12% { translate: 0 -1px; } 22% { translate: 0 -2px; } 42% { translate: 0 -1px; } 54% { translate: 0 0; } 62% { translate: 0 1px; } 72% { translate: 0 0; } }
+@keyframes yk-hop-a { 0% { visibility: visible; } 22% { visibility: hidden; } 62% { visibility: visible; } }
+@keyframes yk-hop-b { 0% { visibility: hidden; } 22% { visibility: visible; } 62% { visibility: hidden; } }
+/* (the hover's own names, so a hover after a tap hops again, as the app's m-hover) */
+@keyframes yk-hover { 0% { translate: 0 1px; } 12% { translate: 0 -1px; } 22% { translate: 0 -2px; } 42% { translate: 0 -1px; } 54% { translate: 0 0; } 62% { translate: 0 1px; } 72% { translate: 0 0; } }
+@keyframes yk-hover-a { 0% { visibility: visible; } 22% { visibility: hidden; } 62% { visibility: visible; } }
+@keyframes yk-hover-b { 0% { visibility: hidden; } 22% { visibility: visible; } 62% { visibility: hidden; } }
 
 /* ================================================================== the stage
    svg.ykstage: one unit a cell. Where round() is known, a cell is a whole number of screen pixels and the stage covers
@@ -91,7 +130,7 @@
 /* ================================================================== YUKI on Downloads (render/downloads.ts) */
 .dlf__art--yuki { position: relative; min-height: 300px; overflow: hidden; border-right: var(--bw) solid var(--ink); background: #22306e; }
 .dlf__art--yuki .ykart { position: absolute; inset: 0; }
-.dlf__tag, .dlf__zz { position: absolute; z-index: 3; line-height: 0; }
+.dlf__tag { position: absolute; z-index: 3; line-height: 0; }
 .dlf__tag {
   right: 12px;
   top: 12px;
@@ -106,19 +145,10 @@
   font: 400 1rem / 1 var(--f-label);
   letter-spacing: 0.08em;
 }
-.dlf__zz { right: 22px; top: 18px; display: flex; align-items: flex-end; gap: 2px; color: #dff7ff; font: 400 25px / 1 var(--f-title); line-height: 1; }
-.dlf__zz i { font-style: normal; }
-.dlf__zz i:nth-child(1) { font-size: 25px; }
-.dlf__zz i:nth-child(2) { translate: 0 -10px; }
-.dlf__zz i:nth-child(3) { font-size: 50px; translate: 0 -18px; }
-@media (prefers-reduced-motion: no-preference) {
-  .dlf__zz i { animation: yk-zz 3s steps(1, end) calc(var(--z, 0) * 1s) infinite; }
-  .dlf__zz i:nth-child(2) { --z: 0.33; }
-  .dlf__zz i:nth-child(3) { --z: 0.66; }
-}
-@keyframes yk-zz { 0%, 32% { opacity: 0; } 33%, 100% { opacity: 1; } }
 .dlf__guide { margin: 0; }
-.dlf[data-yuki="none"] .dlf__cta { margin-top: 4px; }
+/* before the release (render/downloads.ts): the block and its checksum keep their shape, the values say what isn't out */
+.dlf[data-yuki="none"] .spec dd { color: var(--muted); font-weight: 400; }
+.hash--later { border-style: dashed; color: var(--muted); }
 .dlg__more { margin: 12px 0 0; }
 @media (max-width: 699px) {
   /* phones keep her: a short strip on top of the block instead of the drawn file */
@@ -230,8 +260,8 @@
   position: absolute;
   z-index: 4;
   left: 50%;
-  /* just over her ring; never higher than the stage's top (it clips) */
-  bottom: min(calc(35 * var(--u)), calc(100% - 62px));
+  /* just over her ring (render/yukiart.ts ORB: its top is 38 cells up); never higher than the stage's top (it clips) */
+  bottom: min(calc(39 * var(--u)), calc(100% - 62px));
   margin: 0;
   padding: 10px 14px 9px;
   background: #fff;
@@ -268,25 +298,30 @@
 }
 
 /* the hatch (once, when motion is welcome and scripts run): her orb's ring grows in steps, a flash, she pops up, the
-   pixels fly, then she says hi. After it (motion/yuki.ts): a hop (.is-hop) and a new line's pop (.is-new). Both sit
-   on the hatch's selectors plus their class, so they win over it. The hop keeps the pop in its list (matched by name,
-   the pop never replays) and comes after it, so while it plays the hop owns `translate` and `scale`. A new line pops
-   under its own keyframes' name: the same name as the hatch's would count as the same animation and never replay. */
+   pixels fly, then she says hi. After it (motion/yuki.ts): her hop is the sprite's own (.yk.is-hop, whole pixels, as in
+   the app), so it never fights the pop on her stage's group; a new line's pop (.is-new) sits on the hatch's selector
+   plus its class, so it wins over it, under its own keyframes' name (the same name as the hatch's would count as the
+   same animation and never replay). */
 @media (prefers-reduced-motion: no-preference) {
   html.js [data-hatch] .ykstage__ring { animation: yk-ring-in 520ms steps(6, end) 80ms both, yk-ring 3.6s steps(1, end) 900ms infinite; }
-  html.js [data-hatch] .ykstage__her { animation: yk-pop 720ms cubic-bezier(.3, 1.6, .5, 1) 420ms both; }
+  html.js [data-hatch] .ykstage__her { animation: yk-pop 720ms steps(1, end) 420ms both; }
   html.js [data-hatch] .ykh__burst i { animation: yk-burst 760ms steps(8, end) calc(540ms + var(--i) * 18ms) both; }
   html.js [data-hatch] .ykh__burst::before { animation: yk-flash 420ms steps(4, end) 470ms both; }
   html.js .ykh__say { animation: yk-say 360ms cubic-bezier(.3, 1.5, .5, 1) 1250ms both; }
   html.js .ykh__say.is-new { animation: yk-say-new 300ms cubic-bezier(.3, 1.5, .5, 1) both; }
-  html.js [data-hatch] .ykstage__her.is-hop { animation: yk-pop 720ms cubic-bezier(.3, 1.6, .5, 1) 420ms both, yk-hop 460ms steps(3, end); }
 }
 @keyframes yk-ring-in { from { scale: 0.1; opacity: 0; } 40% { opacity: 1; } to { scale: 1; opacity: 1; } }
+/* she pops up into her orb in whole cells (a scale would resample her pixels, as the app never does): up from 10 cells
+   down, two over the top, down a cell, a landing a cell deep, rest */
 @keyframes yk-pop {
-  0% { translate: 0 10px; scale: 0.55; opacity: 0; }
-  50% { translate: 0 -2px; scale: 1.06 0.95; opacity: 1; }
-  75% { translate: 0 0; scale: 0.97 1.03; }
-  100% { translate: 0 0; scale: 1; opacity: 1; }
+  0% { translate: 0 10px; opacity: 0; }
+  12% { translate: 0 7px; opacity: 1; }
+  24% { translate: 0 4px; }
+  36% { translate: 0 1px; }
+  48% { translate: 0 -2px; }
+  62% { translate: 0 -1px; }
+  76% { translate: 0 1px; }
+  88%, 100% { translate: 0 0; opacity: 1; }
 }
 @keyframes yk-burst {
   0% { opacity: 1; translate: 0 0; }
@@ -295,14 +330,6 @@
 @keyframes yk-flash { 0% { opacity: 0; scale: 0.3; } 25% { opacity: 0.9; scale: 0.8; } 100% { opacity: 0; scale: 1.4; } }
 @keyframes yk-say { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
 @keyframes yk-say-new { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
-/* the hop, from her feet: a squat, up four of her pixels stretched tall, down, a squash on landing */
-@keyframes yk-hop {
-  0%, 100% { translate: 0 0; scale: 1; }
-  16% { translate: 0 0; scale: 1.08 0.92; }
-  42% { translate: 0 -4px; scale: 0.95 1.05; }
-  70% { translate: 0 -1px; scale: 1; }
-  84% { translate: 0 0; scale: 1.06 0.94; }
-}
 
 /* the page after the Download click (motion/yuki.ts): the guide is where the page is */
 .page--yuki[data-stage="guide"] .ykstep[data-step="1"] .ykstep__tick { display: grid; }
@@ -474,11 +501,11 @@
   .ykh__snow { -webkit-mask-image: linear-gradient(#000 0 40%, transparent 50%); mask-image: linear-gradient(#000 0 40%, transparent 50%); }
 }
 /* stacked, a cell is set by the stage's width (her night covers it), so a fixed height cropped her ring and lifted her
-   line out of the top on tablets (700-899 px). The stage is at least as tall as her line needs: 35 cells (the
+   line out of the top on tablets (700-899 px). The stage is at least as tall as her line needs: 39 cells (the
    bubble's foot, just over her ring) plus the bubble and a gap. The box is the container that width is read from. */
 @supports (width: round(up, 1.5px, 1px)) {
   @media (max-width: 899px) {
     .ykh__box { container-type: inline-size; }
-    .ykh__stage { height: max(clamp(240px, 62vw, 380px), calc(35 * round(up, 100cqw / var(--cols), 1px) + 66px)); }
+    .ykh__stage { height: max(clamp(240px, 62vw, 380px), calc(39 * round(up, 100cqw / var(--cols), 1px) + 66px)); }
   }
 }

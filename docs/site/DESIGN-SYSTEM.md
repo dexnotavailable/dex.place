@@ -40,20 +40,31 @@ gets a page at `/yuki/` (under Downloads) that turns into the install guide afte
 made with code (no image generation).
 
 - **Data, one place each:** `data/downloads.ts` `YUKI_RELEASE` (version, asset name, bytes, SHA-256; `null` until the
-  first release, and every page then says "No public download yet"), the download link is the releases repo's
+  first release, and every page then says "No public download yet"; the Downloads block and its install guide keep
+  their released shape meanwhile, each value saying what isn't out, so the home band keeps its height and its hanging
+  banners their pace), the download link is the releases repo's
   `releases/download/v<version>/<asset>` (the release the page lists, so its size and SHA-256 always match the file and
   the next release never breaks it; refill it with every stable release); `RETIRED` (dexCode, dexClient) only feeds the one small "Retired" line where their
   entries were, which keeps `/downloads/#dexcode` and `#dexclient` landing; their old `/projects/<id>/` pages say where
-  they went (noindex). `data/yuki.ts`: what it is, the app's S to D hardware tiers (YUKI's `hardware.ts` `TIER_RULES`), **off** until a release
+  they went (noindex), as do their old docs' addresses (`data/docs.ts` `RETIRED_DOCS`: `/docs/dexcode/` and
+  `/docs/installing-dexclient/` point at the YUKI docs, `content/docs/yuki.md` and `installing-yuki.md`). `data/yuki.ts`: what it is, the app's S to D hardware tiers (YUKI's `hardware.ts` `TIER_RULES`), **off** until a release
   has the first run that picks them (`YUKI_TIERS_LIVE`), and `YUKI_LINK`, the optional status
   ping to YUKI's engine on the visitor's PC, **off** (no markup, no request) until the engine answers dex.place.
-- **Pixel Yuki** (`yuki-sprite.ts`): a 32 x 32 chibi bust as grids, drawn to Dex's pixel-face rules in the orb's
-  colours. Layers: base, eyes (open, blink, happy, sleepy), mouth (calm, smile, talk), ahoge (two frames); a data
-  attribute picks the face; a glance moves the eye layer one pixel. Idle: a blink on each Yuki's own seeded clock
-  (4.1-6.3 s, `blinkVars`: a stage sets it for the Yuki in it, a lone sprite takes it from its `seed`, so two in view
-  blink out of step), ahoge sway, a one-pixel bob, all `steps()`.
-- **Her stage** (`render/yukiart.ts`): night in hard bands, stars, her orb's pixel ring, ice shards, big flakes, then
-  her; a cell is a whole number of screen pixels (`round()` in `styles/yuki.css`), so it stays crisp at any size. It
+- **Pixel Yuki** (`yuki-sprite.ts`) is the YUKI app's own mascot (Dex 10-26: the site's Yuki stays the app's). Her
+  pixels and timings are synced as data into `yuki-faces.ts` by `node tools/yuki-faces/sync.mjs <YUKI checkout> [ref]`
+  (it reads the app's `ui/pixel/faces.ts` and `ui/mascotFrames.ts` at a commit, never a working tree a taste round is
+  editing, splits each face into layers and checks they add back up to the app's faces pixel for pixel); rerun it when
+  the app's mascot changes. Layers as the app animates them: the back hair and the head bob a pixel over still
+  shoulders, the eyes (open with its left and right glances, half, closed, happy, sleepy, wide, squeeze), blush (soft,
+  strong with happy, wide and squeeze) and mouth (small, smile, open) sit on the head, the ahoge sways on two frames,
+  the app's zz floats by her asleep. `data-eyes` / `data-mouth` pick the face, `data-look` a glance. Idle, the app's
+  clock: frames 650 ms, the bob twice that, a blink (half, shut, half: 40 / 80 / 40 ms) on each Yuki's own seeded clock
+  (4.1-6.3 s) and a look aside on another (13-19 s; `blinkVars`: a stage sets them for the Yuki in it, a lone sprite
+  takes them from its `seed`), all `steps()`. A hop is whole pixels (the app's `HOP_STEPS`, her ahoge trailing):
+  a tap on her stage, or hovering her banner or card. Pressed on her stage, her eyes squeeze shut and her head sinks
+  a pixel; let go, it pops a pixel up for 60 ms. A new face arrives behind a blink (shut 90 ms, half 50 ms).
+- **Her stage** (`render/yukiart.ts`): night in hard bands, stars, her orb's pixel ring (`ORB`, 20 cells round her
+  head, so her hair, ahoge and zz sit inside it), ice shards, big flakes, then her; a cell is a whole number of screen pixels (`round()` in `styles/yuki.css`), so it stays crisp at any size. It
   stands in for the rig art on YUKI's banner (hero window, and her night in place of Dex's plate), its card, its
   Downloads block and the `/yuki/` hero.
 - **Banners:** `pban--lead` (taller, a bigger name at every width: 44 px on a phone, 56 on a tablet, 64 wide) and
@@ -67,12 +78,12 @@ made with code (no image generation).
   (the file), then the page becomes the guide (`data-stage="guide"`). Everything rests off screen and holds still under
   reduced motion (the whole hero is watched, so the snow beside her stage rests too); without JS the key downloads and
   the guide is just there. Her face stands in for the generic mascot in any step or fact tile of hers, Downloads too.
-  - The hop (`.is-hop`) and a new line's pop (`.is-new`) sit on the hatch's selectors plus their class, so they beat
-    its one-time rules; the hop keeps the pop in its animation list (matched by name, it never replays), and a new line
+  - The hop is the sprite's own (`.yk.is-hop` moves `.yk__hop`), so it never fights the hatch's pop on her stage's
+    group; a new line's pop (`.is-new`) sits on the hatch's selector plus its class, so it beats its one-time rule, and
     pops under its own keyframes' name (the hatch's name again would never replay).
   - Each SmartScreen cursor sits inside what it taps (`.ss__target`), placed in percent of it, so its tip lands on More
     info and Run anyway at any width (the buttons move as the window narrows).
-  - Stacked (under 900 px) a cell is set by the stage's width, so the stage is at least 35 cells (her line's foot, over
+  - Stacked (under 900 px) a cell is set by the stage's width, so the stage is at least 39 cells (her line's foot, over
     her ring) plus the bubble tall; the bubble never sits above the stage's top.
   - `tools/site-checks/yuki-geometry.mjs` checks those on real layout (Edge, a served build): cursor tips inside their
     targets at 320-1440, ring and bubble inside the stage at 320-1920, the hop and the pop really playing.

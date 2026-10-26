@@ -70,11 +70,33 @@ test("page, released: one direct download with size, the full checksum and how t
 test("page, not released: says so plainly, links nothing that looks like a binary, sends you to meet her", () => {
   for (const html of [downloadsPage(unreleased), downloadsSection(unreleased)]) {
     const block = html.slice(html.indexOf('id="yuki"'), html.indexOf("</article>", html.indexOf('id="yuki"')));
-    assert.match(block, /Not yet/);
-    assert.match(block, /No public download yet\./);
+    assert.match(block, /<p class="dl-state"><span class="dl-state__dot" aria-hidden="true"><\/span>No public download yet<\/p>/);
     assert.match(block, /href="\/yuki\/"/);
+    // the specs say what isn't out, never a made-up version, size or hash
+    assert.match(block, /<dt>Version<\/dt><dd>Not out yet<\/dd>/);
+    assert.match(block, /<dt>SHA-256<\/dt><dd>With the release<\/dd>/);
+    assert.doesNotMatch(block, /\d+(\.\d+)? (MB|GB)|v?\d+\.\d+\.\d+/);
     assert.doesNotMatch(html, /href="[^"]+\.(exe|msi|zip|dmg)"/);
     assert.doesNotMatch(html, /yuki-releases/);
+  }
+});
+
+test("not released, the section keeps its shape (Dex 10-26: a short band ran its hanging banners fast): the same parts in the same order, the guide there too, only the checksum waiting", () => {
+  const parts = (html) => {
+    const block = html.slice(html.indexOf('id="yuki"'), html.indexOf("</article>", html.indexOf('id="yuki"')));
+    return [...block.matchAll(/class="(dl-state[^"]*|dlf__name|dlf__line|dlf__cta|btn [^"]*btn--l[^"]*|dlf__file|spec|dl-notes|dlf__guide)"/g)].map((m) => m[1].split(" ")[0]);
+  };
+  for (const [none, rel] of [[downloadsPage(unreleased), downloadsPage(released)], [downloadsSection(unreleased), downloadsSection(released)]]) {
+    assert.deepEqual(parts(none), parts(rel), "the block's parts");
+    assert.equal((none.match(/<dt>/g) ?? []).length, (rel.match(/<dt>/g) ?? []).length, "as many specs");
+    assert.equal((none.match(/<li class="step"/g) ?? []).length, 4, "the four steps");
+    assert.match(none, /<section class="dlg" aria-labelledby="yuki-install">/);
+    // check the file: its place kept, the hash's place saying it comes with the release, the PowerShell line there
+    const v = none.slice(none.indexOf('class="verify'));
+    assert.match(v, /^class="verify verify--later" id="yuki-verify"/);
+    assert.match(v, /<code class="hash hash--later">Not out yet<\/code>/);
+    assert.ok(v.includes("Get-FileHash .\\YUKI-Setup-*.exe -Algorithm SHA256"));
+    assert.equal((none.match(/class="verify__(line|row)"/g) ?? []).length, (rel.match(/class="verify__(line|row)"/g) ?? []).length, "as many lines");
   }
 });
 

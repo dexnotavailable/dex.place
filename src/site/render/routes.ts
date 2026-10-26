@@ -11,8 +11,8 @@ import { projectHref, projects } from "../data/projects.ts";
 import { RETIRED } from "../data/downloads.ts";
 import { YUKI_LINE } from "../data/yuki.ts";
 import { yukiPage } from "./yuki.ts";
-import { blogIndex, docsIndex, entryPage } from "./docs.ts";
-import { docGroup } from "../data/docs.ts";
+import { blogIndex, docsIndex, entryPage, retiredDocPage } from "./docs.ts";
+import { docGroup, RETIRED_DOCS } from "../data/docs.ts";
 import { donatePage } from "./donate.ts";
 import { STUBS, stubPage } from "./stubs.ts";
 import type { Entry, PageMeta, Rendered, SiteContent } from "./types.ts";
@@ -77,10 +77,15 @@ export function routes(content: SiteContent): Route[] {
       main: () => piecePage(content, i),
     })),
     {
-      meta: { path: "/docs/", title: "Docs", page: "docs", description: "Documentation for dexCode, dexClient and dex.place." },
+      meta: { path: "/docs/", title: "Docs", page: "docs", description: "Documentation for YUKI and dex.place, and for the retired dexCode and dexClient." },
       main: () => docsIndex(content),
     },
     ...entryRoutes(content, content.docs),
+    // the retired docs' old addresses say where their readers go now (Dex 10-26), unless a doc of that name is back
+    ...RETIRED_DOCS.filter((r) => !content.docs.some((d) => d.slug === r.slug)).map((r) => ({
+      meta: { path: `/docs/${r.slug}/`, title: r.title, page: "docs" as const, description: `${r.project} is retired. YUKI replaces it.`, noindex: true },
+      main: () => retiredDocPage(content, r),
+    })),
     {
       meta: { path: "/blog/", title: "Blog", page: "blog", description: "Posts from Dex." },
       main: () => blogIndex(content),

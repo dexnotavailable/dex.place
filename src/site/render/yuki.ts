@@ -51,7 +51,7 @@ function hero(f: DownloadFile | null): string {
     snowFx("yuki-page", 34, "ykh__snow") +
     `<div class="ykh__stage" data-yuki-stage aria-hidden="true">` +
     `<div class="ykh__art" data-hatch>` +
-    yukiStage({ cols: 72, rows: 50, seed: "yuki-page", yuki: { eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "calm" }, shards: 6, at: { lift: 0 } }) +
+    yukiStage({ cols: 72, rows: 50, seed: "yuki-page", yuki: { eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "small" }, shards: 6, at: { lift: 0 } }) +
     `<span class="ykh__burst">${Array.from({ length: 8 }, (_, i) => `<i style="--i:${i}"></i>`).join("")}</span>` +
     `</div>` +
     `<p class="ykh__say" data-yuki-say><span data-yuki-line>${esc(say)}</span></p>` +

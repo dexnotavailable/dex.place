@@ -28,5 +28,16 @@ Open Windows Settings, then **Apps**, then **Installed apps**. Find **dexClient*
 
 This removes dexClient only. It leaves behind:
 
-- the dexCode folder and anything it downloaded, wherever you put them (see [where things go](/docs/installing-dexclient/#where-things-go)). Delete that folder yourself if you want it gone;
+- the dexCode folder and anything it downloaded, wherever you put them (see [where things went](#where-things-went)). Delete that folder yourself if you want it gone;
 - dexClient's settings in `%APPDATA%\dexClient`.
+
+## Where things went
+
+| What | Where |
+|---|---|
+| dexClient | `%LOCALAPPDATA%\Programs\dex-client` |
+| The dexCode app | `<your folder>\Apps\dexCode` |
+| Models and engines | `<your folder>\AI` |
+| dexClient's settings | `%APPDATA%\dexClient` |
+
+`<your folder>` is the one you picked when you installed dexClient. It suggested `\Dex\Library` on one of your drives, or `\Dex\dexClient` if you already had your own `Library` folder there.

@@ -1,0 +1,40 @@
+---
+title: YUKI overview
+summary: What YUKI is, what it can do on your PC, and where your chats go.
+group: yuki
+order: 1
+placeholder: false
+---
+
+YUKI is a Windows app that runs an AI agent on your own PC. You talk to Yuki, its anime companion, in a chat. She can do any task on the PC, even the roundabout ones, and she hands the long jobs to her helper agents so she can keep talking with you while they run.
+
+YUKI replaces dexCode and dexClient. Both are retired, and YUKI installs on its own: there is no launcher to install first.
+
+> [!IMPORTANT]
+> YUKI works with full access to your PC: when you ask, it can open apps, read and change your files, use your browser and your logins, and run commands. Models run as they ship: YUKI adds no filters of its own.
+
+## Getting it
+
+YUKI has one setup file. Its first public release isn't out yet. When it is, [Downloads](/downloads/#yuki) and [YUKI's page](/yuki/) have the file, its size and its SHA-256. [Installing YUKI](/docs/installing-yuki/) goes through it step by step.
+
+## What it does
+
+| Part | What it means |
+|---|---|
+| Any task on your PC | Files, the shell, the browser and your logins, desktop apps, games, and other AI models. |
+| Models are tools | Her brain can call an image, video or language model with its own settings, take what it makes, and keep working. |
+| Yuki never goes busy | You talk to Yuki. She hands the work to her helper agents and keeps talking with you while they run. |
+
+## Where your chats go
+
+YUKI runs on your PC, and your chats stay there unless you pick a cloud model. A cloud model, free or used with your own API key, runs on its maker's servers, so what you send it goes to them.
+
+## Where things go
+
+| What | Where |
+|---|---|
+| The YUKI app | `%LOCALAPPDATA%\Programs\YUKI`, or the folder you pick when you install |
+| Your chats, memory and settings | `%LOCALAPPDATA%\YUKI` |
+| A note of where that folder is | `%APPDATA%\YUKI` |
+
+Your chats and settings aren't kept in the app's folder, so updating or removing the app leaves them in place. [Uninstalling](/docs/installing-yuki/#uninstalling) says how to remove them too.

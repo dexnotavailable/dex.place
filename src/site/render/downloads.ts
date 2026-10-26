@@ -52,8 +52,9 @@ function yukiFileArt(f: DownloadFile | null): string {
   return (
     `<div class="dlf__art dlf__art--yuki" aria-hidden="true">` +
     // (a wide stage: a tall column on a desktop crops its sides, a phone's short strip keeps her whole)
-    yukiArt({ className: "dlf__yuki", seed: "yuki-dl", cols: 96, rows: 64, eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "calm" }) +
-    (f ? `<span class="dlf__tag">${icon("download", 2)}<span>${esc(ext)}</span></span>` : `<span class="dlf__zz"><i>z</i><i>z</i><i>Z</i></span>`) +
+    yukiArt({ className: "dlf__yuki", seed: "yuki-dl", cols: 96, rows: 64, eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "small" }) +
+    // (asleep, the app's own zz floats by her: yuki-sprite.ts)
+    (f ? `<span class="dlf__tag">${icon("download", 2)}<span>${esc(ext)}</span></span>` : "") +
     `</div>`
   );
 }
@@ -101,7 +102,9 @@ function published(d: DownloadEntry, f: DownloadFile, level: Level): string {
 function pending(d: DownloadEntry, i: number, level: Level): string {
   const via = d.installedBy ? downloads.find((x) => x.id === d.installedBy && x.file) : undefined;
   const h = `h${level}`;
-  // an entry with a page of its own (YUKI) keeps its big block, asleep until there is a file
+  // an entry with a page of its own (YUKI) keeps its big block, asleep until there is a file, laid out as it will be
+  // with one (the key, the specs, the notes, the guide), each saying plainly what isn't out yet: the home band then
+  // keeps its height either way (its hanging banners ride the band's scroll; a short band ran them fast)
   if (d.guide) {
     return (
       `<article class="dlf" id="${d.id}" data-yuki="none" aria-labelledby="${d.id}-name" data-reveal="pop-block">` +
@@ -109,12 +112,19 @@ function pending(d: DownloadEntry, i: number, level: Level): string {
       yukiFileArt(null) +
       `<div class="dlf__body">` +
       `<div class="dlf__head"><div class="dlf__title">` +
-      `<p class="dl-state"><span class="dl-state__dot" aria-hidden="true"></span>Not yet</p>` +
+      `<p class="dl-state"><span class="dl-state__dot" aria-hidden="true"></span>${esc(d.notes[0]?.replace(/\.$/, "") ?? "Not yet")}</p>` +
       `<${h} class="dlf__name" id="${d.id}-name">${esc(d.name)}</${h}>` +
       `</div></div>` +
       `<p class="dlf__line">${esc(lineOf(d.id))}</p>` +
-      d.notes.map((n) => `<p class="dlp__note">${esc(n)}</p>`).join("") +
-      `<div class="dlf__cta">${button({ href: d.guide, label: `Meet ${projects.find((p) => p.id === d.id)?.hero ?? d.name}`, icon: "arrow", size: "m" })}</div>` +
+      `<div class="dlf__cta">${button({ href: d.guide, label: `Meet ${projects.find((p) => p.id === d.id)?.hero ?? d.name}`, icon: "arrow", size: "l" })}` +
+      `<span class="dlf__file"><code>${esc(d.name)} for Windows</code><span>Not out yet</span></span></div>` +
+      `<dl class="spec">` +
+      `<div><dt>Version</dt><dd>Not out yet</dd></div>` +
+      `<div><dt>Platform</dt><dd>Windows</dd></div>` +
+      `<div><dt>SHA-256</dt><dd>With the release</dd></div>` +
+      `</dl>` +
+      (d.installer?.length ? `<ul class="dl-notes">${d.installer.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : "") +
+      `<p class="dlf__guide"><a class="link" href="${esc(d.guide)}#install">The install guide, step by step</a></p>` +
       `</div></article>`
     );
   }
@@ -165,8 +175,10 @@ export function verifyBlock(d: DownloadEntry, f: DownloadFile, level: Level): st
 }
 
 /** The install guide. `ways`: each browser's own words under a step (the home band's four narrow cards leave them to
- *  the full guide its link opens). */
-function guide(d: DownloadEntry, f: DownloadFile, level: Level, ways: boolean): string {
+ *  the full guide its link opens). Before there is a file (a project with a page of its own, YUKI) the guide is there
+ *  all the same, so the section keeps its height (the home band's hanging banners ride its scroll: a short band ran
+ *  them fast) and anyone can read how installing goes; only the file's checksum waits for the release. */
+function guide(d: DownloadEntry, f: DownloadFile | null, level: Level, ways: boolean): string {
   const steps = d.steps ?? [];
   const h = `h${level}`;
   const h2 = `h${level + 1}`;
@@ -192,7 +204,7 @@ function guide(d: DownloadEntry, f: DownloadFile, level: Level, ways: boolean): 
       : "") +
     (d.caveat ? `<p class="dlg__caveat">${icon("warn", 2)}<span>${esc(d.caveat)}</span></p>` : "") +
     (d.guide ? `<p class="dlg__more"><a class="link" href="${esc(d.guide)}#install">More on installing, with pictures of the Windows prompt</a></p>` : "") +
-    verifyBlock(d, f, level) +
+    (f ? verifyBlock(d, f, level) : verifyLater(d, level)) +
     `</section>`
   );
 }
@@ -214,14 +226,30 @@ export function retiredNote(where: "downloads" | "projects"): string {
   );
 }
 
+/** "Check the file" before the release: laid out as it will be, the checksum's place saying it comes with the release
+ *  (the block keeps its height), the PowerShell line already there. */
+function verifyLater(d: DownloadEntry, level: Level): string {
+  const h2 = `h${level + 1}`;
+  const cmd = `Get-FileHash .\\${d.name}-Setup-*.exe -Algorithm SHA256`;
+  return (
+    `<div class="verify verify--later" id="${d.id}-verify" data-reveal>` +
+    `<${h2} class="verify__title">${tile("qr", "paper", "s")}<span>Check the file</span></${h2}>` +
+    `<p class="verify__line">The SHA-256 of ${esc(d.name)}'s installer shows here with its first release:</p>` +
+    `<div class="verify__row"><code class="hash hash--later">Not out yet</code></div>` +
+    `<p class="verify__line">To compare, run this in PowerShell in the folder with the file. It prints the same code in capitals.</p>` +
+    `<div class="verify__row"><code class="cmd"><span aria-hidden="true">&gt; </span>${esc(cmd)}</code>${copyButton(cmd, "PowerShell command")}</div>` +
+    `</div>`
+  );
+}
+
 /** Every download block, then the install guide; item headings at `level`. `list`: the site's own unless a test
- *  passes another (a release that isn't out yet); `ways`: each browser's own words under the guide's steps. */
+ *  passes another (a release that isn't out yet); `ways`: each browser's own words under the guide's steps. A project
+ *  with its own page (YUKI) has its guide here before its file is out too. */
 export function downloadsBody(level: Level, list: readonly DownloadEntry[] = downloads, ways = true): string {
-  const files = list.filter((d) => d.file !== null);
   const blocks = list.map((d, i) => (d.file ? published(d, d.file, level) : pending(d, i, level))).join("");
   return (
     `<div class="dl-list">${blocks}${retiredNote("downloads")}</div>` +
-    files.filter((d) => d.steps).map((d) => guide(d, d.file as DownloadFile, level, ways)).join("")
+    list.filter((d) => d.steps && (d.file || d.guide)).map((d) => guide(d, d.file, level, ways)).join("")
   );
 }
 

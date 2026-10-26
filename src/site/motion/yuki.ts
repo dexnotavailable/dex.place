@@ -1,8 +1,11 @@
 // YUKI's page (/yuki/, render/yuki.ts) and her sprite wherever it is: what scripts add. The page is complete without
 // this (the key downloads, the guide is there below it); this makes her alive and turns the page into the guide.
 //
-// - Her eyes follow a fine pointer (the eye layer one pixel left or right, styles/yuki.css --gx), on every stage.
-// - Tap or click her on the page's stage: she hops, smiles and says something small.
+// - Her eyes follow a fine pointer (the open eyes' glance layers, data-look -1 / 0 / 1, as the app's glance), on every
+//   stage; without one they look aside now and then on their own clock (styles/yuki.css).
+// - A new face arrives behind a blink, as in the app (YUKI ui/mascotFrames.ts SWAP_STEPS: shut 90 ms, half open 50 ms).
+// - Press her on the page's stage: she squeezes her eyes shut and her head sinks a pixel; let go and it pops a pixel up
+//   for a beat (the app's PRESS), then she hops, smiles and says something small.
 // - The Download click (the default action runs: the file comes from GitHub, the page stays): the page becomes the
 //   install guide (data-stage="guide"), she cheers, one status line says what to do, and the page goes to the steps.
 // - The hero (her stage and the snow in front of it), her art in the Downloads block (the block itself is tall: its art
@@ -12,6 +15,7 @@
 // Reduced motion: no hop, no talking mouth, no smooth scroll; her face still changes (a state, not a motion).
 
 import { readLinkStatus, YUKI_LINK } from "../data/yuki.ts";
+import { OPEN_EYES, YUKI_TIMING, type YukiEyes } from "../yuki-sprite.ts";
 
 const POKES = ["hehe.", "that tickles!", "snow's nice tonight.", "i live on your PC.", "hi again!"] as const;
 
@@ -24,11 +28,11 @@ interface Her {
 
 function hersIn(root: ParentNode): Her[] {
   return Array.from(root.querySelectorAll<SVGSVGElement>("svg.yk")).map((svg) => ({
-    svg, eyes: svg.dataset["eyes"] ?? "open", mouth: svg.dataset["mouth"] ?? "calm",
+    svg, eyes: svg.dataset["eyes"] ?? "open", mouth: svg.dataset["mouth"] ?? "small",
   }));
 }
 
-/** Her eyes follow the pointer: -1, 0 or 1 pixel, from where the pointer is beside her face. */
+/** Her eyes follow the pointer: they look left, ahead or right (-1, 0, 1) from where it is beside her face. */
 function initGlances(): () => void {
   const all = hersIn(document);
   if (!all.length) return () => {};
@@ -40,14 +44,14 @@ function initGlances(): () => void {
       if (r.width < 24 || r.bottom < 0 || r.top > innerHeight) continue;
       const cx = r.left + r.width / 2, dx = px - cx;
       const gx = Math.abs(dx) < r.width * 0.35 ? 0 : dx < 0 ? -1 : 1;
-      h.svg.style.setProperty("--gx", String(gx));
+      h.svg.dataset["look"] = String(gx);
     }
   };
   const move = (e: PointerEvent): void => {
     px = e.clientX;
     if (!raf) raf = requestAnimationFrame(look);
   };
-  const leave = (): void => { for (const h of all) h.svg.style.removeProperty("--gx"); };
+  const leave = (): void => { for (const h of all) delete h.svg.dataset["look"]; };
   window.addEventListener("pointermove", move, { passive: true });
   document.documentElement.addEventListener("pointerleave", leave);
   return () => {
@@ -83,18 +87,44 @@ class Stage {
     this.timers = [];
   }
 
-  /** Her face for a while (or for good), then back to rest. */
+  /** Her face for a while (or for good), then back to rest. A new pair of eyes arrives behind a blink, as in the app:
+   *  shut, then half open if they open. */
   face(eyes: string, mouth: string, ms = 0): void {
-    if (!this.her) return;
-    this.her.svg.dataset["eyes"] = eyes;
-    this.her.svg.dataset["mouth"] = mouth;
+    const her = this.her;
+    if (!her) return;
+    const svg = her.svg;
+    const set = (e: string): void => { svg.dataset["eyes"] = e; };
+    svg.dataset["mouth"] = mouth;
+    if (svg.dataset["eyes"] !== eyes && !this.reduced) {
+      const [[shut, shutMs], [half, halfMs]] = YUKI_TIMING.swapSteps;
+      set(shut);
+      this.later(shutMs, () => {
+        if (OPEN_EYES.includes(eyes as YukiEyes)) { set(half); this.later(halfMs, () => set(eyes)); } else set(eyes);
+      });
+    } else set(eyes);
     if (ms) this.later(ms, () => this.rest());
   }
 
   rest(): void {
     if (!this.her) return;
-    this.her.svg.dataset["eyes"] = this.her.eyes;
-    this.her.svg.dataset["mouth"] = this.her.mouth;
+    this.face(this.her.eyes, this.her.mouth);
+  }
+
+  /** Pressed: her eyes squeeze shut (the app's boop) and her head sinks a pixel; let go, it pops a pixel up a beat. */
+  press(down: boolean): void {
+    const svg = this.her?.svg;
+    if (!svg || this.reduced) return;
+    if (down) {
+      this.clear();
+      svg.classList.add("is-press");
+      svg.dataset["eyes"] = "squeeze";
+      svg.dataset["mouth"] = "smile";
+      return;
+    }
+    if (!svg.classList.contains("is-press")) return;
+    svg.classList.remove("is-press");
+    svg.classList.add("is-pop");
+    window.setTimeout(() => svg.classList.remove("is-pop"), YUKI_TIMING.press.popMs);
   }
 
   /** She says a line: the bubble pops, her mouth moves while she says it. */
@@ -108,20 +138,21 @@ class Stage {
       void bubble.offsetWidth;
       bubble.classList.add("is-new");
     }
-    this.face(then.eyes, "talk");
+    this.face(then.eyes, "open");
     if (!this.reduced && this.her) {
       const svg = this.her.svg;
       const beats = Math.max(3, Math.min(12, Math.round(text.length / 3)));
-      for (let i = 1; i <= beats; i++) this.later(i * 110, () => { svg.dataset["mouth"] = i % 2 ? "calm" : "talk"; });
+      for (let i = 1; i <= beats; i++) this.later(i * 110, () => { svg.dataset["mouth"] = i % 2 ? "small" : "open"; });
       this.later((beats + 1) * 110, () => this.face(then.eyes, then.mouth, then.ms ?? 0));
     } else {
       this.face(then.eyes, then.mouth, then.ms ?? 0);
     }
   }
 
+  /** A hop: the sprite's own (whole pixels, her ahoge trailing), restarted each time. */
   hop(): void {
     if (this.reduced) return;
-    const g = this.stage.querySelector<SVGGElement>(".ykstage__her");
+    const g = this.her?.svg;
     if (!g) return;
     g.classList.remove("is-hop");
     void g.getBoundingClientRect();
@@ -189,9 +220,11 @@ export function initYuki(reduced: boolean, fine: boolean): void {
   const stage = stageEl ? new Stage(stageEl, hersIn(stageEl)[0] ?? null, reduced) : null;
   if (stageEl && stage) {
     let n = 0;
+    stageEl.addEventListener("pointerdown", (e) => { if (e.button === 0) stage.press(true); });
+    for (const t of ["pointerup", "pointercancel", "pointerleave"] as const) stageEl.addEventListener(t, () => stage.press(false));
     stageEl.addEventListener("click", () => {
       if (page.dataset["release"] === "none") {
-        stage.say("five more minutes...", { eyes: "sleepy", mouth: "calm" });
+        stage.say("five more minutes...", { eyes: "sleepy", mouth: "small" });
         return;
       }
       stage.hop();

@@ -19,8 +19,8 @@ Every file is reachable straight from the website, with no game and no sign-in i
 
 | Section | What's in it |
 |---|---|
-| [Projects](/projects/) | dexCode, dexClient and dex.place |
-| [Downloads](/downloads/) | The dexClient setup, with its size and SHA-256 |
+| [Projects](/projects/) | YUKI and dex.place |
+| [Downloads](/downloads/) | The YUKI setup, with its size and SHA-256, once its first release is out |
 | [Gallery](/gallery/) | Dex's own illustrations |
 | [Docs](/docs/) | These pages |
 | [Blog](/blog/) | Posts from Dex |

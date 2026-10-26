@@ -61,8 +61,10 @@ References each have one job. Don't blend them into a collage or copy their char
 ## Brand and words
 
 - The mark is lowercase **dex** in the **Daniel** font. Nothing under it.
-- No taglines, subtitles, role labels, "solo dev", "made with love", mysterious one-liners, or
-  copy that sells Dex to the visitor.
+- No taglines, subtitles, role labels, "solo dev", "made with love" or mysterious one-liners.
+- Never advertise what doesn't exist yet: no hype, promises or sales copy for anything that isn't
+  real. A real product with a real showcase may be shown as one, with its own page, art and words
+  (Dex, 2026-10-26: the rule only ever stopped agents advertising things that didn't exist).
 - Short text either helps someone use something or gives a real character a small voice.
 - Pixel fonts are fine for headings; long text, docs, forms, bank details and accessibility
   text stay plainly readable.

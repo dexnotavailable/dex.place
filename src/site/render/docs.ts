@@ -3,7 +3,7 @@
 // build/content.ts. Complete without JavaScript; motion/toc.ts only adds the
 // scroll-spy and anchor copying.
 
-import { DOC_GROUPS, OTHER_GROUP, docGroup, type DocGroup } from "../data/docs.ts";
+import { DOC_GROUPS, OTHER_GROUP, docGroup, type DocGroup, type RetiredDoc } from "../data/docs.ts";
 import { DEEP_PLACES, deepBand, deepHead } from "./deep.ts";
 import { button, hanko, icon, pageHead, placeholderTag, sectionHead, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
@@ -88,10 +88,10 @@ function docGroups(content: SiteContent, level: 2 | 3 | 4): string {
 }
 
 /**
- * The doc a newcomer wants first, shown above the catalogue on /docs/: installing dexClient (CANON's wayfinding puts
- * downloads first, and dexClient is how dexCode gets onto a PC). Its own title and summary; no card if it is gone.
+ * The doc a newcomer wants first, shown above the catalogue on /docs/: installing YUKI (CANON's wayfinding puts
+ * downloads first; since Dex 10-26 YUKI is the one download). Its own title and summary; no card if it is gone.
  */
-export const START_DOC = "installing-dexclient";
+export const START_DOC = "installing-yuki";
 
 function startHere(content: SiteContent): string {
   const d = content.docs.find((x) => x.slug === START_DOC);
@@ -364,4 +364,17 @@ export function postPage(content: SiteContent, e: Entry): string {
 
 export function entryPage(content: SiteContent, e: Entry): string {
   return e.kind === "docs" ? docPage(content, e) : postPage(content, e);
+}
+
+/** A retired doc's old address (data/docs.ts RETIRED_DOCS): says so, and links the doc that replaces it. */
+export function retiredDocPage(content: SiteContent, r: RetiredDoc): string {
+  const to = content.docs.find((d) => d.slug === r.to);
+  return (
+    `<div class="page page--retired">` +
+    `<div class="wrap">` +
+    pageHead({ kicker: "docs", title: r.title, tone: "cyan", icon: "page" }) +
+    `<p class="retired retired--page"><span class="retired__tag">Retired</span><span>${esc(r.project)} is retired. YUKI replaces it.</span></p>` +
+    `<p class="retired__go">${button({ href: to ? to.url : "/docs/", label: to ? to.title : "Docs", icon: "arrow", size: "m" })}</p>` +
+    `</div></div>`
+  );
 }

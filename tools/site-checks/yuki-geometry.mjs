@@ -128,7 +128,8 @@ console.log("3. after the hatch: a click on her, and the hop's class");
   await page.waitForTimeout(40);
   const after = await page.evaluate(() => {
     const names = (sel) => document.querySelector(sel).getAnimations().filter((a) => a.playState === "running").map((a) => a.animationName);
-    return { say: names("[data-yuki-say]"), her: names("[data-yuki-stage] .ykstage__her"), line: document.querySelector("[data-yuki-line]").textContent };
+    // (her hop is the sprite's own: svg.yk.is-hop moves its .yk__hop group in whole pixels)
+    return { say: names("[data-yuki-say]"), her: names("[data-yuki-stage] svg.yk .yk__hop"), line: document.querySelector("[data-yuki-line]").textContent };
   });
   console.log(`  click (${released ? "released" : "not released"}): "${after.line}"  bubble ${JSON.stringify(after.say)}  her ${JSON.stringify(after.her)}`);
   check(after.say.includes("yk-say-new"), "a click: the bubble didn't pop");
@@ -136,11 +137,14 @@ console.log("3. after the hatch: a click on her, and the hop's class");
   // the class itself, whatever the release: off, a reflow, on (as motion/yuki.ts does)
   await page.waitForTimeout(800);
   const hop = await page.evaluate(() => {
-    const g = document.querySelector("[data-yuki-stage] .ykstage__her");
+    const g = document.querySelector("[data-yuki-stage] svg.yk");
     g.classList.remove("is-hop");
     void g.getBoundingClientRect();
     g.classList.add("is-hop");
-    return { name: getComputedStyle(g).animationName, running: g.getAnimations().filter((a) => a.playState === "running").map((a) => a.animationName) };
+    const hopper = g.querySelector(".yk__hop");
+    const stage = document.querySelector("[data-yuki-stage] .ykstage__her");
+    const running = [...hopper.getAnimations(), ...stage.getAnimations()].filter((a) => a.playState === "running").map((a) => a.animationName);
+    return { name: getComputedStyle(hopper).animationName, running };
   });
   console.log(`  .is-hop: animation-name "${hop.name}", running ${JSON.stringify(hop.running)}`);
   check(hop.running.includes("yk-hop") && !hop.running.includes("yk-pop"), ".is-hop: the hop doesn't play, or the pop replays");

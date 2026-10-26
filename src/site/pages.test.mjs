@@ -179,7 +179,7 @@ test("/blog/: the newest post leads as a card, every other post follows in order
   assert.equal((html.match(/data-hanko/g) ?? []).length, 1, "one Hanko");
 });
 
-test("/docs/ starts a newcomer at installing dexClient; /donate/ says what a donation does not change", async () => {
+test("/docs/ starts a newcomer at installing YUKI; /donate/ says what a donation does not change", async () => {
   const { START_DOC } = await import("./render/docs.ts");
   const start = content.docs.find((d) => d.slug === START_DOC);
   assert.ok(start, "the start doc exists");

@@ -13,9 +13,28 @@ export interface DocGroup {
 }
 
 export const DOC_GROUPS: readonly DocGroup[] = [
+  { id: "yuki", label: "YUKI", icon: "sparkle", tone: "cyan" },
   { id: "dexcode", label: "dexCode", icon: "window", tone: "yellow" },
   { id: "dexclient", label: "dexClient", icon: "download", tone: "mint" },
   { id: "dex-place", label: "dex.place", icon: "grid", tone: "magenta" },
+];
+
+/**
+ * Docs that are gone, and where their readers go now (Dex 10-26: YUKI replaces dexCode, and dexClient is retired; the
+ * YUKI docs replace theirs). Their old addresses stay as small retired pages (noindex), as the retired projects' do.
+ */
+export interface RetiredDoc {
+  readonly slug: string;
+  readonly title: string;
+  /** The project it documented, as the retired line names it. */
+  readonly project: string;
+  /** The doc that replaces it. */
+  readonly to: string;
+}
+
+export const RETIRED_DOCS: readonly RetiredDoc[] = [
+  { slug: "dexcode", title: "dexCode overview", project: "dexCode", to: "yuki" },
+  { slug: "installing-dexclient", title: "Installing dexClient", project: "dexClient", to: "installing-yuki" },
 ];
 
 /** Docs without a `group` land here, after the named groups. */

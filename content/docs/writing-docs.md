@@ -23,19 +23,19 @@ Names are lowercase with hyphens. A file whose name starts with `_` is not built
 
 Each file starts with a few `key: value` lines between `---` fences.
 
-```yaml title="content/docs/installing-dexclient.md"
+```yaml title="content/docs/installing-yuki.md"
 ---
-title: Installing dexClient
+title: Installing YUKI
 summary: One line for the index
-group: dexclient
-order: 1
+group: yuki
+order: 2
 ---
 ```
 
 - `title` is required.
 - `summary` shows under the title on index pages.
 - `date` (posts, `YYYY-MM-DD`) sets the order on the blog. Undated posts are listed as drafts. Never make a date up.
-- `group` (docs) is one of `dexcode`, `dexclient` or `dex-place`.
+- `group` (docs) is one of `yuki`, `dex-place`, or the retired `dexcode` and `dexclient`.
 - `placeholder: true` marks a page that is still a stand-in. A doc shows the Placeholder tag and is hidden from search engines. A post is not published at all: no page, no place on the blog or in the feed, until the line goes. Leave it out, or set `placeholder: false`, on a finished page.
 
 ### Groups and order

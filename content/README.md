@@ -16,12 +16,12 @@ are ignored (drafts you don't want built).
 
 ```text
 ---
-title: Installing dexClient       required
+title: Installing YUKI            required
 summary: One line for the index   optional
 date: 2026-09-29                  optional, YYYY-MM-DD, blog posts; never invent one
 sequence: 10                      optional, blog posts on the same date; higher first
 order: 1                          optional, docs only, lower first
-group: dexclient                  optional, docs only: dexcode, dexclient or dex-place
+group: yuki                       optional, docs only: yuki, dex-place, dexcode or dexclient
 placeholder: true                 shows a "Placeholder" tag, adds noindex, keeps it out of the feed
 nsfw: true                        blog posts: shows an NSFW tag, marks the feed item, no image indexing
 ---

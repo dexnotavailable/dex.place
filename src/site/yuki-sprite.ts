@@ -1,172 +1,41 @@
-// Pixel Yuki: YUKI's face as a 32 x 32 chibi bust, drawn in code (CANON and the YUKI brief: materials are made with
-// code, no image generation). One character per pixel, one SVG path per colour, one SVG unit per pixel, so it stays
-// crisp at any whole-number scale. DOM-free: it renders at build time and runs under `node --test`.
+// Pixel Yuki: YUKI's mascot as the app draws her, a 32 x 32 chibi bust (Dex 10-26: the site's Yuki stays the app's).
+// Her pixels are the app's own, synced as data into yuki-faces.ts (tools/yuki-faces/sync.mjs, which checks them against
+// the app's faces pixel for pixel); this draws them. One SVG unit a pixel and one <path> per colour per layer, so she
+// stays crisp at any whole-number scale. DOM-free: it renders at build time and runs under `node --test`.
 //
-// Drawn to Dex's pixel-face rules (YUKI docs/build/PHASE2-SCOPE.md W5): a head-only bust about two thirds of the
-// canvas; eyes a little below the head's middle, an iris 4 px wide and 5 tall under a dark lid with a one-pixel outward
-// flick, three tones from dark on top to bright below, a white highlight, no lower lash; no nose; a two-pixel mouth;
-// blush under the outer corners; bangs over the brows; one lighter band in the hair; outlines a darker hue of their
-// colour, never black (the lid is the one black). Her colours are the orb's (YUKI packages/yuki-orb art.ts): white
-// hair with lilac shade, blue eyes, red only on the hairpin and the collar gem.
-//
-// Layers, so a face changes without redrawing her: the base (hair, skin with the eyes and mouth left out, the cloak),
-// the eyes (one layer per expression, eye pixels only, so a glance is the layer moved one pixel sideways over plain
-// skin), the mouth (one per shape) and the ahoge (two frames, it sways). styles/yuki.css shows one of each.
+// Layers, as the app animates them (YUKI ui/Mascot.tsx): the back hair and the head bob a pixel over still shoulders;
+// the eyes, blush and mouth sit on the head as layers of their own, so a blink, a glance or a new face is one attribute
+// and never a redraw; the ahoge sways on two sprite frames. Which face shows: `data-eyes` and `data-mouth` on the svg;
+// the blush turns strong with the eyes that call for it (happy, wide, squeeze), as in the app's expressions; the open
+// eyes glance with `data-look` (-1, 0, 1), or on their own idle clock without it. Asleep, the app's zz floats by her.
+// styles/yuki.css shows and moves them; motion/yuki.ts changes them.
 
 import { rng } from "./render/html.ts";
+import { BACK, BLUSH, BODY, EYES, FACE, FRONT, HEAD, MOUTHS, PALETTE, PROPS, TIMING, type FaceKey, type Layer } from "./yuki-faces.ts";
 
-/** Her palette. The keys are this sprite's own (pixels.ts has the icons' keys). */
-export const YUKI_PALETTE = {
-  o: "#4a4366", // hair outline
-  H: "#e8e5f2", // hair
-  L: "#ffffff", // the hair's light band
-  h: "#cbc5de", // hair shade
-  d: "#a29bbe", // bang tips
-  x: "#bdb6d2", // the side hair's inner shade
-  S: "#fff1ea", // skin
-  s: "#f8d9cf", // skin in shadow (under the bangs, the neck)
-  e: "#eab4a6", // jaw line
-  K: "#1c1430", // lid and lash (the one near-black)
-  I: "#1b2486", // iris, top
-  i: "#2c9ef5", // iris
-  j: "#8fe6ff", // iris, bottom
-  W: "#ffffff", // highlight
-  B: "#ffa3b8", // blush
-  M: "#c4505f", // mouth
-  m: "#7d2a40", // mouth, open
-  R: "#e8303a", // hairpin
-  r: "#8f1020", // hairpin and gem, dark
-  g: "#ffb3b8", // hairpin and gem, light
-  G: "#e8303a", // gem
-  C: "#e6e8f7", // cloak
-  c: "#bfc3e0", // cloak shade
-  q: "#4f5287", // cloak outline
-  F: "#ffffff", // fur collar
-  f: "#d6d7ea", // fur shade
-} as const;
-export type YukiKey = keyof typeof YUKI_PALETTE;
+/** Her palette (the app's look "yuki"). */
+export const YUKI_PALETTE = PALETTE;
 
-/** The base: everything but the eyes, the mouth and the ahoge. */
-export const YUKI_BASE: readonly string[] = [
-  "................................",
-  "................................",
-  "..............oooo..............",
-  "...........oooHHHHooo...........",
-  ".........ooHLLLLLLLLHoo.........",
-  "........oHLLHHHHHHHHLLHo........",
-  ".......oHLHHHHHHHHHHHHLHo.......",
-  "......oHLHHHHHHHHHHHHHHLHo......",
-  "......oHHHHHHHHHHHHHHHHHHo......",
-  ".....oHHHHHHHHHHHHHHHHHHRHo.....",
-  ".....oHHHHhHHhHHHHhHHhHRgRo.....",
-  ".....oHHHHhHHhHHHHhHHhHrRro.....",
-  "....oHHHHHdHddHHHHddHdHHHHHo....",
-  "....oHHHhdsdssdHHdssdsdhHHHo....",
-  "....oHHxdsSSSSsddsSSSSsdxHHo....",
-  "....oHxSSSSSSSSSSSSSSSSSSxHo....",
-  "....oHxSSSSSSSSSSSSSSSSSSxHo....",
-  "....oHxSSSSSSSSSSSSSSSSSSxHo....",
-  "....oHxSSSSSSSSSSSSSSSSSSxHo....",
-  "....oHxSSSSSSSSSSSSSSSSSSxHo....",
-  "....oHxSBBSSSSSSSSSSSSBBSxHo....",
-  "....oHHxSSSSSSSSSSSSSSSSxHHo....",
-  ".....oHxSSSSSSSSSSSSSSSSxHo.....",
-  ".....oHxeSSSSSSSSSSSSSSexHo.....",
-  "......oo.eeSSSSSSSSSSee.oo......",
-  ".......oo..eessssssee..oo.......",
-  "........o..qFFssssFFq..o........",
-  ".........qqfFFFssFFFfqq.........",
-  "......qqqfFFFfFgGFfFFFfqqq......",
-  "....qqCFFFFFfFFGrFFfFFFFFCqq....",
-  "...qCCCcCCCCCCCccCCCCCCCcCCCq...",
-  "...qqqqqqqqqqqqqqqqqqqqqqqqqq...",
-];
+/** The eyes the site shows (the app has more: focused, sad). "open" also carries its glances. */
+export const YUKI_EYES = ["open", "half", "closed", "happy", "sleepy", "wide", "squeeze"] as const;
+export type YukiEyes = (typeof YUKI_EYES)[number];
+/** Eyes that open: she blinks and glances only with these, and a new face arrives behind a blink before them. */
+export const OPEN_EYES: readonly YukiEyes[] = ["open", "wide"];
+/** Eyes whose face has the strong blush (the app's happy, surprised and boop). */
+export const STRONG_BLUSH: readonly YukiEyes[] = ["happy", "wide", "squeeze"];
 
-/** The eyes, rows 15-20 of the bust, its full width (every other pixel empty, the base's skin shows). */
-const eyes = (rows: readonly string[]): readonly string[] => [
-  ...Array.from({ length: 15 }, () => ".".repeat(32)),
-  ...rows,
-  ...Array.from({ length: 11 }, () => ".".repeat(32)),
-];
+/** The mouths the site shows: small (at rest), smile (open, happy), open (a little "o": mid-word, surprised). */
+export const YUKI_MOUTHS = ["small", "smile", "open"] as const;
+export type YukiMouth = (typeof YUKI_MOUTHS)[number];
 
-export const YUKI_EYES = {
-  /** Open, looking at you. */
-  open: eyes([
-    ".......KKKKK........KKKKK.......",
-    "........KKIIK......KIIKK........",
-    "........KIWII......IIWIK........",
-    ".........IWii......iiWI.........",
-    ".........iiij......jiii.........",
-    "..........jj........jj..........",
-  ]),
-  /** Shut for a blink: the lash as one line, the flick kept. */
-  blink: eyes([
-    "................................",
-    "................................",
-    ".......K................K.......",
-    "........KKKKK......KKKKK........",
-    "................................",
-    "................................",
-  ]),
-  /** ^ ^ */
-  happy: eyes([
-    "................................",
-    ".........KK..........KK.........",
-    "........K..K........K..K........",
-    ".......K....K......K....K.......",
-    "................................",
-    "................................",
-  ]),
-  /** Asleep: two soft arcs the other way up. */
-  sleepy: eyes([
-    "................................",
-    "................................",
-    "................................",
-    ".......K....K......K....K.......",
-    "........KKKK........KKKK........",
-    "................................",
-  ]),
-} as const satisfies Record<string, readonly string[]>;
-export type YukiEyes = keyof typeof YUKI_EYES;
+/** The app's timings, for the stylesheet and the script (tests keep styles/yuki.css in step with them). */
+export const YUKI_TIMING = TIMING;
 
-const mouth = (r21: string, r22 = "......"): readonly string[] => [
-  ...Array.from({ length: 21 }, () => ".".repeat(32)),
-  `.............${r21}.............`,
-  `.............${r22}.............`,
-  ...Array.from({ length: 9 }, () => ".".repeat(32)),
-];
-
-export const YUKI_MOUTHS = {
-  /** Two pixels, calm. */
-  calm: mouth("..MM.."),
-  /** A small cat smile. */
-  smile: mouth(".M..M.", "..MM.."),
-  /** Open, mid-word. */
-  talk: mouth("..mm..", "..mm.."),
-} as const satisfies Record<string, readonly string[]>;
-export type YukiMouth = keyof typeof YUKI_MOUTHS;
-
-/** The ahoge, rows 0-2: two frames (it sways). */
-export const YUKI_AHOGE: readonly (readonly string[])[] = [
-  ["..................oo............", ".................o..o...........", "................oo.............."],
-  [".................oo.............", "................o..o............", "................oo.............."],
-];
-
-const SIZE = 32;
-
-/** Checks a layer: 32 rows of 32, known keys only. */
-export function validateLayer(name: string, rows: readonly string[]): void {
-  if (rows.length !== SIZE) throw new Error(`yuki ${name}: ${rows.length} rows, expected ${SIZE}`);
-  rows.forEach((row, y) => {
-    if (row.length !== SIZE) throw new Error(`yuki ${name} row ${y}: ${row.length} wide, expected ${SIZE}`);
-    for (const ch of row) if (ch !== "." && !(ch in YUKI_PALETTE)) throw new Error(`yuki ${name}: unknown key "${ch}"`);
-  });
-}
-
-/** One <path> per colour, one rectangle per horizontal run (as pixels.ts does for the icons). */
-export function layerPaths(rows: readonly string[]): string {
+/** One <path> per colour, one rectangle per horizontal run. */
+export function layerPaths(layer: Layer): string {
   const runs = new Map<string, string>();
-  rows.forEach((row, y) => {
+  layer.rows.forEach((row, i) => {
+    const y = layer.y + i;
     for (let x = 0; x < row.length;) {
       const ch = row[x] as string;
       if (ch === ".") { x += 1; continue; }
@@ -176,19 +45,23 @@ export function layerPaths(rows: readonly string[]): string {
     }
   });
   let out = "";
-  for (const [ch, d] of runs) out += `<path fill="${YUKI_PALETTE[ch as YukiKey]}" d="${d}"/>`;
+  for (const [ch, d] of runs) out += `<path fill="${PALETTE[ch as FaceKey]}" d="${d}"/>`;
   return out;
 }
 
+const same = (a: Layer, b: Layer): boolean => a.y === b.y && a.rows.join("|") === b.rows.join("|");
+
 /**
- * Her blink's clock, seeded (styles/yuki.css reads --blink, the period, and --blink-at, where in it she starts): 4.1 to
- * 6.3 s, so two Yukis on one screen (a banner and a block, the hero and a tile) blink out of step. A stage sets it for
- * the Yuki inside it (render/yukiart.ts); a Yuki on her own takes it from her `seed`.
+ * Her blink's and her idle glance's clocks, seeded (styles/yuki.css reads them): a blink every 4.1 to 6.3 s (the app
+ * blinks every 3-6 s at random) and a look aside every 13 to 19 s, each from its own start, so two Yukis on one screen
+ * never blink or look in step. A stage sets them for the Yuki inside it (render/yukiart.ts); a lone one takes its seed.
  */
 export function blinkVars(seed: string): string {
   const r = rng(`${seed}-blink`);
   const period = 4.1 + r() * 2.2;
-  return `--blink:${period.toFixed(2)}s;--blink-at:${(-r() * period).toFixed(2)}s`;
+  const at = -r() * period;
+  const look = 13 + r() * 6;
+  return `--blink:${period.toFixed(2)}s;--blink-at:${at.toFixed(2)}s;--look:${look.toFixed(2)}s;--look-at:${(-r() * look).toFixed(2)}s`;
 }
 
 export interface YukiSpriteOptions {
@@ -200,32 +73,43 @@ export interface YukiSpriteOptions {
   className?: string;
   /** Accessible name; without it she is decorative. */
   label?: string;
-  /** Seeds her blink's clock (blinkVars); without it she follows her stage's, or the default 4.7 s. */
+  /** Seeds her clocks (blinkVars); without it she follows her stage's, or the stylesheet's defaults. */
   seed?: string;
 }
 
 /**
- * Pixel Yuki as inline SVG: `svg.yk[data-eyes][data-mouth]` with a group per layer. Every expression is in the
- * markup; the data attributes pick which shows, so a change of face is one attribute and never a fetch.
+ * Pixel Yuki as inline SVG: `svg.yk[data-eyes][data-mouth]`. Every face she shows is in the markup; the attributes pick
+ * one, so a change of face is an attribute and never a fetch.
  */
 export function yukiSprite(o: YukiSpriteOptions = {}): string {
   const scale = o.scale;
-  const size = scale ? ` width="${SIZE * scale}" height="${SIZE * scale}"` : "";
+  const size = scale ? ` width="${FACE * scale}" height="${FACE * scale}"` : "";
   const a11y = o.label
     ? `role="img" aria-label="${o.label.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;")}"`
     : `aria-hidden="true" focusable="false"`;
-  const group = (cls: string, rows: readonly string[], attr = ""): string => `<g class="${cls}"${attr}>${layerPaths(rows)}</g>`;
+  const g = (cls: string, inner: string): string => `<g class="${cls}">${inner}</g>`;
+  // two sprite frames, or one layer when they are the same (her long hair hangs still; the ahoge sways)
+  const frames = (cls: string, [a, b]: readonly [Layer, Layer]): string =>
+    same(a, b) ? g(cls, layerPaths(a)) : g(cls, g("yk__fa", layerPaths(a)) + g("yk__fb", layerPaths(b)));
+  const eyes = YUKI_EYES.map((k) =>
+    k === "open"
+      ? g("yk__e yk__e--open", g("yk__look yk__look--0", layerPaths(EYES.open)) + g("yk__look yk__look--l", layerPaths(EYES["open-l"])) + g("yk__look yk__look--r", layerPaths(EYES["open-r"])))
+      : g(`yk__e yk__e--${k}`, layerPaths(EYES[k])),
+  ).join("");
   return (
-    `<svg class="yk${o.className ? ` ${o.className}` : ""}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SIZE} ${SIZE}"${size} ` +
-    `shape-rendering="crispEdges" data-eyes="${o.eyes ?? "open"}" data-mouth="${o.mouth ?? "calm"}" ${a11y}` +
+    `<svg class="yk${o.className ? ` ${o.className}` : ""}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${FACE} ${FACE}"${size} ` +
+    `shape-rendering="crispEdges" data-eyes="${o.eyes ?? "open"}" data-mouth="${o.mouth ?? "small"}" ${a11y}` +
     `${o.seed ? ` style="${blinkVars(o.seed)}"` : ""}>` +
-    `<g class="yk__body">` +
-    YUKI_AHOGE.map((rows, i) => group(`yk__ahoge yk__ahoge--${i}`, [...rows, ...Array.from({ length: SIZE - 3 }, () => ".".repeat(SIZE))])).join("") +
-    group("yk__base", YUKI_BASE) +
-    `<g class="yk__eyes">` +
-    (Object.keys(YUKI_EYES) as YukiEyes[]).map((k) => group(`yk__e yk__e--${k}`, YUKI_EYES[k])).join("") +
-    `</g>` +
-    (Object.keys(YUKI_MOUTHS) as YukiMouth[]).map((k) => group(`yk__m yk__m--${k}`, YUKI_MOUTHS[k])).join("") +
-    `</g></svg>`
+    `<g class="yk__hop">` +
+    frames("yk__bob yk__back", BACK) +
+    g("yk__body", layerPaths(BODY)) +
+    `<g class="yk__bob yk__head">` +
+    layerPaths(HEAD) +
+    eyes +
+    g("yk__bl yk__bl--soft", layerPaths(BLUSH.soft)) + g("yk__bl yk__bl--strong", layerPaths(BLUSH.strong)) +
+    YUKI_MOUTHS.map((k) => g(`yk__m yk__m--${k}`, layerPaths(MOUTHS[k]))).join("") +
+    frames("yk__front", FRONT) +
+    frames("yk__zz", [PROPS.zz, PROPS["zz-up"]]) +
+    `</g></g></svg>`
   );
 }

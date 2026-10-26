@@ -8,7 +8,7 @@
 // in a tile stands in for the site's generic mascot wherever a step or fact of hers would show it (yukiTileOr).
 // Decorative everywhere except where a caller gives it a label. Reduced motion: all still (styles/yuki.css).
 
-import { blinkVars, YUKI_PALETTE, yukiSprite, type YukiEyes, type YukiMouth } from "../yuki-sprite.ts";
+import { blinkVars, yukiSprite, type YukiEyes, type YukiMouth } from "../yuki-sprite.ts";
 import type { Tone } from "../data/projects.ts";
 import type { IconName } from "../pixels.ts";
 import { tile } from "./glyphs.ts";
@@ -18,6 +18,9 @@ import { cx, esc, rng } from "./html.ts";
 export const NIGHT = ["#0b0a20", "#100f30", "#161a45", "#1c2559", "#22306e"] as const;
 const ICE = { edge: "#2d8fc4", body: "#8fe6ff", core: "#ffffff", deep: "#1b5f97" } as const;
 const RING = { outer: "#dff7ff", inner: "#34e1ff", glow: "#34e1ff" } as const;
+/** Her orb's radius in cells, round her head (14 rows down her 32 x 32 bust): its top is 6 cells over the bust's, 38
+ *  cells up from the foot of a stage she stands at the bottom of (styles/yuki.css puts her line's bubble just over it). */
+export const ORB = 20;
 
 /** A midpoint circle of radius r around (cx, cy), as cells. */
 export function ringCells(cx: number, cy: number, r: number): [number, number][] {
@@ -97,19 +100,20 @@ export function yukiStage(o: StageOptions): string {
   // where she stands
   const sx = o.at?.x ?? Math.round((cols - 32) / 2);
   const sy = rows - 32 + (o.at?.lift ?? 0);
-  const head: [number, number] = [sx + 16, sy + 15];
+  // her orb: a ring round her head and hair (the app's bust is wide with her long hair), its top just over her ahoge
+  const head: [number, number] = [sx + 16, sy + 14];
   // stars: one-cell dots, two brightnesses, never on her
   const stars: [number, number][] = [], dim: [number, number][] = [];
   for (let i = 0; i < Math.round((cols * rows) / 55); i++) {
     const x = Math.floor(r() * cols), y = Math.floor(r() * rows * 0.8);
-    if (Math.hypot(x - head[0], y - head[1]) < 19) continue;
+    if (Math.hypot(x - head[0], y - head[1]) < ORB + 2) continue;
     (r() < 0.35 ? stars : dim).push([x, y]);
   }
   s += cellsPath(dim, "#5a6aa8") + cellsPath(stars, "#cfe9ff");
   // her orb: a stepped glow and a two-tone ring
   if (o.ring !== false && o.yuki !== null) {
-    const glow = [17, 14, 11].map((rad, i) => `<circle cx="${head[0] + 0.5}" cy="${head[1] + 0.5}" r="${rad}" fill="${RING.glow}" opacity="${[0.07, 0.08, 0.1][i]}"/>`).join("");
-    s += `<g class="ykstage__ring" style="--hx:${head[0] + 0.5}px;--hy:${head[1] + 0.5}px">${glow}${cellsPath(ringCells(head[0], head[1], 17), RING.outer)}${cellsPath(ringCells(head[0], head[1], 16), RING.inner, ' opacity="0.85"')}</g>`;
+    const glow = [ORB, ORB - 3, ORB - 6].map((rad, i) => `<circle cx="${head[0] + 0.5}" cy="${head[1] + 0.5}" r="${rad}" fill="${RING.glow}" opacity="${[0.07, 0.08, 0.1][i]}"/>`).join("");
+    s += `<g class="ykstage__ring" style="--hx:${head[0] + 0.5}px;--hy:${head[1] + 0.5}px">${glow}${cellsPath(ringCells(head[0], head[1], ORB), RING.outer)}${cellsPath(ringCells(head[0], head[1], ORB - 1), RING.inner, ' opacity="0.85"')}</g>`;
   }
   // ice shards: either side of her, seeded heights and places
   const n = o.shards ?? 4;
@@ -124,7 +128,7 @@ export function yukiStage(o: StageOptions): string {
   // a few big flakes, away from her face
   for (let i = 0; i < Math.max(2, Math.round(cols / 18)); i++) {
     const x = 3 + Math.floor(r() * (cols - 6)), y = 3 + Math.floor(r() * rows * 0.6);
-    if (Math.hypot(x - head[0], y - head[1]) < 20) continue;
+    if (Math.hypot(x - head[0], y - head[1]) < ORB + 3) continue;
     s += `<g class="ykstage__flake" style="--i:${i}">${flake(x, y)}</g>`;
   }
   // Yuki, on whole cells
@@ -132,7 +136,7 @@ export function yukiStage(o: StageOptions): string {
   const her = o.yuki === null || layer === "back" ? "" :
     `<g class="ykstage__her" style="--hx:${sx + 16}px;--hy:${sy + 32}px">` +
     `<svg x="${sx}" y="${sy}" width="32" height="32" viewBox="0 0 32 32" overflow="visible">` +
-    yukiSprite({ eyes: o.yuki?.eyes ?? "open", mouth: o.yuki?.mouth ?? "calm" }) +
+    yukiSprite({ eyes: o.yuki?.eyes ?? "open", mouth: o.yuki?.mouth ?? "small" }) +
     `</svg></g>`;
   return (
     `<svg class="ykstage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cols} ${rows}" shape-rendering="crispEdges" ` +
@@ -178,7 +182,7 @@ export function yukiArt(o: YukiArtOptions = {}): string {
   const cols = o.cols ?? 48, rows = o.rows ?? (o.card ? 72 : 60);
   const a11y = o.label ? `role="img" aria-label="${esc(o.label)}"` : `aria-hidden="true"`;
   const stage: StageOptions = {
-    cols, rows, seed: o.seed ?? "yuki", yuki: { eyes: o.eyes ?? "open", mouth: o.mouth ?? "calm" },
+    cols, rows, seed: o.seed ?? "yuki", yuki: { eyes: o.eyes ?? "open", mouth: o.mouth ?? "small" },
     ...(o.card ? { align: "middle" as const, at: { lift: -24 } } : {}),
   };
   // with a numeral: two stages, the night, the numeral, then her (as a rig card puts it between its back parts and
@@ -200,9 +204,6 @@ export function yukiArt(o: YukiArtOptions = {}): string {
 export function yukiBack(): string {
   return `<span class="ykback">${yukiStage({ cols: 160, rows: 48, seed: "yuki-back", yuki: null, shards: 7 })}</span>`;
 }
-
-/** Her palette's light blue, for CSS that wants it from here. */
-export const YUKI_ICE = YUKI_PALETTE.j;
 
 /** A tile with her face in it. `seed`: her blink's clock, so tiles side by side blink out of step. */
 export function yukiTile(size: "s" | "m", seed: string): string {
