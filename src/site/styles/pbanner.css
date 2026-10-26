@@ -202,9 +202,9 @@
   .pban--lead .pban__lift { --ban-h: 240px; }
   .pban--minor .pban__lift { --ban-h: 150px; }
 }
-/* YUKI's code-drawn layers: her night fills the plate's box, the snow falls in front of the hero too */
+/* YUKI's code-drawn layers: her night (its snow on its own grid) fills the plate's box; her window has its own snow,
+   behind her */
 .pban__bk .ykback { inset: 0; }
-.pban__snow { z-index: 0; }
 .pban__hero .ykart { background: #22306e; }
 
 /* ---- per banner: where its plate and fx sit in their frame */
@@ -217,7 +217,8 @@
   .pban__hit { position: relative; height: var(--ban-h); border-bottom: 2px solid var(--ink); }
   .pban__hero { bottom: auto; top: calc(var(--ban-h) * -0.08); height: var(--hero-h); }
   .pban__front { bottom: auto; height: var(--ban-h); }
-  .pban__scrim { background: linear-gradient(to top, rgb(31 23 41 / 0.7), rgb(31 23 41 / 0) 45%); }
+  /* (the scrim stops where the hero window starts: the portrait is never under it) */
+  .pban__scrim { right: calc(var(--hero-r) + var(--hero-w)); background: linear-gradient(to top, rgb(31 23 41 / 0.7), rgb(31 23 41 / 0) 45%); }
   .pban__num { --np: 4px; font-size: 100px; left: 10px; right: auto; bottom: -0.04em; }
   .pban__info { width: auto; padding: 14px var(--pad) var(--pad); }
   .pban__cap { display: none; }

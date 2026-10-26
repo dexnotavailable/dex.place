@@ -38,6 +38,8 @@ const M = await import(pathToFileURL(join(tmp, "mascotFrames.ts")).href);
 rmSync(tmp, { recursive: true, force: true });
 
 const N = F.FACE;
+/** A status's turn as the site plays it: [frame A 0 or B 1, ms] a beat, in the order the app's TIMELINE plays them. */
+const beatsOf = (status) => M.TIMELINE[status].map(([f, ms]) => [M.swayOf(M.STATUS_FRAMES[status][f], f), ms]);
 const lk = F.LOOKS.yuki;
 const blank = () => Array.from({ length: N }, () => ".".repeat(N));
 const over = (g, top) => g.map((row, y) => [...row].map((c, x) => (top[y][x] !== "." ? top[y][x] : c)).join(""));
@@ -168,14 +170,16 @@ export const PROPS = ${record(props)} as const satisfies Record<string, Layer>;
 /** The app's expressions: which eyes, mouth and blush each shows. */
 export const EXPRESSIONS = ${JSON.stringify(Object.fromEntries(Object.entries(F.EXPRESSIONS).map(([k, e]) => [k, { eyes: e.eyes, mouth: Object.entries(mouthOf).find(([, x]) => F.EXPRESSIONS[x].mouth === e.mouth)?.[0] ?? null, blush: e.blush ? "strong" : "soft" }])), null, 2)} as const;
 
-/** The app's mascot timings (ms), from ui/mascotFrames.ts: awake the "waiting" status's clock, asleep the "queued" one's
- *  (\`sway\`: which sprite frame each beat shows, A 0 or B 1). */
+/** The app's mascot timings (ms), from ui/mascotFrames.ts. Awake she keeps the "waiting" status's clock, asleep the
+ *  "queued" one's: \`beats\`, one turn of sprite frames as [frame, ms] (frame A 0 or B 1: which way the loose hair
+ *  hangs; the app's other differences between beats are props the site doesn't draw), and \`bob\`, the head's ms at rest
+ *  then sunk a pixel, on the same turn. \`bobLagMs\`: the hair behind the head lands that long after it, both ways.
+ *  \`phaseSpanMs\`: each mascot's clocks start a stable offset into their turn, under this. */
 export const TIMING = ${JSON.stringify({
-  // awake she keeps the app's "waiting" clock (its frames sway the ahoge A, B, A), asleep its "queued" one (A, B)
-  frameMs: M.FRAME_MS?.waiting,
-  bobMs: M.BOB_MS?.waiting,
-  sway: M.STATUS_FRAMES.waiting.map((f, i) => M.swayOf(f, i)),
-  asleep: { frameMs: M.FRAME_MS?.queued, bobMs: M.BOB_MS?.queued, sway: M.STATUS_FRAMES.queued.map((f, i) => M.swayOf(f, i)) },
+  awake: { beats: beatsOf("waiting"), bob: M.BOB.waiting },
+  asleep: { beats: beatsOf("queued"), bob: M.BOB.queued },
+  bobLagMs: M.BOB_LAG_MS,
+  phaseSpanMs: M.PHASE_SPAN_MS,
   ...pick({ blinkSteps: M.BLINK_STEPS, swapSteps: M.SWAP_STEPS, glance: M.GLANCE, hopSteps: M.HOP_STEPS, hopSway: M.HOP_SWAY, hopMs: M.HOP_MS, press: M.PRESS }, ["blinkSteps", "swapSteps", "glance", "hopSteps", "hopSway", "hopMs", "press"]),
 }, null, 2)} as const;
 `;

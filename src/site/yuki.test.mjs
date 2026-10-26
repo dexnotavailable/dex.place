@@ -4,9 +4,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { blinkVars, OPEN_EYES, STRONG_BLUSH, YUKI_EYES, YUKI_MOUTHS, YUKI_TIMING, yukiSprite } from "./yuki-sprite.ts";
-import { BACK, BLUSH, BODY, EXPRESSIONS, EYES, FACE, FRONT, HEAD, MOUTHS, PALETTE, PROPS, YUKI_FACES_SOURCE } from "./yuki-faces.ts";
-import { discPath, ORB, ringCells, yukiArt, yukiStage } from "./render/yukiart.ts";
+import { blinkVars, eyesLayer, OPEN_EYES, STRONG_BLUSH, YUKI_EYES, YUKI_MOUTHS, YUKI_TIMING, yukiSprite } from "./yuki-sprite.ts";
+import { BACK, BLUSH, BODY, EXPRESSIONS, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, PALETTE, PROPS, YUKI_FACES_SOURCE } from "./yuki-faces.ts";
+import { bandPath, discPath, GROW, ORB, ringCells, snowLayer, yukiArt, yukiStage } from "./render/yukiart.ts";
 import { smartScreen, YUKI_SAYS, yukiPage } from "./render/yuki.ts";
 import { releaseAsset, yukiEntry } from "./data/downloads.ts";
 import { readLinkStatus, YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE } from "./data/yuki.ts";
@@ -99,7 +99,9 @@ test("pixel Yuki's face is built like Dex's references: a lid that flicks out, a
 test("pixel Yuki's layers: eyes, blush and mouth in their own rows over the bare head; a glance only moves the iris", () => {
   const rowsOf = (l) => l.rows.map((_, i) => l.y + i).filter((y) => /[^.]/.test(full(l)[y]));
   const blushY = BLUSH.soft.y;
-  for (const k of YUKI_EYES) for (const y of rowsOf(EYES[k])) assert.ok(y < blushY, `eyes ${k} above the blush`);
+  for (const k of YUKI_EYES) for (const y of rowsOf(eyesLayer(k))) assert.ok(y < blushY, `eyes ${k} above the blush`);
+  // asleep is the app's own shut eyes (its blink's), never a drawing of the site's
+  assert.equal(eyesLayer("asleep"), EYES.closed);
   for (const k of YUKI_MOUTHS) for (const y of rowsOf(MOUTHS[k])) assert.ok(y > blushY, `mouth ${k} below the blush`);
   // a glance keeps the lids where they are and moves only the iris inside the eye
   for (const g of ["open-l", "open-r"]) {
@@ -122,12 +124,14 @@ test("pixel Yuki as SVG: every face in the markup, the attributes pick one; cris
   for (const k of YUKI_MOUTHS) assert.ok(svg.includes(`class="yk__m yk__m--${k}"`), k);
   for (const k of ["0", "l", "r"]) assert.ok(svg.includes(`class="yk__look yk__look--${k}"`), `glance ${k}`);
   for (const k of ["soft", "strong"]) assert.ok(svg.includes(`class="yk__bl yk__bl--${k}"`), `blush ${k}`);
-  // the ahoge sways on two frames; her long hair hangs still (one layer) until a hop lands and splays it; the zz floats
-  // by her asleep; the landing squash's eyes (the app's LAND_EYES) wait beside the face's own
+  // the ahoge sways on two frames, and so do her long hair's tips where the app swings them (one layer where it
+  // doesn't), until a hop lands and splays it; the zz floats by her asleep; the eyes a hop ends on (the app's
+  // LAND_EYES, then half open) wait beside the face's own
   assert.match(svg, /<g class="yk__front"><g class="yk__fa">.*?<\/g><g class="yk__fb">/);
-  assert.match(svg, /<g class="yk__bob yk__back"><g class="yk__bk"><path[^]*?<\/g><g class="yk__land"><path/);
+  const swings = BACK[0].y !== BACK[1].y || BACK[0].rows.join() !== BACK[1].rows.join();
+  assert.match(svg, swings ? /<g class="yk__bob yk__back"><g class="yk__bk"><g class="yk__fa"><path[^]*?<\/g><g class="yk__fb"><path[^]*?<\/g><\/g><g class="yk__land"><path/ : /<g class="yk__bob yk__back"><g class="yk__bk"><path[^]*?<\/g><g class="yk__land"><path/);
   assert.match(svg, /<g class="yk__zz"><g class="yk__fa">/);
-  assert.match(svg, /<g class="yk__eyes"><g class="yk__e yk__e--open">[^]*<g class="yk__land-eyes"><path/);
+  assert.match(svg, /<g class="yk__eyes"><g class="yk__e yk__e--open">[^]*<g class="yk__land-eyes"><path[^]*?<\/g><g class="yk__land-half"><path/);
   // the head and the back hair bob over still shoulders
   assert.equal(svg.match(/class="yk__bob /g).length, 2);
   assert.match(svg, /<g class="yk__body"><path/);
@@ -140,61 +144,84 @@ test("pixel Yuki as SVG: every face in the markup, the attributes pick one; cris
   assert.ok(css.includes(`.yk:is(${STRONG_BLUSH.map((k) => `[data-eyes="${k}"]`).join(", ")}) .yk__bl--strong { display: inline; }`));
 });
 
-test("pixel Yuki moves on the app's clock (YUKI ui/mascotFrames.ts, synced as TIMING): frames, bob, blink, hop, press", () => {
+test("pixel Yuki moves on the app's clock (YUKI ui/mascotFrames.ts, synced as TIMING): frames, bob, hair lag, blink, hop, press", () => {
   const css = read("./styles/yuki.css");
-  const secs = (ms) => `${+(ms / 1000).toFixed(3)}s`.replace(".", "\\.");
-  // a turn of sprite frames: awake the app's "waiting" clock (A, B, A), asleep its "queued" one (A, B), the same length
-  // (one rule plays both); each frame's keyframes show it on its beats; the bob is two turns, the same awake or asleep
-  const turn = YUKI_TIMING.frameMs * YUKI_TIMING.sway.length;
-  assert.equal(Math.round(YUKI_TIMING.asleep.frameMs * YUKI_TIMING.asleep.sway.length), Math.round(turn), "one turn awake or asleep");
-  assert.equal(YUKI_TIMING.asleep.bobMs, YUKI_TIMING.bobMs, "one bob awake or asleep");
-  assert.match(css, new RegExp(`\\.yk \\.yk__fa \\{ animation: var\\(--yk-fa\\) ${secs(turn)} steps\\(1, end\\) infinite; \\}`));
-  assert.match(css, new RegExp(`\\.yk \\.yk__bob \\{ animation: yk-bob ${secs(YUKI_TIMING.bobMs * 2)} steps\\(1, end\\) infinite; \\}`));
-  assert.match(css, /\.yk\[data-eyes="sleepy"\] \{ --yk-fa: yk-sa; --yk-fb: yk-sb; \}/);
-  const beats = (name) => [...css.match(new RegExp(`@keyframes ${name} \\{([^\\n]*)\\}`))[1].matchAll(/([\d.]+)% \{ visibility: (\w+); \}/g)].map((m) => [+m[1], m[2]]);
-  for (const [a, b, sway] of [["yk-fa", "yk-fb", YUKI_TIMING.sway], ["yk-sa", "yk-sb", YUKI_TIMING.asleep.sway]]) {
-    // the frame each beat shows, read back off the keyframes (a beat starts at i / n of the turn)
-    const at = (keys, i) => keys.filter(([p]) => p <= (i / sway.length) * 100 + 0.01).at(-1)[1];
-    sway.forEach((f, i) => {
-      assert.equal(at(beats(a), i), f ? "hidden" : "visible", `${a} beat ${i}`);
-      assert.equal(at(beats(b), i), f ? "visible" : "hidden", `${b} beat ${i}`);
-    });
+  const T = YUKI_TIMING;
+  const turnOf = (c) => c.beats.reduce((t, [, ms]) => t + ms, 0);
+  const pct = (ms, of) => +((ms / of) * 100).toFixed(3);
+  // a turn of sprite frames: awake the app's "waiting" clock, asleep its "queued" one, the same length (one rule plays
+  // both, with the bob on the same turn, the same awake or asleep)
+  const turn = turnOf(T.awake);
+  assert.equal(turnOf(T.asleep), turn, "one turn awake or asleep");
+  assert.deepEqual(T.asleep.bob, T.awake.bob, "one bob awake or asleep");
+  assert.equal(T.awake.bob.rest + T.awake.bob.sunk, turn, "the bob is a turn long");
+  const secs = `${+(turn / 1000).toFixed(3)}s`.replace(".", "\\.");
+  assert.match(css, new RegExp(`\\.yk \\.yk__fa \\{ animation: var\\(--yk-fa\\) ${secs} steps\\(1, end\\) var\\(--mphase, 0s\\) infinite; \\}`));
+  assert.match(css, new RegExp(`\\.yk \\.yk__bob \\{ animation: yk-bob ${secs} steps\\(1, end\\) var\\(--mphase, 0s\\) infinite; \\}`));
+  assert.match(css, /\.yk\[data-eyes="asleep"\] \{ --yk-fa: yk-sa; --yk-fb: yk-sb; \}/);
+  assert.match(css, /\.yk\[data-eyes="asleep"\] \.yk__zz \{ display: inline; \}/);
+  // each frame's keyframes show it on its beats, read back off the keyframes
+  const keys = (name) => [...css.match(new RegExp(`@keyframes ${name} \\{([^\\n]*)\\}`))[1].matchAll(/([\d.]+)% \{ (?:visibility|opacity|translate): ([\w .-]+); \}/g)].map((m) => [+m[1], m[2]]);
+  const at = (k, p) => k.filter(([q]) => q <= p + 0.001).at(-1)[1];
+  for (const [a, b, beats] of [["yk-fa", "yk-fb", T.awake.beats], ["yk-sa", "yk-sb", T.asleep.beats]]) {
+    let from = 0;
+    for (const [f, ms] of beats) {
+      const p = pct(from + ms / 2, turn);
+      assert.equal(at(keys(a), p), f ? "hidden" : "visible", `${a} at ${p}%`);
+      assert.equal(at(keys(b), p), f ? "visible" : "hidden", `${b} at ${p}%`);
+      from += ms;
+    }
   }
+  // the bob: at rest, then sunk a pixel from the app's rest; the hair behind the head lands bobLagMs later
+  assert.deepEqual(keys("yk-bob"), [[0, "0 0"], [pct(T.awake.bob.rest, turn), "0 1px"]]);
+  assert.match(css, new RegExp(`\\.yk \\.yk__back \\{ animation-delay: calc\\(var\\(--mphase, 0s\\) \\+ ${T.bobLagMs}ms\\); \\}`));
+  // every Yuki's frame and bob clocks start their own way into a turn (the app's phaseMs, folded into one turn)
+  const phases = ["yuki-page", "yuki-dl", "yuki-card"].map((seed) => +blinkVars(seed).match(/--mphase:-(\d+)ms/)[1]);
+  for (const p of phases) assert.ok(p >= 0 && p < turn);
+  assert.equal(new Set(phases).size, phases.length, "out of step");
   // the blink: half, shut, half at the default clock's length, each within 5 ms of the app's
   const clock = 5.2;
-  const keys = (name) => [...css.match(new RegExp(`@keyframes ${name} \\{([^\\n]*)\\}`))[1].matchAll(/([\d.]+)% \{ (?:visibility|opacity): (\w+); \}/g)].map((m) => +m[1]);
-  const shut = keys("yk-blink-shut");
-  const half = keys("yk-blink-half");
-  const [[, halfMs], [, shutMs], [, openMs]] = YUKI_TIMING.blinkSteps;
+  const shut = keys("yk-blink-shut").map(([p]) => p);
+  const half = keys("yk-blink-half").map(([p]) => p);
+  const [[, halfMs], [, shutMs], [, openMs]] = T.blinkSteps;
   const ms = (a, b) => ((b - a) / 100) * clock * 1000;
   assert.ok(Math.abs(ms(half[1], half[2]) - halfMs) <= 5, "first half");
   assert.ok(Math.abs(ms(shut[1], shut[2]) - shutMs) <= 5, "shut");
   assert.ok(Math.abs(ms(half[3], 100) - openMs) <= 5, "second half");
   assert.match(css, /\.yk\[data-eyes="open"\] \.yk__e--open \{ animation: yk-blink-open var\(--blink, 5\.2s\) steps\(1, end\) var\(--blink-at, 0s\) infinite; \}/);
-  // the hop: hopMs long, the app's steps (whole pixels), the ahoge trailing it on frame B
-  assert.match(css, new RegExp(`\\.yk\\.is-hop \\.yk__hop \\{ animation: yk-hop ${YUKI_TIMING.hopMs.hover}ms steps\\(1, end\\); \\}`));
-  const hop = css.match(/@keyframes yk-hop \{([^\n]*)\}/)[1];
-  for (const [t, dy] of YUKI_TIMING.hopSteps) assert.ok(hop.includes(`${Math.round(t * 100)}% { translate: 0 ${dy ? `${dy}px` : 0}; }`), `hop ${t}`);
-  // the ahoge on frame B at the top; the landing squash (the app's "land") shows frame A with the splayed hair and shut
-  // eyes on, the usual ones off, until the next step
-  const sway = css.match(/@keyframes yk-hop-b \{([^\n]*)\}/)[1];
-  YUKI_TIMING.hopSway.forEach(([t, f], i) => {
-    // (a keyframe where frame B comes or goes)
-    if (i && (f === 1) === (YUKI_TIMING.hopSway[i - 1][1] === 1)) return;
-    assert.ok(sway.includes(`${Math.round(t * 100)}% { visibility: ${f === 1 ? "visible" : "hidden"}; }`), `sway ${t}`);
-  });
-  const landAt = YUKI_TIMING.hopSway.findIndex(([, f]) => f === "land");
-  assert.ok(landAt > 0, "the app's hop lands on a squash frame");
-  const [from, to] = [YUKI_TIMING.hopSway[landAt][0], YUKI_TIMING.hopSway[landAt + 1][0]].map((t) => Math.round(t * 100));
-  for (const k of ["yk-land-on", "yk-hover-land-on"]) assert.match(css, new RegExp(`@keyframes ${k} \\{ 0% \\{ visibility: hidden; \\} ${from}% \\{ visibility: visible; \\} ${to}% \\{ visibility: hidden; \\} \\}`), k);
-  for (const k of ["yk-land-off", "yk-hover-land-off"]) assert.match(css, new RegExp(`@keyframes ${k} \\{ 0% \\{ opacity: 1; \\} ${from}% \\{ opacity: 0; \\} ${to}% \\{ opacity: 1; \\} \\}`), k);
-  assert.match(css, /\.yk\.is-hop \.yk__land \{ display: inline; visibility: hidden; animation: yk-land-on 500ms steps\(1, end\); \}/);
-  assert.match(css, /\.yk\.is-hop:is\(\[data-eyes="open"\], \[data-eyes="wide"\]\) \.yk__land-eyes \{ display: inline; visibility: hidden; animation: yk-land-on 500ms steps\(1, end\); \}/);
-  // a press sinks the head a pixel (the app's PRESS.sink), letting go pops it a pixel up for popMs (motion/yuki.ts)
-  assert.match(css, new RegExp(`\\.yk\\.is-press \\.yk__bob \\{ translate: 0 ${YUKI_TIMING.press.sink}px; \\}`));
-  assert.match(css, new RegExp(`\\.yk\\.is-pop \\.yk__bob \\{ translate: 0 -${YUKI_TIMING.press.popPx}px; \\}`));
+  // the hop: the app's hover hop, hopMs long, its steps (whole pixels) and its beats: frame A, B at the top, the squash
+  // (the splayed hair and the landing eyes on, the usual ones off), the landing eyes at rest, then half open
+  const H = T.hopMs.hover;
+  for (const [sel, name] of [[".yk.is-hop .yk__hop", "yk-hop"], [":is(.pban, .pcard):hover .yk .yk__hop", "yk-hover"]]) {
+    assert.ok(css.includes(`${sel} { animation: ${name} ${H}ms steps(1, end); }`), sel);
+  }
+  for (const pre of ["yk-hop", "yk-hover"]) {
+    assert.deepEqual(keys(pre), T.hopSteps.map(([t, dy]) => [+(t * 100).toFixed(3), dy ? `0 ${dy}px` : "0 0"]), pre);
+  }
+  const beat = (f) => T.hopSway.findIndex(([, x]) => x === f);
+  const span = (f) => [+(T.hopSway[beat(f)][0] * 100).toFixed(3), beat(f) + 1 < T.hopSway.length ? +(T.hopSway[beat(f) + 1][0] * 100).toFixed(3) : 100];
+  const [b0, b1] = span(1), [l0, l1] = span("land"), [g0] = span("glad"), [h0] = span("half");
+  assert.equal(T.hopSway[0][1], 0);
+  assert.equal(LAND.eyes, "happy", "she lands delighted");
+  for (const [p, r] of [["yk-hop", "yk-"], ["yk-hover", "yk-hover-"]]) {
+    assert.deepEqual(keys(`${p}-a`), [[0, "visible"], [b0, "hidden"], [b1, "visible"]], `${p}-a`);
+    assert.deepEqual(keys(`${p}-b`), [[0, "hidden"], [b0, "visible"], [b1, "hidden"]], `${p}-b`);
+    assert.deepEqual(keys(`${r}land-on`), [[0, "hidden"], [l0, "visible"], [l1, "hidden"]], `${r}land-on`);
+    assert.deepEqual(keys(`${r}land-off`), [[0, "1"], [l0, "0"], [l1, "1"]], `${r}land-off`);
+    assert.deepEqual(keys(`${r}eyes-off`), [[0, "1"], [l0, "0"]], `${r}eyes-off`);
+    assert.deepEqual(keys(`${r}glad-on`), [[0, "hidden"], [l0, "visible"], [h0, "hidden"]], `${r}glad-on`);
+    assert.deepEqual(keys(`${r}half-on`), [[0, "hidden"], [h0, "visible"]], `${r}half-on`);
+  }
+  assert.ok(g0 === l1, "the landing eyes rest on after the squash");
+  assert.match(css, new RegExp(`\\.yk\\.is-hop \\.yk__land \\{ display: inline; visibility: hidden; animation: yk-land-on ${H}ms steps\\(1, end\\); \\}`));
+  assert.match(css, new RegExp(`\\.yk\\.is-hop:is\\(\\[data-eyes="open"\\], \\[data-eyes="wide"\\]\\) \\.yk__land-half \\{ display: inline; visibility: hidden; animation: yk-half-on ${H}ms steps\\(1, end\\); \\}`));
+  // a press sinks the head a pixel (the app's PRESS.sink), letting go pops it a pixel up for popMs, the eyes half open
+  // for letMs (motion/yuki.ts)
+  assert.match(css, new RegExp(`\\.yk\\.is-press \\.yk__bob \\{ translate: 0 ${T.press.sink}px; \\}`));
+  assert.match(css, new RegExp(`\\.yk\\.is-pop \\.yk__bob \\{ translate: 0 -${T.press.popPx}px; \\}`));
   const ts = read("./motion/yuki.ts");
   assert.match(ts, /YUKI_TIMING\.press\.popMs/);
+  assert.match(ts, /YUKI_TIMING\.press\.letMs/);
   // a new face arrives behind a blink (the app's SWAP_STEPS)
   assert.match(ts, /YUKI_TIMING\.swapSteps/);
 });
@@ -276,6 +303,84 @@ test("her stage: a crisp night in whole cells, her orb's ring closed all round h
   assert.ok(card.indexOf("cart__num") > card.indexOf("ykart__stage") && card.indexOf("cart__num") < card.indexOf("ykart__stage--her"));
 });
 
+test("snow on her grid, behind her: a flake is one cell, falling a cell at a time, laid over its stage cell for cell", () => {
+  const snow = snowLayer("t", 72, 50, 22);
+  assert.equal(snow, snowLayer("t", 72, 50, 22), "seeded");
+  assert.match(snow, /^<span class="yksnow" aria-hidden="true" style="--cols:72;--rows:50">/);
+  const flakes = [...snow.matchAll(/<i(?: class="is-far")? style="--c:(\d+);--r:(\d+);--n:(\d+);--d:(\d+)ms;--t:(-?\d+)ms;--sw:[\d.]+s;--w:(-?1)"><\/i>/g)];
+  assert.equal(flakes.length, 22, "every flake in whole cells");
+  for (const [, c, r, n] of flakes) {
+    assert.ok(+c >= 0 && +c < 72 && +r >= 1 && +r <= 50, "on the stage");
+    assert.equal(+n, 51, "a fall is the stage's height plus the cell it starts above it");
+  }
+  const css = read("./styles/yuki.css");
+  // the same cell as the stage (the same formula, the same place), a flake one cell, each step of its fall one cell
+  const u = "--u: round(up, max(100cqh / var(--rows), 100cqw / var(--cols)), 1px);";
+  assert.ok(css.match(/\.ykstage \{\n\s+--u: [^\n]*/)[0].includes(u) && css.match(/\.yksnow \{\n\s+--u: [^\n]*/)[0].includes(u));
+  assert.match(css, /\.yksnow i \{[^}]*width: var\(--u\); height: var\(--u\);/);
+  assert.match(css, /\.yksnow i \{ animation: yk-fall var\(--d, 9s\) steps\(var\(--n, 50\), end\)/);
+  assert.match(css, /@keyframes yk-fall \{ from \{ translate: 0 0; \} to \{ translate: 0 calc\(var\(--n, 50\) \* var\(--u\)\); \} \}/);
+  // behind her wherever she stands: between the stage's night and her, never after her
+  for (const html of [yukiArt(), yukiArt({ numeral: "01", card: true }), yukiPage(yukiEntry(SAMPLE))]) {
+    const at = html.indexOf('class="yksnow"');
+    assert.ok(at > 0 && at < html.indexOf('class="ykstage__her"'), "the snow before her");
+  }
+});
+
+test("the hatch is drawn on her grid: the ring's growth a radius a frame, an opaque flash and a cut, solid pixels a cell a step", () => {
+  const plain = yukiStage({ cols: 72, rows: 50, seed: "t" });
+  assert.doesNotMatch(plain, /ykstage__grow|ykstage__open/, "only the /yuki/ stage hatches");
+  const back = yukiStage({ cols: 72, rows: 50, seed: "t", hatch: true, layer: "back" });
+  const her = yukiStage({ cols: 72, rows: 50, seed: "t", hatch: true, layer: "her" });
+  // her head's centre on this stage: 16 right of her bust's left cell (20), 14 down from its top (18)
+  const [hx, hy] = [36, 32];
+  // the growth: behind her, each radius its own ring of whole cells (a scaled ring's cells were a third of hers)
+  const grow = back.slice(back.indexOf('<g class="ykstage__grow">'));
+  assert.ok(back.indexOf("ykstage__grow") > back.indexOf("ykstage__ring"));
+  assert.deepEqual([...grow.matchAll(/<g style="--k:(\d)">/g)].map((m) => +m[1]), GROW.map((_, k) => k));
+  for (const rad of GROW) assert.ok(grow.includes(`M${hx + rad} ${hy}h1v1h-1z`), `the ring of radius ${rad}`);
+  assert.ok(GROW.every((r, k) => r < ORB && (k === 0 || r > GROW[k - 1])), "growing, inside the whole ring");
+  assert.doesNotMatch(her, /ykstage__grow/);
+  // the flash: in front of her, opaque, two frames on her grid (the orb full of light, then a band just outside it)
+  const open = her.slice(her.indexOf('<g class="ykstage__open">'));
+  assert.ok(her.indexOf("ykstage__open") > her.indexOf("ykstage__her"));
+  assert.ok(open.includes(`<g class="ykstage__fl ykstage__fl--a">${discPath(hx, hy, ORB - 1, "#d6f3ff")}</g>`));
+  assert.ok(open.includes(`<g class="ykstage__fl ykstage__fl--b">${bandPath(hx, hy, ORB + 3, ORB, "#d6f3ff")}</g>`));
+  assert.doesNotMatch(open, /opacity|<circle|stroke/);
+  // the pixels: eight solid single cells, along the grid's eight directions, --k cells out, a cell a step
+  const px = [...open.matchAll(/<g style="--i:(\d);--k:(\d+);--dx:(-?\d+);--dy:(-?\d+)"><path fill="(#[0-9a-f]{6})" d="M(\d+) (\d+)h1v1h-1z"\/><\/g>/g)];
+  assert.equal(px.length, 8);
+  for (const [, , k, dx, dy] of px) assert.ok([+dx, +dy].every((d) => d === 0 || Math.abs(d) === +k) && (+dx || +dy), "a straight or diagonal line");
+  // a band: no cell of it inside the hole, every cell of the ring's outside within it
+  const band = [...bandPath(10, 10, 6, 4, "#000").matchAll(/M(-?\d+) (-?\d+)h(\d+)/g)].flatMap((m) => Array.from({ length: +m[3] }, (_, i) => [+m[1] + i, +m[2]]));
+  const hole = new Set(ringCells(10, 10, 4).map(([x, y]) => `${x},${y}`));
+  assert.ok(band.every(([x, y]) => !hole.has(`${x},${y}`) && Math.hypot(x - 10, y - 10) <= 6.5));
+  // the frames play once, stepped, never scaled; unplayed, none shows and the ring is simply there
+  const css = read("./styles/yuki.css");
+  assert.match(css, /^\.ykstage__grow, \.ykstage__open \{ display: none; \}$/m);
+  // (her line's bubble is words, not her pixels: it pops smoothly, after the hatch)
+  const hatch = css.slice(css.indexOf("/* the hatch (once"), css.indexOf("@keyframes yk-say ")).replace(/^.*\.ykh__say.*$/gm, "");
+  assert.doesNotMatch(hatch, /scale: 0|scale\(|yk-flash|opacity: 0\.\d/);
+  assert.match(hatch, /\.ykstage__fl--a \{ animation: yk-frame 70ms steps\(1, end\) 600ms; \}/);
+  assert.match(hatch, /\.ykstage__fl--b \{ animation: yk-frame 70ms steps\(1, end\) 670ms; \}/);
+  assert.match(hatch, /\.ykstage__burst > g \{ animation: yk-burst calc\(var\(--k\) \* 70ms\) steps\(var\(--k\), end\)/);
+});
+
+test("her banner's window and her card keep her pixels square: no smooth float, no 3D tilt, no scrim over her on a phone", () => {
+  const css = read("./styles/yuki.css");
+  const ban = read("./styles/pbanner.css");
+  // the window's smooth float (pban-float, +-3 px eased) put her between screen rows; hers steps a whole cell
+  const motion = css.slice(css.indexOf("/* in her banner's slanted hero window"), css.indexOf("/* the banner's back layer"));
+  assert.match(motion, /\.pban__hfloat:has\(\.ykart\), \.pban__in:has\(\.ykart\) \.pban__tilt, \.pcard__float:has\(\.ykart\), \.pcard__in:has\(\.ykart\) \.pcard__tilt \{ animation: none; \}/);
+  assert.match(motion, /\.pcard \.ykart--mid :is\(\.ykstage, \.yksnow\) \{ animation: yk-cfloat 6\.4s steps\(1, end\)/);
+  assert.match(motion, /\.pban__hero :is\(\.ykstage, \.yksnow\) \{ animation: yk-hfloat 6\.4s steps\(1, end\)/);
+  assert.match(motion, /@keyframes yk-hfloat \{\n\s+0% \{ translate: calc\(-50% \+ var\(--ykx, 2\) \* var\(--u\)\) calc\(-1 \* var\(--u\)\); \}\n\s+50% \{ translate: calc\(-50% \+ var\(--ykx, 2\) \* var\(--u\)\) 0; \}\n\}/);
+  assert.match(motion, /\.pban__hero:has\(\.ykart\), \.pban__hero:has\(\.ykart\) \* \{ image-rendering: pixelated; \}/);
+  // a phone's banner: the words are under the art strip, and the strip's scrim stops where the window starts
+  const phone = ban.slice(ban.indexOf("@container pban (max-width: 559px) {\n  .pban__lift { --ban-h: 168px;"));
+  assert.match(phone.slice(0, phone.indexOf("\n}\n")), /\.pban__scrim \{ right: calc\(var\(--hero-r\) \+ var\(--hero-w\)\);/);
+});
+
 // ------------------------------------------------------------------ the page
 
 test("/yuki/ is a route under Downloads, its description plain", () => {
@@ -291,7 +396,7 @@ test("/yuki/, not released: she sleeps, no file link, the guide still reads in f
   const html = yukiPage(yukiEntry(null));
   assert.match(html, /data-release="none"/);
   assert.match(html, /<h1 class="ykh__title" id="page-title">YUKI<\/h1>/);
-  assert.match(html, /data-eyes="sleepy"/);
+  assert.match(html, /data-eyes="asleep"/);
   assert.ok(html.includes(YUKI_SAYS.none));
   assert.match(html, /No public download yet/);
   assert.doesNotMatch(html, /href="[^"]+\.exe"|yuki-releases|class="[^"]*ykh__dl/);
@@ -365,9 +470,9 @@ test("motion after the hatch: her hop is the sprite's own (whole pixels, never f
   assert.deepEqual(anim(".yk.is-hop .yk__hop").map(name), ["yk-hop"]);
   assert.match(css, /@keyframes yk-hop \{[^\n]*translate: 0 -2px;/);
   assert.doesNotMatch(css.match(/@keyframes yk-hop \{[^\n]*\}/)[0], /scale/);
-  // the hatch's pop too: whole cells up into her orb, stepped, never scaled
+  // the hatch's pop too: whole cells up into her orb, stepped, never scaled, starting behind the flash
   assert.doesNotMatch(css.match(/@keyframes yk-pop \{[\s\S]*?\n\}/)[0], /scale/);
-  assert.match(css, /html\.js \[data-hatch\] \.ykstage__her \{ animation: yk-pop 720ms steps\(1, end\) 420ms both; \}/);
+  assert.match(css, /html\.js \[data-hatch\] \.ykstage__her \{ animation: yk-pop 720ms steps\(1, end\) 560ms both; \}/);
   // her stage's group only pops in once (the hatch); nothing else animates it or the bubble
   assert.equal(css.match(/\.ykstage__her[^{,]*\{[^}]*animation:/g).length, 1);
   assert.equal(css.match(/\.ykh__say[^{,]*\{[^}]*animation:/g).length, 2);
@@ -376,7 +481,7 @@ test("motion after the hatch: her hop is the sprite's own (whole pixels, never f
   assert.match(ts, /g\.classList\.remove\("is-hop"\);\n\s*void g\.getBoundingClientRect\(\);\n\s*g\.classList\.add\("is-hop"\);/);
   assert.match(ts, /bubble\.classList\.remove\("is-new"\);\n\s*void bubble\.offsetWidth;\n\s*bubble\.classList\.add\("is-new"\);/);
   // her banner and card hop her once on hover, under the hop's own name again (so a hover after a tap hops too)
-  assert.match(css, /:is\(\.pban, \.pcard\):hover \.yk \.yk__hop \{ animation: yk-hover 500ms steps\(1, end\); \}/);
+  assert.match(css, /:is\(\.pban, \.pcard\):hover \.yk \.yk__hop \{ animation: yk-hover 690ms steps\(1, end\); \}/);
 });
 
 test("/yuki/ on a tablet: the stacked stage is tall enough for her ring and her line (a cell is set by its width there)", () => {
@@ -484,14 +589,17 @@ test("motion: the click never stops the download, the chunk loads only where she
   const css = read("./styles/yuki.css");
   const outside = css.replace(/@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n\}\n/g, "");
   assert.doesNotMatch(outside, /animation:/, "every loop and entrance waits for motion to be allowed");
-  assert.match(css, /:is\(\.pban__in, \.ykh, \.dlf__art--yuki, \.ss, \.yktile\)\.is-off :is\(\.yk \*, \.ykstage \*, \.ykfx i, \.ss \*\) \{ animation-play-state: paused; \}/);
-  // the whole hero rests off screen, so the snow in front of her stage does too (it sits beside the stage, not in it);
-  // on Downloads her art, not its tall block (the art leaves the screen while the block's foot is still on it)
+  assert.match(css, /:is\(\.pban__in, \.ykh, \.dlf__art--yuki, \.ss, \.yktile\)\.is-off :is\(\.yk \*, \.ykstage, \.ykstage \*, \.yksnow i, \.ss \*\) \{ animation-play-state: paused; \}/);
+  // the whole hero rests off screen; on Downloads her art, not its tall block (the art leaves the screen while the
+  // block's foot is still on it)
   assert.match(ts, /restOffScreen\(document\.querySelectorAll\("\.ykh, \.dlf__art--yuki, \[data-ss\], \.yktile"\)\)/);
+  // the hero's snow falls on her stage, between her night and her (in front of her, a speck crossed her face)
   const hero = yukiPage(yukiEntry(SAMPLE));
-  assert.match(hero.slice(hero.indexOf('<header class="ykh"'), hero.indexOf("</header>")), /class="ykfx ykh__snow"/);
-  // idles step on whole pixels
-  for (const name of ["yk-blink-open", "yk-blink-half", "yk-blink-shut", "yk-look-0", "yk-bob", "var\\(--yk-fa\\)", "var\\(--yk-fb\\)", "yk-hop", "yk-land-on", "yk-land-off", "yk-shard"]) {
+  const art = hero.slice(hero.indexOf('<div class="ykh__art" data-hatch>'), hero.indexOf("data-yuki-say"));
+  assert.match(art, /^<div class="ykh__art" data-hatch><svg class="ykstage"[^]*?<\/svg><span class="yksnow" aria-hidden="true" style="--cols:72;--rows:50">[^]*?<\/span><svg class="ykstage"[^>]*><g class="ykstage__her"/);
+  assert.doesNotMatch(hero, /ykfx|ykh__snow|ykh__burst/);
+  // idles step on whole pixels, and so does everything the snow, the banner's window and the hatch move
+  for (const name of ["yk-blink-open", "yk-blink-half", "yk-blink-shut", "yk-look-0", "yk-bob", "var\\(--yk-fa\\)", "var\\(--yk-fb\\)", "yk-hop", "yk-land-on", "yk-land-off", "yk-shard", "yk-fall", "yk-sway", "yk-hfloat", "yk-cfloat", "yk-frame", "yk-burst", "yk-ring-in"]) {
     assert.match(css, new RegExp(`${name} [^;]*steps\\(`), name);
   }
   assert.doesNotMatch(css, /border-radius|backdrop-filter/);

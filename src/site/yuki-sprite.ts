@@ -8,7 +8,8 @@
 // and never a redraw; the ahoge sways on two sprite frames. Which face shows: `data-eyes` and `data-mouth` on the svg;
 // the blush turns strong with the eyes that call for it (happy, wide, squeeze), as in the app's expressions; the open
 // eyes glance with `data-look` (-1, 0, 1), or on their own idle clock without it. Asleep, the app's zz floats by her.
-// A hop lands on the app's squash frame: her long hair splayed a pixel and her open eyes turned to the app's (LAND).
+// A hop lands on the app's squash frame (her long hair splayed a pixel, her open eyes turned to the app's ^ ^: LAND),
+// rests a moment with those eyes, then opens them through the half-open lid, as the app's hop ends.
 // styles/yuki.css shows and moves them; motion/yuki.ts changes them.
 
 import { rng } from "./render/html.ts";
@@ -17,9 +18,15 @@ import { BACK, BLUSH, BODY, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, PALETTE, PROP
 /** Her palette (the app's look "yuki"). */
 export const YUKI_PALETTE = PALETTE;
 
-/** The eyes the site shows (the app has more: focused, sad). "open" also carries its glances. */
-export const YUKI_EYES = ["open", "half", "closed", "happy", "sleepy", "wide", "squeeze"] as const;
+/**
+ * The eyes the site shows (the app has more: focused, sad). "open" also carries its glances. "asleep" is the site's
+ * resting face while YUKI isn't out: the app's shut eyes (its blink's) with its zz floating by, on its "queued" clock;
+ * the app's "sleepy" half-lids read smug beside the zz, so they stay for her drowsy moments awake.
+ */
+export const YUKI_EYES = ["open", "half", "closed", "happy", "sleepy", "asleep", "wide", "squeeze"] as const;
 export type YukiEyes = (typeof YUKI_EYES)[number];
+/** The app's eyes layer a face of the site shows. */
+export const eyesLayer = (k: YukiEyes): Layer => EYES[k === "asleep" ? "closed" : k];
 /** Eyes that open: she blinks and glances only with these, and a new face arrives behind a blink before them. */
 export const OPEN_EYES: readonly YukiEyes[] = ["open", "wide"];
 /** Eyes whose face has the strong blush (the app's happy, surprised and boop). */
@@ -52,17 +59,27 @@ export function layerPaths(layer: Layer): string {
 
 const same = (a: Layer, b: Layer): boolean => a.y === b.y && a.rows.join("|") === b.rows.join("|");
 
+/** How far into a turn her frame and bob clocks start, from a stable seed (the app's phaseMs: FNV-1a over the seed,
+ *  under its PHASE_SPAN_MS), folded into one of her turns (awake and asleep turns are the same length). */
+export function phaseMs(seed: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  const turn = TIMING.awake.beats.reduce((t, [, ms]) => t + ms, 0);
+  return ((h >>> 0) % TIMING.phaseSpanMs) % turn;
+}
+
 /**
- * Her blink's and her idle glance's clocks, seeded (styles/yuki.css reads them): a blink every 4.1 to 6.3 s (the app
- * blinks every 3-6 s at random) and a look aside every 13 to 19 s, each from its own start, so two Yukis on one screen
- * never blink or look in step. A stage sets them for the Yuki inside it (render/yukiart.ts); a lone one takes its seed.
+ * Her clocks, seeded (styles/yuki.css reads them): a blink every 4.1 to 6.3 s (the app blinks every 3-6 s at random)
+ * and a look aside every 13 to 19 s, each from its own start, and her sprite frames and bob started --mphase into
+ * their turn (as the app starts each helper's), so two Yukis on one screen never blink, look or bob in step. A stage
+ * sets them for the Yuki inside it (render/yukiart.ts); a lone one takes its seed.
  */
 export function blinkVars(seed: string): string {
   const r = rng(`${seed}-blink`);
   const period = 4.1 + r() * 2.2;
   const at = -r() * period;
   const look = 13 + r() * 6;
-  return `--blink:${period.toFixed(2)}s;--blink-at:${at.toFixed(2)}s;--look:${look.toFixed(2)}s;--look-at:${(-r() * look).toFixed(2)}s`;
+  return `--blink:${period.toFixed(2)}s;--blink-at:${at.toFixed(2)}s;--look:${look.toFixed(2)}s;--look-at:${(-r() * look).toFixed(2)}s;--mphase:-${phaseMs(seed)}ms`;
 }
 
 export interface YukiSpriteOptions {
@@ -95,7 +112,7 @@ export function yukiSprite(o: YukiSpriteOptions = {}): string {
   const eyes = YUKI_EYES.map((k) =>
     k === "open"
       ? g("yk__e yk__e--open", g("yk__look yk__look--0", layerPaths(EYES.open)) + g("yk__look yk__look--l", layerPaths(EYES["open-l"])) + g("yk__look yk__look--r", layerPaths(EYES["open-r"])))
-      : g(`yk__e yk__e--${k}`, layerPaths(EYES[k])),
+      : g(`yk__e yk__e--${k}`, layerPaths(eyesLayer(k))),
   ).join("");
   const land = LAND.head.rows.length ? g("yk__land", layerPaths(LAND.head)) : "";
   return (
@@ -110,6 +127,7 @@ export function yukiSprite(o: YukiSpriteOptions = {}): string {
     land +
     g("yk__eyes", eyes) +
     g("yk__land-eyes", layerPaths(EYES[LAND.eyes])) +
+    g("yk__land-half", layerPaths(EYES.half)) +
     g("yk__bl yk__bl--soft", layerPaths(BLUSH.soft)) + g("yk__bl yk__bl--strong", layerPaths(BLUSH.strong)) +
     YUKI_MOUTHS.map((k) => g(`yk__m yk__m--${k}`, layerPaths(MOUTHS[k]))).join("") +
     frames("yk__front", FRONT) +

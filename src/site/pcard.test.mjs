@@ -184,8 +184,8 @@ test("the card's DOM (DESIGN-1019 5.2): one owner per wrapper, the hero accents,
     // the art: the back parts, the numeral, the figure; then the scrim, glare and shine
     const no = String(projects.indexOf(p) + 1).padStart(2, "0");
     if (p.art.code) {
-      // drawn in code (YUKI): her night, the numeral, then her; the snow; the scrim, glare and shine
-      assert.match(li, new RegExp(`<div class="ykart__stage"><svg class="ykstage".*</svg></div><span class="cart__num">${no}</span><div class="ykart__stage ykart__stage--her"><svg class="ykstage".*</svg></div><span class="ykfx" aria-hidden="true">.*</span><span class="cart__scrim"></span><span class="cart__glare"></span><span class="cart__shine"></span></div>`));
+      // drawn in code (YUKI): her night, the numeral, the snow (behind her), then her; the scrim, glare and shine
+      assert.match(li, new RegExp(`<div class="ykart__stage"><svg class="ykstage".*</svg></div><span class="cart__num">${no}</span><span class="yksnow" aria-hidden="true"[^>]*>.*</span><div class="ykart__stage ykart__stage--her"><svg class="ykstage".*</svg></div><span class="cart__scrim"></span><span class="cart__glare"></span><span class="cart__shine"></span></div>`));
     } else {
       assert.match(li, new RegExp(`<div class="cart__art"><div class="rig__box">.*</div><span class="cart__num">${no}</span><div class="rig__box">.*</div></div><span class="cart__scrim"></span><span class="cart__glare"></span><span class="cart__shine"></span></div>`));
     }

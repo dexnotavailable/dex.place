@@ -22,7 +22,7 @@ import { cardArt } from "./cardart.ts";
 import { button, chip, icon } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import { captionOf, docsKey, fileOf, primaryAction, stateText } from "./pcard.ts";
-import { snowFx, yukiBack } from "./yukiart.ts";
+import { yukiBack } from "./yukiart.ts";
 
 const BANNERS = "/site/banners/";
 const has = (path: string): boolean => existsSync(new URL(`../../../public${path}`, import.meta.url));
@@ -72,7 +72,6 @@ function front(p: Project): string {
   return (
     `<span class="pban__front" aria-hidden="true">` +
     (fx ? layerImg("pban__fx", fx) : "") +
-    (p.art.code === "yuki" ? snowFx(`${p.id}-front`, 22, "pban__snow") : "") +
     `<span class="pban__scrim"></span><span class="pban__shine"></span></span>`
   );
 }

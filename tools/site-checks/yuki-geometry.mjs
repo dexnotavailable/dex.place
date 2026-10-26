@@ -7,7 +7,7 @@
 //   3. the motion after the hatch: a click on her starts a new line's pop (and, once released, her hop), and the hop's
 //      class really changes what plays (the hatch's own rules used to win);
 //   4. everything of hers rests off screen: no animation of her sprite, stage, snow or drawn prompt runs well outside
-//      the viewport on /yuki/, /downloads/ or the home page (the hero's snow sits beside the stage and used to run on);
+//      the viewport on /yuki/, /downloads/ or the home page (the snow of every stage of hers included);
 //   5. the retired line: its tag flush with the line's left edge (the old addresses' anchors once took a flex gap), and
 //      /downloads/#dexcode and #dexclient still land on it;
 //   6. step one's per-browser lines sit inside their step, in the text's column, at phone to desktop widths.
@@ -159,7 +159,7 @@ console.log("3. after the hatch: a click on her, and the hop's class");
 console.log("4. off screen: her animations still running with their picture wholly off screen (0 everywhere)");
 async function runningOff(page) {
   return page.evaluate(() => {
-    const mine = (el) => el instanceof Element && el.closest(".yk, .ykfx, .ykstage, .ykh, .ss");
+    const mine = (el) => el instanceof Element && el.closest(".yk, .yksnow, .ykstage, .ykh, .ss");
     const picture = (el) => el.closest(".ykh, .dlf__art--yuki, [data-ss], .yktile, .pban__in, .pcard__in, .cart") ?? el;
     let on = 0, off = 0;
     const where = new Set();

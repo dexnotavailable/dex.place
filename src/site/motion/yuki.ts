@@ -8,7 +8,7 @@
 //   for a beat (the app's PRESS), then she hops, smiles and says something small.
 // - The Download click (the default action runs: the file comes from GitHub, the page stays): the page becomes the
 //   install guide (data-stage="guide"), she cheers, one status line says what to do, and the page goes to the steps.
-// - The hero (her stage and the snow in front of it), her art in the Downloads block (the block itself is tall: its art
+// - The hero (her stage, its snow behind her), her art in the Downloads block (the block itself is tall: its art
 //   leaves the screen first), the drawn Windows prompt and her face in the steps' and facts' tiles rest off screen.
 // - The live link (data/yuki.ts YUKI_LINK) only when it is switched on and in the page: after the click it asks YUKI's
 //   engine on this PC how its first run is going.
@@ -110,7 +110,9 @@ class Stage {
     this.face(this.her.eyes, this.her.mouth);
   }
 
-  /** Pressed: her eyes squeeze shut (the app's boop) and her head sinks a pixel; let go, it pops a pixel up a beat. */
+  /** Pressed: her eyes squeeze shut (the app's boop) and her head sinks a pixel; let go, it pops a pixel up a beat while
+   *  her eyes open through the half-open lid (the app's PRESS: popMs, letMs), then she settles back to rest (or to the
+   *  face a tap gives her, which takes over at once). */
   press(down: boolean): void {
     const svg = this.her?.svg;
     if (!svg || this.reduced) return;
@@ -125,6 +127,9 @@ class Stage {
     svg.classList.remove("is-press");
     svg.classList.add("is-pop");
     window.setTimeout(() => svg.classList.remove("is-pop"), YUKI_TIMING.press.popMs);
+    svg.dataset["eyes"] = "half";
+    const her = this.her!;
+    this.later(YUKI_TIMING.press.letMs, () => { svg.dataset["eyes"] = her.eyes; svg.dataset["mouth"] = her.mouth; });
   }
 
   /** She says a line: the bubble pops, her mouth moves while she says it. */
@@ -224,7 +229,8 @@ export function initYuki(reduced: boolean, fine: boolean): void {
     for (const t of ["pointerup", "pointercancel", "pointerleave"] as const) stageEl.addEventListener(t, () => stage.press(false));
     stageEl.addEventListener("click", () => {
       if (page.dataset["release"] === "none") {
-        stage.say("five more minutes...", { eyes: "sleepy", mouth: "small" });
+        // (she stirs, drowsy, and dozes off again)
+        stage.say("five more minutes...", { eyes: "sleepy", mouth: "small", ms: 1600 });
         return;
       }
       stage.hop();

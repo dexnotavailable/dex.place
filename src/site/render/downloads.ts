@@ -52,7 +52,7 @@ function yukiFileArt(f: DownloadFile | null): string {
   return (
     `<div class="dlf__art dlf__art--yuki" aria-hidden="true">` +
     // (a wide stage: a tall column on a desktop crops its sides, a phone's short strip keeps her whole)
-    yukiArt({ className: "dlf__yuki", seed: "yuki-dl", cols: 96, rows: 64, eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "small" }) +
+    yukiArt({ className: "dlf__yuki", seed: "yuki-dl", cols: 96, rows: 64, eyes: f ? "open" : "asleep", mouth: "small" }) +
     // (asleep, the app's own zz floats by her: yuki-sprite.ts)
     (f ? `<span class="dlf__tag">${icon("download", 2)}<span>${esc(ext)}</span></span>` : "") +
     `</div>`
@@ -253,7 +253,9 @@ function verifyLater(d: DownloadEntry, level: Level): string {
     `<div class="verify__row"><code class="hash hash--later">${"<i></i>".repeat(8)}<span class="later__text">Not out yet</span></code>` +
     `<span class="later__key" aria-hidden="true" inert>${copyButton("", "SHA-256")}</span></div>` +
     `<p class="verify__line">To compare, run this in PowerShell in the folder with the file. It prints the same code in capitals.</p>` +
-    `<div class="verify__row"><code class="cmd"><span aria-hidden="true">&gt; </span>${esc(cmd)}</code>${copyButton(cmd, "PowerShell command")}</div>` +
+    // (the line as the release will have it, with the file's version, is the room: the wildcard is a few characters
+    // shorter and wrapped a line short on the narrowest phones)
+    `<div class="verify__row"><code class="cmd cmd--later" data-room="${esc(`> Get-FileHash .\\${sampleName(d)} -Algorithm SHA256`)}"><span class="cmd__text"><span aria-hidden="true">&gt; </span>${esc(cmd)}</span></code>${copyButton(cmd, "PowerShell command")}</div>` +
     `</div>`
   );
 }

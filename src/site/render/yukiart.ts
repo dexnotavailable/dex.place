@@ -1,7 +1,8 @@
 // YUKI's art, made with code (Dex 10-26, YUKI docs/build/PHASE2-SCOPE.md "The feel": materials are made with code, no
 // image generation): pixel Yuki (yuki-sprite.ts) at a whole-number scale in a snowy night, inside her orb's ring (the
-// round portrait she lives in, in the app), ice shards drifting by, snow falling. Every pixel of the scene is one
-// stage unit, and a stage unit is a whole number of screen pixels (styles/yuki.css --u), so it stays crisp at any size.
+// round portrait she lives in, in the app), ice shards drifting by, snow falling behind her. Every pixel of the scene is
+// one stage unit, and a stage unit is a whole number of screen pixels (styles/yuki.css --u), so it stays crisp at any
+// size: the snow too is one cell a flake, falling a cell at a time (a finer speck over her face read as a stray pixel).
 //
 // One stage feeds every place YUKI shows: its banner's hero window and back layer (render/pbanner.ts), its card in
 // "Other projects" (render/cardart.ts), its block on Downloads and the big stage on /yuki/ (render/yuki.ts). Her face
@@ -21,6 +22,10 @@ const RING = { outer: "#dff7ff", inner: "#34e1ff", glow: "#34e1ff" } as const;
 /** Her orb's radius in cells, round her head (14 rows down her 32 x 32 bust): its top is 6 cells over the bust's, 38
  *  cells up from the foot of a stage she stands at the bottom of (styles/yuki.css puts her line's bubble just over it). */
 export const ORB = 20;
+/** The hatch (the /yuki/ stage, once): her orb's ring grows through these radii, a frame each, before the whole ring. */
+export const GROW = [3, 6, 9, 12, 15, 18] as const;
+/** The flash as the orb opens: one opaque frame filling it, one a band of light just outside its ring, then a cut. */
+const FLASH = "#d6f3ff";
 
 /** A midpoint circle of radius r around (cx, cy), as cells. */
 export function ringCells(cx: number, cy: number, r: number): [number, number][] {
@@ -48,6 +53,26 @@ export function discPath(cx: number, cy: number, r: number, fill: string, extra 
   }
   const d = [...rows].sort(([a], [b]) => a - b).map(([y, [a, b]]) => `M${a} ${y}h${b - a + 1}v1h${a - b - 1}z`).join("");
   return `<path fill="${fill}"${extra} d="${d}"/>`;
+}
+
+/** A pixel annulus: the cells of a radius-`r` disc that are outside a radius-`hole` disc, one or two runs a row. */
+export function bandPath(cx: number, cy: number, r: number, hole: number, fill: string): string {
+  const span = (rad: number): Map<number, [number, number]> => {
+    const rows = new Map<number, [number, number]>();
+    for (const [x, y] of ringCells(cx, cy, rad)) {
+      const e = rows.get(y);
+      rows.set(y, e ? [Math.min(e[0], x), Math.max(e[1], x)] : [x, x]);
+    }
+    return rows;
+  };
+  const outer = span(r), inner = span(hole);
+  let d = "";
+  for (const [y, [a, b]] of [...outer].sort(([p], [q]) => p - q)) {
+    const h = inner.get(y);
+    const runs: [number, number][] = h ? [[a, h[0] - 1], [h[1] + 1, b]] : [[a, b]];
+    for (const [x0, x1] of runs) if (x1 >= x0) d += `M${x0} ${y}h${x1 - x0 + 1}v1h${x0 - x1 - 1}z`;
+  }
+  return `<path fill="${fill}" d="${d}"/>`;
 }
 
 /** Cells as one path (one rectangle each). */
@@ -94,6 +119,30 @@ export interface StageOptions {
   layer?: "all" | "back" | "her";
   /** How the stage sits in a box of another shape: on its bottom edge (default) or around its middle (a card). */
   align?: "bottom" | "middle";
+  /** The hatch's frames (the /yuki/ stage): the ring's growth, the flash, the pixels flying out. Hidden until it plays
+   *  (styles/yuki.css), each a drawing of its own on her grid, never a scaled one. */
+  hatch?: boolean;
+}
+
+/** The hatch's ring growth: each radius its own two-tone ring, shown a frame each (styles/yuki.css). */
+function growFrames(hx: number, hy: number): string {
+  return `<g class="ykstage__grow">${GROW.map((rad, k) =>
+    `<g style="--k:${k}">${cellsPath(ringCells(hx, hy, rad), RING.outer)}${cellsPath(ringCells(hx, hy, rad - 1), RING.inner)}</g>`).join("")}</g>`;
+}
+
+/** The flash (two opaque frames: the orb full of light, then a band of it just outside the ring) and eight pixels flying
+ *  out from the ring along the grid's eight directions, a cell a step, white and cyan by turns. */
+function openFrames(hx: number, hy: number): string {
+  const flash = `<g class="ykstage__fl ykstage__fl--a">${discPath(hx, hy, ORB - 1, FLASH)}</g>` +
+    `<g class="ykstage__fl ykstage__fl--b">${bandPath(hx, hy, ORB + 3, ORB, FLASH)}</g>`;
+  const dirs = [[1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1]] as const;
+  const burst = dirs.map(([dx, dy], i) => {
+    const diag = dx !== 0 && dy !== 0;
+    const from = diag ? Math.round((ORB + 4) / Math.SQRT2) : ORB + 4;
+    const k = diag ? 7 : 10;
+    return `<g style="--i:${i};--k:${k};--dx:${dx * k};--dy:${dy * k}">${cellsPath([[hx + dx * from, hy + dy * from]], i % 2 ? RING.inner : "#ffffff")}</g>`;
+  }).join("");
+  return `<g class="ykstage__open">${flash}<g class="ykstage__burst">${burst}</g></g>`;
 }
 
 /**
@@ -128,6 +177,7 @@ export function yukiStage(o: StageOptions): string {
   if (o.ring !== false && o.yuki !== null) {
     const glow = [ORB, ORB - 3, ORB - 6].map((rad, i) => discPath(head[0], head[1], rad, RING.glow, ` opacity="${[0.07, 0.08, 0.1][i]}"`)).join("");
     s += `<g class="ykstage__ring" style="--hx:${head[0] + 0.5}px;--hy:${head[1] + 0.5}px">${glow}${cellsPath(ringCells(head[0], head[1], ORB), RING.outer)}${cellsPath(ringCells(head[0], head[1], ORB - 1), RING.inner, ' opacity="0.85"')}</g>`;
+    if (o.hatch) s += growFrames(head[0], head[1]);
   }
   // ice shards: either side of her, seeded heights and places
   const n = o.shards ?? 4;
@@ -151,7 +201,8 @@ export function yukiStage(o: StageOptions): string {
     `<g class="ykstage__her" style="--hx:${sx + 16}px;--hy:${sy + 32}px">` +
     `<svg x="${sx}" y="${sy}" width="32" height="32" viewBox="0 0 32 32" overflow="visible">` +
     yukiSprite({ eyes: o.yuki?.eyes ?? "open", mouth: o.yuki?.mouth ?? "small" }) +
-    `</svg></g>`;
+    `</svg></g>` +
+    (o.hatch && o.ring !== false ? openFrames(head[0], head[1]) : "");
   return (
     `<svg class="ykstage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cols} ${rows}" shape-rendering="crispEdges" ` +
     `preserveAspectRatio="xMid${o.align === "middle" ? "YMid" : "YMax"} slice" aria-hidden="true" focusable="false" ` +
@@ -159,15 +210,23 @@ export function yukiStage(o: StageOptions): string {
   );
 }
 
-/** Snow falling in front (spans; styles/yuki.css drops them in whole-pixel steps). Seeded. */
-export function snowFx(seed: string, count = 14, className?: string): string {
+/**
+ * Snow on the stage's grid (styles/yuki.css .yksnow: laid over the stage cell for cell, a flake one cell, falling a
+ * cell at a time and swaying a cell now and then). Behind her: a stage puts it between its night and her (yukiArt, the
+ * /yuki/ hero), so no flake ever crosses her face. Near flakes are white and quicker, far ones dimmer and slower. Seeded.
+ */
+export function snowLayer(seed: string, cols: number, rows: number, count: number, className?: string): string {
   const r = rng(`${seed}-snow`);
   let s = "";
   for (let i = 0; i < count; i++) {
-    const big = r() < 0.3;
-    s += `<i style="--x:${(r() * 100).toFixed(1)}%;--d:${(6 + r() * 7).toFixed(1)}s;--t:${(-r() * 12).toFixed(1)}s;--w:${(r() * 2 - 1).toFixed(2)}"${big ? ' class="is-big"' : ""}></i>`;
+    const far = r() < 0.45;
+    const c = Math.floor(r() * cols);
+    const n = rows + 1;
+    const d = Math.round(n * (far ? 190 + r() * 70 : 110 + r() * 50));
+    // (--r: where it hangs when nothing moves)
+    s += `<i${far ? ' class="is-far"' : ""} style="--c:${c};--r:${1 + Math.floor(r() * rows)};--n:${n};--d:${d}ms;--t:${-Math.round(r() * d)}ms;--sw:${(1.6 + r() * 2.4).toFixed(1)}s;--w:${r() < 0.5 ? -1 : 1}"></i>`;
   }
-  return `<span class="${cx("ykfx", className)}" aria-hidden="true">${s}</span>`;
+  return `<span class="${cx("yksnow", className)}" aria-hidden="true" style="--cols:${cols};--rows:${rows}">${s}</span>`;
 }
 
 export interface YukiArtOptions {
@@ -188,40 +247,38 @@ export interface YukiArtOptions {
 }
 
 /**
- * The art box: `div.ykart` (container) with the stage sized to cover it at a whole-pixel cell and the snow in front.
- * It takes render/cardart.ts's place for YUKI (`cart cart--code`), so a card, a banner's hero window and a project's
- * picture all hold it the same way.
+ * The art box: `div.ykart` (container) with the stage sized to cover it at a whole-pixel cell. Two stages stacked, the
+ * night behind and her in front, with the snow between them (and a card's numeral, as a rig card puts it between its
+ * back parts and the figure), so the snow falls behind her. It takes render/cardart.ts's place for YUKI (`cart
+ * cart--code`), so a card, a banner's hero window and a project's picture all hold it the same way.
  */
 export function yukiArt(o: YukiArtOptions = {}): string {
   const cols = o.cols ?? 48, rows = o.rows ?? (o.card ? 72 : 60);
+  const seed = o.seed ?? "yuki";
   const a11y = o.label ? `role="img" aria-label="${esc(o.label)}"` : `aria-hidden="true"`;
   const stage: StageOptions = {
-    cols, rows, seed: o.seed ?? "yuki", yuki: { eyes: o.eyes ?? "open", mouth: o.mouth ?? "small" },
+    cols, rows, seed, yuki: { eyes: o.eyes ?? "open", mouth: o.mouth ?? "small" },
     ...(o.card ? { align: "middle" as const, at: { lift: -24 } } : {}),
   };
-  // with a numeral: two stages, the night, the numeral, then her (as a rig card puts it between its back parts and
-  // the figure)
-  const art = o.numeral !== undefined
-    ? `<div class="ykart__stage">${yukiStage({ ...stage, layer: "back" })}</div><span class="cart__num">${esc(o.numeral)}</span>` +
-      `<div class="ykart__stage ykart__stage--her">${yukiStage({ ...stage, layer: "her" })}</div>`
-    : `<div class="ykart__stage">${yukiStage(stage)}</div>`;
   return (
     `<div class="${cx("cart cart--code ykart", o.card && "ykart--mid", o.className)}" ${a11y} style="--cols:${cols};--rows:${rows}">` +
-    art +
-    snowFx(o.seed ?? "yuki") +
+    `<div class="ykart__stage">${yukiStage({ ...stage, layer: "back" })}</div>` +
+    (o.numeral !== undefined ? `<span class="cart__num">${esc(o.numeral)}</span>` : "") +
+    snowLayer(seed, cols, rows, Math.round((cols * rows) / 220)) +
+    `<div class="ykart__stage ykart__stage--her">${yukiStage({ ...stage, layer: "her" })}</div>` +
     (o.card ? `<span class="cart__scrim"></span><span class="cart__glare"></span>` : "") +
     `<span class="cart__shine"></span></div>`
   );
 }
 
-/** The banner's back layer for YUKI, in Dex's plate's place: the night with shards and flakes, no Yuki. */
+/** The banner's back layer for YUKI, in Dex's plate's place: the night with shards, flakes and its snow, no Yuki. */
 export function yukiBack(): string {
-  return `<span class="ykback">${yukiStage({ cols: 160, rows: 48, seed: "yuki-back", yuki: null, shards: 7 })}</span>`;
+  return `<span class="ykback">${yukiStage({ cols: 160, rows: 48, seed: "yuki-back", yuki: null, shards: 7 })}${snowLayer("yuki-back", 160, 48, 30)}</span>`;
 }
 
 /** A tile with her face in it. `seed`: her blink's clock, so tiles side by side blink out of step. */
 export function yukiTile(size: "s" | "m", seed: string): string {
-  return `<span class="tile tile--cyan tile--${size} yktile" aria-hidden="true">${yukiSprite({ scale: 1, mouth: "smile", seed })}</span>`;
+  return `<span class="tile tile--cyan tile--${size} yktile" aria-hidden="true">${yukiSprite({ scale: 1, seed })}</span>`;
 }
 
 /** A step's or fact's tile: her face where it would show the site's generic mascot ("blob"), else the icon's tile. */

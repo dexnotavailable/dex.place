@@ -17,7 +17,7 @@ import { yukiSprite } from "../yuki-sprite.ts";
 import { fileName, verifyBlock, waysList } from "./downloads.ts";
 import { button, chip, icon, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
-import { snowFx, yukiStage, yukiTileOr as tileOr } from "./yukiart.ts";
+import { snowLayer, yukiStage, yukiTileOr as tileOr, type StageOptions } from "./yukiart.ts";
 
 /** YUKI's download entry (always there; its file only once released). */
 export const yukiDownload = (): DownloadEntry => downloads.find((d) => d.id === "yuki") as DownloadEntry;
@@ -45,15 +45,17 @@ function hero(f: DownloadFile | null): string {
     : `<p class="ykh__soon"><span class="dl-state__dot" aria-hidden="true"></span>No public download yet</p>` +
       button({ href: "#install", label: "How installing works", icon: "arrow-down", size: "m", className: "ykh__guide" });
   const say = f ? YUKI_SAYS.ready : YUKI_SAYS.none;
+  const stage: StageOptions = { cols: 72, rows: 50, seed: "yuki-page", yuki: { eyes: f ? "open" : "asleep", mouth: "small" }, shards: 6, at: { lift: 0 }, hatch: true };
   return (
     `<header class="ykh" aria-labelledby="page-title">` +
     `<span class="ykh__plate" aria-hidden="true"></span>` +
     `<div class="ykh__box">` +
-    snowFx("yuki-page", 34, "ykh__snow") +
     `<div class="ykh__stage" data-yuki-stage aria-hidden="true">` +
+    // her night, the snow falling behind her, then her (and the hatch's flash and pixels in front of her)
     `<div class="ykh__art" data-hatch>` +
-    yukiStage({ cols: 72, rows: 50, seed: "yuki-page", yuki: { eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "small" }, shards: 6, at: { lift: 0 } }) +
-    `<span class="ykh__burst">${Array.from({ length: 8 }, (_, i) => `<i style="--i:${i}"></i>`).join("")}</span>` +
+    yukiStage({ ...stage, layer: "back" }) +
+    snowLayer("yuki-page", 72, 50, 22) +
+    yukiStage({ ...stage, layer: "her" }) +
     `</div>` +
     `<p class="ykh__say" data-yuki-say><span data-yuki-line>${esc(say)}</span></p>` +
     `</div>` +
@@ -137,7 +139,7 @@ export function smartScreen(file: string | null): string {
     `<p class="ss__btns"><span class="ss__btn ss__btn--go ss__target">Run anyway${cursor("ss__cursor--b")}</span><span class="ss__btn">Don't run</span></p>` +
     `</div>` +
     `</div>` +
-    `<figcaption class="ss__cap" id="ss-cap"><span class="ss__peek" aria-hidden="true">${yukiSprite({ scale: 2, eyes: "open", mouth: "smile", className: "ss__yuki", seed: "ss-peek" })}</span>` +
+    `<figcaption class="ss__cap" id="ss-cap"><span class="ss__peek" aria-hidden="true">${yukiSprite({ scale: 2, eyes: "happy", mouth: "smile", className: "ss__yuki", seed: "ss-peek" })}</span>` +
     `<span><b>Click More info, then Run anyway.</b> Windows doesn't know YUKI yet because the installer isn't signed; it asks once, the first time.</span></figcaption>` +
     `</figure>`
   );

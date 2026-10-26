@@ -98,6 +98,8 @@ test("not released, the section keeps its shape (Dex 10-26: a short band ran its
     assert.match(v, /<code class="hash hash--later">(<i><\/i>){8}<span class="later__text">Not out yet<\/span><\/code><span class="later__key" aria-hidden="true" inert>/);
     assert.doesNotMatch(v.slice(0, v.indexOf("</section>")).replace(/ data-room="[^"]*"/g, ""), /[0-9a-f]{8}|\d+\.\d+\.\d+/, "no stand-in hash or version in the page");
     assert.ok(v.includes("Get-FileHash .\\YUKI-Setup-*.exe -Algorithm SHA256"));
+    // the line holds the room of the released one (the wildcard, a few characters shorter, wrapped a line short at 320)
+    assert.ok(v.includes('<code class="cmd cmd--later" data-room="&gt; Get-FileHash .\\YUKI-Setup-0.0.0.exe -Algorithm SHA256"><span class="cmd__text">'));
     assert.equal((none.match(/class="verify__(line|row)"/g) ?? []).length, (rel.match(/class="verify__(line|row)"/g) ?? []).length, "as many lines");
   }
 });
