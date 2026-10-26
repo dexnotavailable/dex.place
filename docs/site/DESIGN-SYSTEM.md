@@ -61,25 +61,26 @@ made with code (no image generation).
   (it reads the app's `ui/pixel/faces.ts` and `ui/mascotFrames.ts` at a commit, never a working tree a taste round is
   editing, splits each face into layers and checks they add back up to the app's faces pixel for pixel); rerun it when
   the app's mascot changes. Layers as the app animates them: the back hair and the head bob a pixel over still
-  shoulders, the eyes (open with its left and right glances, half, closed, happy, sleepy, wide, squeeze; `asleep`, the
-  site's face while YUKI isn't out, is the app's shut eyes with its zz: its sleepy half-lids read smug beside the zz,
-  so they stay for her drowsy moments; at rest her mouth is the app's small closed one, its open smile reads as a gasp
-  until she's happy), blush (soft,
-  strong with happy, wide and squeeze) and mouth (small, smile, open) sit on the head, the ahoge and the hair's tips
-  sway on two frames, the app's zz floats by her asleep. `data-eyes` / `data-mouth` pick the face, `data-look` a
-  glance. Idle, the app's clocks (`TIMING`, its `TIMELINE`, `BOB`, `BOB_LAG_MS`), a 1.3 s turn either way: awake its
-  "waiting" one (frame A 1000 ms, the loose hair swung for one 200 ms beat right after the head drops, A 100 ms),
-  asleep its "queued" one (A and B 650 ms each, the zz rising on B); the head bobs a pixel unevenly (1000 ms at rest,
-  300 sunk) and the hair behind it lands 80 ms later both ways; each Yuki's frame and bob clocks start `--mphase` into
-  their turn (the app's `phaseMs` of her seed), so two in view never bob in step. A blink (half, shut, half:
-  40 / 90 / 70 ms at the default clock) on each Yuki's own seeded clock (4.1-6.3 s) and a look aside on another
+  shoulders; the eyes (open with its left and right glances, half, closed, happy, sleepy, wide, squeeze; `asleep`,
+  the site's face while YUKI isn't out, is the app's shut eyes with its zz: its sleepy half-lids read smug beside the
+  zz, so they stay for her drowsy moments), blush (soft, strong with happy, wide and squeeze) and mouth (small, the
+  little smile she rests on in the app; smile, open) sit on the head; what hangs loose (the ahoge, the hair's tips)
+  springs through three poses (A at rest, B swung, C a pixel past rest); the zz has two frames of its own.
+  `data-eyes` / `data-mouth` pick the face, `data-look` a glance. Idle, the app's clocks (`TIMING`: its `TIMELINE`,
+  `BOB`, `BOB_LAG_MS`), a 1.3 s turn awake or asleep: what hangs loose rests 1000 ms, swings for one 200 ms beat right
+  after the head drops, springs past rest for 80 ms and settles; asleep the zz rises halfway; the head bobs a pixel
+  unevenly (1000 ms at rest, 300 sunk) and the hair behind it lands 80 ms later both ways; each Yuki's clocks start
+  `--mphase` into their turn (the app's `phaseMs` of her seed), so two in view never bob in step. A blink (half, shut,
+  half: 40 / 90 / 70 ms at the default clock) on each Yuki's own seeded clock (4.1-6.3 s) and a look aside on another
   (13-19 s; `blinkVars`: a stage sets them for the Yuki in it, a lone sprite takes them from its `seed`), all
-  `steps()`. A hop (690 ms, the app's hover hop) is whole pixels (`HOP_STEPS`, the loose hair swung at the top) and
-  lands on the app's squash frame held 80 ms (`LAND`: her long hair splayed a pixel, open eyes turned to the happy
-  arch), keeps those eyes 250 ms at rest and opens them through the half-open lid (50 ms): a tap on her stage, or
-  hovering her banner or card. Pressed on her stage, her eyes squeeze shut and her head sinks a pixel; let go, it pops
-  a pixel up for 90 ms and her eyes open through the half-open lid (50 ms). A new face arrives behind a blink (shut
-  90 ms, half 50 ms).
+  `steps()`. A hop (690 ms, the app's hover hop) is whole pixels (`HOP_STEPS`): it stretches (`HOP_LIFT`: the head a
+  pixel ahead of the shoulders, `.yk__lift`), hangs with the hair swung while the outfit's rows under her bust show
+  (`BELOW`, so her shoulders reach the bottom of her cell), lands on the app's squash held 80 ms (`LAND`: her long hair
+  splayed a pixel and still swung, open eyes turned to the happy arch), springs the hair past rest (60 ms), keeps the
+  happy eyes at rest and opens them through the half-open lid (50 ms): a tap on her stage, or hovering her banner or
+  card. Pressed on her stage, her eyes squeeze shut and her head sinks a pixel; let go, it pops a pixel up for 90 ms
+  with the hair swung (`.is-pop`) and her eyes half open for 50 ms, then the hair springs past rest for 60 ms
+  (`.is-spring`). A new face arrives behind a blink (shut 90 ms, half 50 ms).
 - **Her stage** (`render/yukiart.ts`): night in hard bands, stars, her orb's pixel ring (`ORB`, 20 cells round her
   head, so her hair, ahoge and zz sit inside it) and its glow (three discs stepped in whole cells, `discPath`, never a
   smooth circle whose edge would step in screen pixels), ice shards, big flakes, the snow (`snowLayer`: a flake is one

@@ -6,24 +6,25 @@
 /* ================================================================== pixel Yuki
    The app's mascot (yuki-sprite.ts, her pixels synced from YUKI's own faces): one face shows, the one her data
    attributes name; the blush turns strong with the eyes that call for it; asleep (the app's shut eyes), the app's zz
-   floats by her (its "sleepy" half-lids read smug beside it: they are her drowsy face, awake). A glance
-   (data-look, motion/yuki.ts: a fine pointer beside her) shows the open eyes looking that way. Pressed (her stage), the
-   head sinks a pixel over still shoulders. Units inside the SVG are her pixels.
+   floats by her (its "sleepy" half-lids read smug beside it: they are her drowsy face, awake). A glance (data-look,
+   motion/yuki.ts: a fine pointer beside her) shows the open eyes looking that way. Pressed (her stage), the head sinks
+   a pixel over still shoulders. Units inside the SVG are her pixels.
    Motion, the app's own (YUKI ui/mascotFrames.ts, styles/base.css; yuki-faces.ts TIMING, a test keeps these in step),
-   on a turn of 1.3 s awake or asleep: awake, the app's "waiting" clock, frame A for 1000 ms, the loose hair swung (B)
-   for one 200 ms beat right after the head drops, A again for 100 ms; asleep, its "queued" clock, A and B 650 ms each
-   (the zz rises on B). The head bobs a pixel over still shoulders, unevenly (1000 ms at rest, 300 sunk), and the hair
-   behind it lands 80 ms later both ways. Her frame and bob clocks start --mphase into their turn (seeded per Yuki,
-   yuki-sprite.ts blinkVars, as the app's per helper), so two in view never bob in step. A blink (half, shut, half:
-   40 / 90 / 70 ms) on each Yuki's own seeded clock (--blink, --blink-at, 4.1-6.3 s), a look aside now and then on
-   another (--look, --look-at: 13-19 s, held about a second) unless a pointer is steering her eyes, and a hop (.is-hop;
-   or hovering her banner or card), 690 ms: a crouch, up a pixel at a time, a hang at the top with the loose hair
-   swung (B), down, the app's landing squash held 80 ms (her long hair splayed a pixel, open eyes turned to the happy
-   arch: yuki-faces.ts LAND), then at rest the happy eyes for 250 ms and the eyes reopening through the half-open lid
-   (50 ms). */
-.yk { display: block; overflow: visible; image-rendering: pixelated; --yk-fa: yk-fa; --yk-fb: yk-fb; }
-.yk[data-eyes="asleep"] { --yk-fa: yk-sa; --yk-fb: yk-sb; }
-.yk .yk__e, .yk .yk__m, .yk .yk__bl--strong, .yk .yk__zz, .yk .yk__fb, .yk .yk__look--l, .yk .yk__look--r, .yk .yk__land, .yk .yk__land-eyes, .yk .yk__land-half { display: none; }
+   on a turn of 1.3 s awake or asleep: what hangs loose (her ahoge, her long hair's tips) rests (A) for 1000 ms, swings
+   (B) for one 200 ms beat right after the head drops, springs a pixel past rest (C) for 80 ms and settles (A); asleep
+   the zz rises halfway through the turn. The head bobs a pixel over still shoulders, unevenly (1000 ms at rest, 300
+   sunk), and the hair behind it lands 80 ms later both ways. Her clocks start --mphase into their turn (seeded per
+   Yuki, yuki-sprite.ts blinkVars, as the app's per helper), so two in view never bob in step. A blink (half, shut,
+   half: 40 / 90 / 70 ms) on each Yuki's own seeded clock (--blink, --blink-at, 4.1-6.3 s), a look aside now and then
+   on another (--look, --look-at: 13-19 s, held about a second) unless a pointer is steering her eyes, and a hop
+   (.is-hop; or hovering her banner or card), 690 ms: a crouch, the head stretching up a pixel ahead of the shoulders,
+   up two with the hair swung, a hang, down a pixel at a time, the app's landing squash held 80 ms (her long hair
+   splayed a pixel and swung, open eyes turned to the happy arch: yuki-faces.ts LAND), the hair springing past rest
+   (60 ms), the happy eyes at rest and the eyes reopening through the half-open lid (50 ms); while she is up, the
+   outfit's rows under her bust show, so her shoulders always reach the bottom of her cell. Let go of a press, her
+   head pops a pixel up for 90 ms with the hair swung (.is-pop), then the hair springs past rest for 60 ms (.is-spring). */
+.yk { display: block; overflow: visible; image-rendering: pixelated; }
+.yk .yk__e, .yk .yk__m, .yk .yk__bl--strong, .yk .yk__zz, .yk .yk__fb, .yk .yk__fc, .yk .yk__zb, .yk .yk__below, .yk .yk__look--l, .yk .yk__look--r, .yk .yk__land, .yk .yk__land-eyes, .yk .yk__land-half { display: none; }
 .yk[data-eyes="open"] .yk__e--open, .yk[data-eyes="half"] .yk__e--half, .yk[data-eyes="closed"] .yk__e--closed,
 .yk[data-eyes="happy"] .yk__e--happy, .yk[data-eyes="sleepy"] .yk__e--sleepy, .yk[data-eyes="asleep"] .yk__e--asleep, .yk[data-eyes="wide"] .yk__e--wide,
 .yk[data-eyes="squeeze"] .yk__e--squeeze { display: inline; }
@@ -36,8 +37,11 @@
 .yk.is-press .yk__bob { translate: 0 1px; }
 .yk.is-pop .yk__bob { translate: 0 -1px; }
 @media (prefers-reduced-motion: no-preference) {
-  .yk .yk__fa { animation: var(--yk-fa) 1.3s steps(1, end) var(--mphase, 0s) infinite; }
-  .yk .yk__fb { display: inline; visibility: hidden; animation: var(--yk-fb) 1.3s steps(1, end) var(--mphase, 0s) infinite; }
+  .yk .yk__fa { animation: yk-fa 1.3s steps(1, end) var(--mphase, 0s) infinite; }
+  .yk .yk__fb { display: inline; visibility: hidden; animation: yk-fb 1.3s steps(1, end) var(--mphase, 0s) infinite; }
+  .yk .yk__fc { display: inline; visibility: hidden; animation: yk-fc 1.3s steps(1, end) var(--mphase, 0s) infinite; }
+  .yk .yk__za { animation: yk-za 1.3s steps(1, end) var(--mphase, 0s) infinite; }
+  .yk .yk__zb { display: inline; visibility: hidden; animation: yk-zb 1.3s steps(1, end) var(--mphase, 0s) infinite; }
   .yk .yk__bob { animation: yk-bob 1.3s steps(1, end) var(--mphase, 0s) infinite; }
   /* (the hair behind the head lands a beat after it) */
   .yk .yk__back { animation-delay: calc(var(--mphase, 0s) + 80ms); }
@@ -48,19 +52,28 @@
   .yk:not([data-look]) .yk__look--l { display: inline; visibility: hidden; animation: yk-look-l var(--look, 16s) steps(1, end) var(--look-at, 0s) infinite; }
   .yk:not([data-look]) .yk__look--r { display: inline; visibility: hidden; animation: yk-look-r var(--look, 16s) steps(1, end) var(--look-at, 0s) infinite; }
   .yk.is-hop .yk__hop { animation: yk-hop 690ms steps(1, end); }
-  .yk.is-hop .yk__fa { animation: var(--yk-fa) 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hop-a 690ms steps(1, end); }
-  .yk.is-hop .yk__fb { animation: var(--yk-fb) 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hop-b 690ms steps(1, end); }
+  .yk.is-hop .yk__lift { animation: yk-lift 690ms steps(1, end); }
+  .yk.is-hop .yk__below { display: inline; visibility: hidden; animation: yk-below 690ms steps(1, end); }
+  .yk.is-hop .yk__fa { animation: yk-fa 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hop-a 690ms steps(1, end); }
+  .yk.is-hop .yk__fb { animation: yk-fb 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hop-b 690ms steps(1, end); }
+  .yk.is-hop .yk__fc { animation: yk-fc 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hop-c 690ms steps(1, end); }
   .yk.is-hop .yk__bk { animation: yk-land-off 690ms steps(1, end); }
   .yk.is-hop .yk__land { display: inline; visibility: hidden; animation: yk-land-on 690ms steps(1, end); }
   .yk.is-hop:is([data-eyes="open"], [data-eyes="wide"]) .yk__eyes { animation: yk-eyes-off 690ms steps(1, end); }
   .yk.is-hop:is([data-eyes="open"], [data-eyes="wide"]) .yk__land-eyes { display: inline; visibility: hidden; animation: yk-glad-on 690ms steps(1, end); }
   .yk.is-hop:is([data-eyes="open"], [data-eyes="wide"]) .yk__land-half { display: inline; visibility: hidden; animation: yk-half-on 690ms steps(1, end); }
   .yk:is(.is-press, .is-pop) .yk__bob { animation: none; }
+  /* let go: the hair swung while the head pops (B), then past rest (C), then her frames again (motion/yuki.ts) */
+  .yk.is-pop :is(.yk__fa, .yk__fc), .yk.is-spring :is(.yk__fa, .yk__fb) { animation: none; visibility: hidden; }
+  .yk.is-pop .yk__fb, .yk.is-spring .yk__fc { animation: none; visibility: visible; }
   /* her banner and her card answer the pointer as her button does in the app: she hops once */
   @media (hover: hover) {
     :is(.pban, .pcard):hover .yk .yk__hop { animation: yk-hover 690ms steps(1, end); }
-    :is(.pban, .pcard):hover .yk .yk__fa { animation: var(--yk-fa) 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hover-a 690ms steps(1, end); }
-    :is(.pban, .pcard):hover .yk .yk__fb { animation: var(--yk-fb) 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hover-b 690ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__lift { animation: yk-hover-lift 690ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__below { display: inline; visibility: hidden; animation: yk-hover-below 690ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__fa { animation: yk-fa 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hover-a 690ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__fb { animation: yk-fb 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hover-b 690ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__fc { animation: yk-fc 1.3s steps(1, end) var(--mphase, 0s) infinite, yk-hover-c 690ms steps(1, end); }
     :is(.pban, .pcard):hover .yk .yk__bk { animation: yk-hover-land-off 690ms steps(1, end); }
     :is(.pban, .pcard):hover .yk .yk__land { display: inline; visibility: hidden; animation: yk-hover-land-on 690ms steps(1, end); }
     :is(.pban, .pcard):hover .yk:is([data-eyes="open"], [data-eyes="wide"]) .yk__eyes { animation: yk-hover-eyes-off 690ms steps(1, end); }
@@ -68,11 +81,13 @@
     :is(.pban, .pcard):hover .yk:is([data-eyes="open"], [data-eyes="wide"]) .yk__land-half { display: inline; visibility: hidden; animation: yk-hover-half-on 690ms steps(1, end); }
   }
 }
-/* the sprite frames: awake A 1000 ms, B 200 (right after the head drops), A 100; asleep A, B (650 ms each) */
-@keyframes yk-fa { 0% { visibility: visible; } 76.923% { visibility: hidden; } 92.308% { visibility: visible; } }
+/* what hangs loose, a turn: A 1000 ms, B 200 (right after the head drops), C 80 (past rest), A 20; the zz rises at
+   650 ms (asleep) */
+@keyframes yk-fa { 0% { visibility: visible; } 76.923% { visibility: hidden; } 98.462% { visibility: visible; } }
 @keyframes yk-fb { 0% { visibility: hidden; } 76.923% { visibility: visible; } 92.308% { visibility: hidden; } }
-@keyframes yk-sa { 0% { visibility: visible; } 50% { visibility: hidden; } }
-@keyframes yk-sb { 0% { visibility: hidden; } 50% { visibility: visible; } }
+@keyframes yk-fc { 0% { visibility: hidden; } 92.308% { visibility: visible; } 98.462% { visibility: hidden; } }
+@keyframes yk-za { 0% { visibility: visible; } 50% { visibility: hidden; } }
+@keyframes yk-zb { 0% { visibility: hidden; } 50% { visibility: visible; } }
 /* (at rest 1000 ms of the turn, then sunk a pixel for 300) */
 @keyframes yk-bob { 0% { translate: 0 0; } 76.923% { translate: 0 1px; } }
 /* (the blink sits at the end of each clock, closing fast and opening slower: at 5.2 s, 96.154-96.923% is 40 ms half,
@@ -84,21 +99,28 @@
 @keyframes yk-look-0 { 0% { visibility: visible; } 34% { visibility: hidden; } 40% { visibility: visible; } 78% { visibility: hidden; } 84% { visibility: visible; } }
 @keyframes yk-look-l { 0% { visibility: hidden; } 34% { visibility: visible; } 40% { visibility: hidden; } }
 @keyframes yk-look-r { 0% { visibility: hidden; } 78% { visibility: visible; } 84% { visibility: hidden; } }
-/* the hop, 690 ms (the app's HOP_STEPS and HOP_SWAY): crouch at 0, up a pixel at 60 ms, two at 110, hang to 210, down a
-   pixel at 210, rest at 270, the squash a pixel deep 310-390, rest; frame B 110-310; the splayed hair 310-390; the
-   happy eyes 310-640; half open 640-690 */
-@keyframes yk-hop { 0% { translate: 0 1px; } 8.696% { translate: 0 -1px; } 15.942% { translate: 0 -2px; } 30.435% { translate: 0 -1px; } 39.13% { translate: 0 0; } 44.928% { translate: 0 1px; } 56.522% { translate: 0 0; } }
-@keyframes yk-hop-a { 0% { visibility: visible; } 15.942% { visibility: hidden; } 44.928% { visibility: visible; } }
-@keyframes yk-hop-b { 0% { visibility: hidden; } 15.942% { visibility: visible; } 44.928% { visibility: hidden; } }
+/* the hop, 690 ms (the app's HOP_STEPS, HOP_LIFT, HOP_SWAY): the bust crouches at 0, rests at 60 while the head
+   stretches up a pixel ahead of it, up two at 110 (the head with it), hangs to 210, down a pixel, rests at 270, the
+   squash a pixel deep 310-390, rest; the rows under the bust 110-270 (while it is up); the hair A, then B 110-390 (the
+   squash keeps it swung), C 390-450, A; the splayed hair 310-390; the happy eyes 310-640; half open 640-690 */
+@keyframes yk-hop { 0% { translate: 0 1px; } 8.696% { translate: 0 0; } 15.942% { translate: 0 -2px; } 30.435% { translate: 0 -1px; } 39.13% { translate: 0 0; } 44.928% { translate: 0 1px; } 56.522% { translate: 0 0; } }
+@keyframes yk-lift { 0% { translate: 0 0; } 8.696% { translate: 0 -1px; } 15.942% { translate: 0 0; } }
+@keyframes yk-below { 0% { visibility: hidden; } 15.942% { visibility: visible; } 39.13% { visibility: hidden; } }
+@keyframes yk-hop-a { 0% { visibility: visible; } 15.942% { visibility: hidden; } 65.217% { visibility: visible; } }
+@keyframes yk-hop-b { 0% { visibility: hidden; } 15.942% { visibility: visible; } 56.522% { visibility: hidden; } }
+@keyframes yk-hop-c { 0% { visibility: hidden; } 56.522% { visibility: visible; } 65.217% { visibility: hidden; } }
 @keyframes yk-land-on { 0% { visibility: hidden; } 44.928% { visibility: visible; } 56.522% { visibility: hidden; } }
 @keyframes yk-land-off { 0% { opacity: 1; } 44.928% { opacity: 0; } 56.522% { opacity: 1; } }
 @keyframes yk-eyes-off { 0% { opacity: 1; } 44.928% { opacity: 0; } }
 @keyframes yk-glad-on { 0% { visibility: hidden; } 44.928% { visibility: visible; } 92.754% { visibility: hidden; } }
 @keyframes yk-half-on { 0% { visibility: hidden; } 92.754% { visibility: visible; } }
 /* (the hover's own names, so a hover after a tap hops again, as the app's m-hover) */
-@keyframes yk-hover { 0% { translate: 0 1px; } 8.696% { translate: 0 -1px; } 15.942% { translate: 0 -2px; } 30.435% { translate: 0 -1px; } 39.13% { translate: 0 0; } 44.928% { translate: 0 1px; } 56.522% { translate: 0 0; } }
-@keyframes yk-hover-a { 0% { visibility: visible; } 15.942% { visibility: hidden; } 44.928% { visibility: visible; } }
-@keyframes yk-hover-b { 0% { visibility: hidden; } 15.942% { visibility: visible; } 44.928% { visibility: hidden; } }
+@keyframes yk-hover { 0% { translate: 0 1px; } 8.696% { translate: 0 0; } 15.942% { translate: 0 -2px; } 30.435% { translate: 0 -1px; } 39.13% { translate: 0 0; } 44.928% { translate: 0 1px; } 56.522% { translate: 0 0; } }
+@keyframes yk-hover-lift { 0% { translate: 0 0; } 8.696% { translate: 0 -1px; } 15.942% { translate: 0 0; } }
+@keyframes yk-hover-below { 0% { visibility: hidden; } 15.942% { visibility: visible; } 39.13% { visibility: hidden; } }
+@keyframes yk-hover-a { 0% { visibility: visible; } 15.942% { visibility: hidden; } 65.217% { visibility: visible; } }
+@keyframes yk-hover-b { 0% { visibility: hidden; } 15.942% { visibility: visible; } 56.522% { visibility: hidden; } }
+@keyframes yk-hover-c { 0% { visibility: hidden; } 56.522% { visibility: visible; } 65.217% { visibility: hidden; } }
 @keyframes yk-hover-land-on { 0% { visibility: hidden; } 44.928% { visibility: visible; } 56.522% { visibility: hidden; } }
 @keyframes yk-hover-land-off { 0% { opacity: 1; } 44.928% { opacity: 0; } 56.522% { opacity: 1; } }
 @keyframes yk-hover-eyes-off { 0% { opacity: 1; } 44.928% { opacity: 0; } }

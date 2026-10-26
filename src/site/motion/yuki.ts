@@ -72,6 +72,8 @@ function restOffScreen(els: Iterable<Element>): void {
 /** The page's stage: her line, her face, her hop. */
 class Stage {
   private timers: number[] = [];
+  /** The release's beats (the hair swung, then past rest): their own clock, so a new line never leaves one stuck. */
+  private beat = 0;
   constructor(
     private readonly stage: HTMLElement,
     private readonly her: Her | null,
@@ -110,9 +112,9 @@ class Stage {
     this.face(this.her.eyes, this.her.mouth);
   }
 
-  /** Pressed: her eyes squeeze shut (the app's boop) and her head sinks a pixel; let go, it pops a pixel up a beat while
-   *  her eyes open through the half-open lid (the app's PRESS: popMs, letMs), then she settles back to rest (or to the
-   *  face a tap gives her, which takes over at once). */
+  /** Pressed: her eyes squeeze shut (the app's boop) and her head sinks a pixel; let go, it pops a pixel up a beat with
+   *  the hair swung while her eyes open through the half-open lid, then the hair springs past rest (the app's PRESS:
+   *  popMs, letMs, springMs), and she settles back to rest (or to the face a tap gives her, which takes over at once). */
   press(down: boolean): void {
     const svg = this.her?.svg;
     if (!svg || this.reduced) return;
@@ -124,12 +126,17 @@ class Stage {
       return;
     }
     if (!svg.classList.contains("is-press")) return;
+    const { popMs, letMs, springMs } = YUKI_TIMING.press;
     svg.classList.remove("is-press");
     svg.classList.add("is-pop");
-    window.setTimeout(() => svg.classList.remove("is-pop"), YUKI_TIMING.press.popMs);
+    window.clearTimeout(this.beat);
+    this.beat = window.setTimeout(() => {
+      svg.classList.replace("is-pop", "is-spring");
+      this.beat = window.setTimeout(() => svg.classList.remove("is-spring"), springMs);
+    }, popMs);
     svg.dataset["eyes"] = "half";
     const her = this.her!;
-    this.later(YUKI_TIMING.press.letMs, () => { svg.dataset["eyes"] = her.eyes; svg.dataset["mouth"] = her.mouth; });
+    this.later(letMs, () => { svg.dataset["eyes"] = her.eyes; svg.dataset["mouth"] = her.mouth; });
   }
 
   /** She says a line: the bubble pops, her mouth moves while she says it. */
@@ -154,11 +161,14 @@ class Stage {
     }
   }
 
-  /** A hop: the sprite's own (whole pixels, her ahoge trailing), restarted each time. */
+  /** A hop: the sprite's own (whole pixels, her ahoge trailing), restarted each time; it takes over from a release's
+   *  beats. */
   hop(): void {
     if (this.reduced) return;
     const g = this.her?.svg;
     if (!g) return;
+    window.clearTimeout(this.beat);
+    g.classList.remove("is-pop", "is-spring");
     g.classList.remove("is-hop");
     void g.getBoundingClientRect();
     g.classList.add("is-hop");

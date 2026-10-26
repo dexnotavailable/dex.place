@@ -5,15 +5,18 @@
 //
 // Layers, as the app animates them (YUKI ui/Mascot.tsx): the back hair and the head bob a pixel over still shoulders;
 // the eyes, blush and mouth sit on the head as layers of their own, so a blink, a glance or a new face is one attribute
-// and never a redraw; the ahoge sways on two sprite frames. Which face shows: `data-eyes` and `data-mouth` on the svg;
-// the blush turns strong with the eyes that call for it (happy, wide, squeeze), as in the app's expressions; the open
-// eyes glance with `data-look` (-1, 0, 1), or on their own idle clock without it. Asleep, the app's zz floats by her.
-// A hop lands on the app's squash frame (her long hair splayed a pixel, her open eyes turned to the app's ^ ^: LAND),
-// rests a moment with those eyes, then opens them through the half-open lid, as the app's hop ends.
+// and never a redraw; what hangs loose (the ahoge, her long hair's tips) springs through three poses (A at rest, B
+// swung, C a pixel past rest), and the zz has two frames of its own. Which face shows: `data-eyes` and `data-mouth` on
+// the svg; the blush turns strong with the eyes that call for it (happy, wide, squeeze), as in the app's expressions;
+// the open eyes glance with `data-look` (-1, 0, 1), or on their own idle clock without it. Asleep, the app's zz floats
+// by her. A hop stretches (the head a pixel ahead of the shoulders: .yk__lift, the outfit's rows under the bust showing
+// while she is up: .yk__below), lands on the app's squash frame (her long hair splayed a pixel and swung, her open eyes
+// turned to the app's ^ ^: LAND), springs the hair past rest, rests a moment with those eyes, then opens them through
+// the half-open lid, as the app's hop does.
 // styles/yuki.css shows and moves them; motion/yuki.ts changes them.
 
 import { rng } from "./render/html.ts";
-import { BACK, BLUSH, BODY, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, PALETTE, PROPS, TIMING, type FaceKey, type Layer } from "./yuki-faces.ts";
+import { BACK, BELOW, BLUSH, BODY, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, PALETTE, PROPS, TIMING, type FaceKey, type Layer } from "./yuki-faces.ts";
 
 /** Her palette (the app's look "yuki"). */
 export const YUKI_PALETTE = PALETTE;
@@ -64,7 +67,7 @@ const same = (a: Layer, b: Layer): boolean => a.y === b.y && a.rows.join("|") ==
 export function phaseMs(seed: string): number {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
-  const turn = TIMING.awake.beats.reduce((t, [, ms]) => t + ms, 0);
+  const turn = TIMING.awake.poses.reduce((t, [, ms]) => t + ms, 0);
   return ((h >>> 0) % TIMING.phaseSpanMs) % turn;
 }
 
@@ -106,9 +109,9 @@ export function yukiSprite(o: YukiSpriteOptions = {}): string {
     ? `role="img" aria-label="${o.label.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;")}"`
     : `aria-hidden="true" focusable="false"`;
   const g = (cls: string, inner: string): string => `<g class="${cls}">${inner}</g>`;
-  // two sprite frames, or one layer when they are the same (her long hair hangs still; the ahoge sways)
-  const frames = (cls: string, [a, b]: readonly [Layer, Layer]): string =>
-    same(a, b) ? g(cls, layerPaths(a)) : g(cls, g("yk__fa", layerPaths(a)) + g("yk__fb", layerPaths(b)));
+  // what hangs loose in its three poses (A at rest, B swung, C past rest), or one layer when they are the same
+  const frames = (cls: string, [a, b, c]: readonly [Layer, Layer, Layer]): string =>
+    same(a, b) && same(a, c) ? g(cls, layerPaths(a)) : g(cls, g("yk__fa", layerPaths(a)) + g("yk__fb", layerPaths(b)) + g("yk__fc", layerPaths(c)));
   const eyes = YUKI_EYES.map((k) =>
     k === "open"
       ? g("yk__e yk__e--open", g("yk__look yk__look--0", layerPaths(EYES.open)) + g("yk__look yk__look--l", layerPaths(EYES["open-l"])) + g("yk__look yk__look--r", layerPaths(EYES["open-r"])))
@@ -120,9 +123,10 @@ export function yukiSprite(o: YukiSpriteOptions = {}): string {
     `shape-rendering="crispEdges" data-eyes="${o.eyes ?? "open"}" data-mouth="${o.mouth ?? "small"}" ${a11y}` +
     `${o.seed ? ` style="${blinkVars(o.seed)}"` : ""}>` +
     `<g class="yk__hop">` +
-    g("yk__bob yk__back", frames("yk__bk", BACK) + g("yk__land", layerPaths(LAND.back))) +
+    g("yk__lift", g("yk__bob yk__back", frames("yk__bk", BACK) + g("yk__land", layerPaths(LAND.back)))) +
     g("yk__body", layerPaths(BODY)) +
-    `<g class="yk__bob yk__head">` +
+    g("yk__below", layerPaths(BELOW)) +
+    `<g class="yk__lift"><g class="yk__bob yk__head">` +
     layerPaths(HEAD) +
     land +
     g("yk__eyes", eyes) +
@@ -131,7 +135,7 @@ export function yukiSprite(o: YukiSpriteOptions = {}): string {
     g("yk__bl yk__bl--soft", layerPaths(BLUSH.soft)) + g("yk__bl yk__bl--strong", layerPaths(BLUSH.strong)) +
     YUKI_MOUTHS.map((k) => g(`yk__m yk__m--${k}`, layerPaths(MOUTHS[k]))).join("") +
     frames("yk__front", FRONT) +
-    frames("yk__zz", [PROPS.zz, PROPS["zz-up"]]) +
-    `</g></g></svg>`
+    g("yk__zz", g("yk__za", layerPaths(PROPS.zz)) + g("yk__zb", layerPaths(PROPS["zz-up"]))) +
+    `</g></g></g></svg>`
   );
 }
