@@ -91,6 +91,10 @@ export interface PropWorld {
   vfx(id: string, x: number, y: number, facing?: number): void;
   /** Local air push from the player (dash, spins): point, radius, strength. */
   pushes: { x: number; y: number; r: number; s: number }[];
+  /** Send a message to another prop in the room by id (a lever calls the crane hook). */
+  signal(target: string, msg: string): void;
+  /** This visit's flags (not saved): the evening after the round, the blade cleared this session. */
+  session: PropSaveApi;
 }
 
 /** Draw calls a prop may make; implemented by the world renderer. */
@@ -143,6 +147,17 @@ export interface Prop {
   lights(out: PropLight[]): void;
   setState(s: string): void;
   dispose(): void;
+  /** A message from a lever, a trigger or the story (signal()). */
+  receive?(msg: string, w: PropWorld): void;
+  /** Moving floors (lifts, the crane hook, the ferry): their motion this tick carries the rider. */
+  readonly mover?: { dx: number; dy: number };
+  /** Carriers: controls are held while the rider is carried. */
+  readonly holdsRider?: boolean;
+  /** Carriers: put the carrier at one of its stops at once, or send it there. */
+  snapStop?(i: number): void;
+  goStop?(i: number, w: PropWorld): void;
+  /** Carriers: is it moving right now. */
+  readonly moving?: boolean;
 }
 
 export interface PropParams {

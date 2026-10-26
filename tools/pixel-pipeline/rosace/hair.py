@@ -6,6 +6,11 @@ at a loose gold ring above the seat and continue as one ribbon to mid-thigh, tip
 to azure. Every clump is a lens-section tube along a smoothed centreline that is pushed off
 the body surface (no helmet: the cap only fills the scalp between clump roots).
 Secondary motion: chains hair_back (mantle -> tail), side_L / side_R, veil.
+
+Hair lane round 1 (2026-09-29): rosace/hair_v3.py is the redesign (clump table, volume, face framing,
+designed ring, lit strands, a veil sized to DESIGN 2), built only to lane files through
+hair_lane_build.py. This builder stays the canonical hair until the Integrate step swaps it in; the
+helpers here (head_metrics, E, Surface, lens_clump, taper, proxy_normals) are shared with hair_v3.
 """
 import math
 

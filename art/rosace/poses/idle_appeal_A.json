@@ -1,0 +1,254 @@
+{
+ "name": "idle_appeal_A",
+ "note": "Concept A 'queen contrapposto' (figure-pose lane, explore round A; kept sub-variant A8 = A6_high + stoles tucked). Weight on the near (right) leg, locked (knee 178) with the pit of the neck over its ankle (figure.weight); the pelvis rolled 15 deg (weight hip up) and turned away 4, the lumbar bent -30 toward the weight side and the upper chest counter-tilted +14, so the shoulders drop ~14 deg over the weight leg against a ~14 deg hip line (one S). Chest lifted/arched (torso x -9), turned back 5 toward the camera (pelvis 48 / chest 42 / head 17 deg from a yaw-45 camera). Free left leg out and forward in the picture plane (chord 1.0 m, knee ~15 deg), knee pulled in toward the weight knee (pole), toe pointed (pitch 26, toe 25) and turned out (yaw 75). Right hand on the cocked hip, wrist bent, fingers loose, elbow out-back, bell sleeve and side hair blown back. Left hand high on the haft (grip_main + slide, at head height) with the glaive planted wide beyond the free foot and leaning ~14 deg IN toward her (an A-frame): a high grip plus a 15-35 deg lean away is out of reach with the free leg on the glaive side (see ART-RULES learning log FPA). Head tilted ~8 deg against the shoulders, chin 4 down, eyes on the viewer. Tabard swung onto the free-leg diagonal so no plumb line points at the crotch.",
+ "camera": {
+  "yaw": 45,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   0
+  ]
+ },
+ "bones": {
+  "J_Bip_C_Hips": [
+   3,
+   15,
+   4
+  ]
+ },
+ "feet": {
+  "R": {
+   "pos": [
+    -0.04,
+    0.02,
+    0.105
+   ],
+   "yaw": -35
+  },
+  "L": {
+   "pos": [
+    0.368,
+    -0.243,
+    0.17
+   ],
+   "yaw": 75,
+   "pitch": 26
+  }
+ },
+ "poles": {
+  "leg.L": [
+   -0.55,
+   -0.15,
+   0.55
+  ],
+  "leg.R": [
+   -0.12,
+   -0.8,
+   0.6
+  ],
+  "arm.R": [
+   -0.65,
+   0.95,
+   1.6
+  ],
+  "arm.L": [
+   0.8,
+   0.3,
+   1.45
+  ]
+ },
+ "weapon": {
+  "butt": [
+   0.8,
+   -0.3,
+   0.0
+  ],
+  "dir": [
+   -0.2398,
+   0.109,
+   0.9647
+  ],
+  "edge": [
+   0.4,
+   -1,
+   0
+  ]
+ },
+ "hands": {
+  "L": {
+   "grip": "grip_main",
+   "slide": 0.346,
+   "thumb": "tip",
+   "back": [
+    1,
+    -0.2,
+    0
+   ]
+  }
+ },
+ "fingers": {
+  "L": {
+   "curl": 86,
+   "thumb": 50
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.04,
+   0.12,
+   0
+  ],
+  "chains": {
+   "tabard": {
+    "g": 0.9,
+    "wind": [
+     0.22,
+     -0.08,
+     0.0
+    ]
+   },
+   "hair_tail": {
+    "g": 0.8
+   },
+   "sleeve_R": {
+    "g": 0.1,
+    "wind": [
+     -0.4,
+     1.0,
+     0.5
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.55,
+    "wind": [
+     0.45,
+     0.35,
+     0.0
+    ]
+   },
+   "stole_A": {
+    "g": 0.85,
+    "wind": [
+     0.25,
+     0.6,
+     0.0
+    ]
+   },
+   "stole_B": {
+    "g": 0.85,
+    "wind": [
+     0.3,
+     0.5,
+     0.0
+    ]
+   },
+   "side_R": {
+    "g": 0.3,
+    "wind": [
+     -0.1,
+     1.0,
+     0.0
+    ]
+   }
+  }
+ },
+ "expression": "serene",
+ "figure": {
+  "appeal": true,
+  "torso": {
+   "bend": [
+    -9,
+    0,
+    -5
+   ]
+  },
+  "joints": {
+   "spine": [
+    0,
+    -30,
+    0
+   ],
+   "chest": [
+    0,
+    -4,
+    0
+   ],
+   "upper_chest": [
+    0,
+    14,
+    0
+   ]
+  },
+  "feet": {
+   "L": {
+    "toe": 25
+   }
+  },
+  "weight": {
+   "leg": "R",
+   "knee": 178,
+   "over": "neck",
+   "offset": [
+    0,
+    0
+   ]
+  },
+  "hands": {
+   "R": {
+    "rel": "hips",
+    "pos": [
+     -0.15,
+     0.0,
+     1.22
+    ],
+    "fdir": [
+     0.15,
+     -0.65,
+     -0.75
+    ],
+    "palm": [
+     1,
+     0.1,
+     0.1
+    ]
+   }
+  },
+  "fingers": {
+   "R": {
+    "curl": 18,
+    "per": {
+     "Index": 8,
+     "Middle": 18,
+     "Ring": 24,
+     "Little": 32
+    },
+    "spread": 6,
+    "thumb": {
+     "fold": 10,
+     "curl": 10,
+     "swing": 20
+    }
+   }
+  },
+  "look": {
+   "at": "camera",
+   "amount": 0.6,
+   "neck": 0.35,
+   "tilt": 12,
+   "chin": 4
+  }
+ }
+}

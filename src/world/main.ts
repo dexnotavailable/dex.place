@@ -1,23 +1,24 @@
-// /world/ : the unified world runtime and its 3-room test world
-// (arrival -> the plain, mist to storm -> indoors). Dev-only page; see
+// /world/ : the world runtime and the round. Rooms are found by rooms/registry.ts
+// (the grey-box of all 21 rooms, the region lanes' rooms replacing them by id,
+// and the old 3-room test world at ?world=test). Dev-only page; see
 // docs/world/RUNTIME.md.
 //
-// URL options: ?room=<id>&spawn=<id> start somewhere else; ?debug overlay;
-// ?manual no real-time loop (drive it from window.__world); ?mute; ?fresh
-// forget the save first; ?go skip the Enter gate (automation).
+// URL options: ?room=<id>&spawn=<id> start somewhere else; ?world=test the
+// test world; ?debug overlay; ?manual no real-time loop (drive it from
+// window.__world); ?mute; ?fresh forget the save first; ?go skip the Enter
+// gate (automation).
 
 import { Input, type Action } from "../lab/engine/input.ts";
 import { ContractError } from "../lab/contracts.ts";
 import { setPropEngine } from "./props-api.ts";
 import { StubEngine, type StubTexture } from "./props/stub.ts";
 import { registerStubRecipes } from "./props/recipes.ts";
+import { registerKit } from "./props/kit.ts";
+import { discoverRooms, ROUTE } from "./rooms/registry.ts";
 import { loadPlayer } from "./player/setup.ts";
 import { WorldRenderer } from "./render/renderer.ts";
 import { WorldGame } from "./game.ts";
 import { Touch } from "./touch.ts";
-import { arrival } from "./rooms/arrival.ts";
-import { plain } from "./rooms/plain.ts";
-import { house } from "./rooms/house.ts";
 import { Save } from "./save.ts";
 
 const canvas = document.getElementById("view") as HTMLCanvasElement;
@@ -68,14 +69,21 @@ async function boot(): Promise<void> {
     return tex;
   });
   registerStubRecipes(engine);
+  registerKit(engine);
+  const found = discoverRooms();
+  // stub recipes a region lane exports next to its rooms are placeable by name
+  for (const r of found.recipes) engine.register(r);
   setPropEngine(engine);
   const assets = await loadPlayer(r);
   const input = new Input(canvas);
   const touch = new Touch(input, touchEl);
-  const rooms = [arrival, plain, house];
+  const rooms = [...found.rooms.values()];
   const room = q.get("room");
-  const start = room && rooms.some((d) => d.id === room) ? { room, spawn: q.get("spawn") ?? "" } : { room: "arrival", spawn: "start" };
-  const game = new WorldGame(r, input, touch, assets, { rooms, start, engine });
+  const home = q.get("world") === "test" ? { room: "arrival", spawn: "start" } : { room: "A1", spawn: "start" };
+  const start = room && found.rooms.has(room) ? { room, spawn: q.get("spawn") ?? "" } : home;
+  const game = new WorldGame(r, input, touch, assets, { rooms, start, engine, source: found.source, route: [...ROUTE] });
+  // ?room= wins over the saved rest place (tools and links)
+  if (room && found.rooms.has(room) && game.room.def.id !== room) game.teleport(room, q.get("spawn") ?? "");
   if (q.has("debug")) game.debug = true;
   game.manual = q.has("manual");
   if (q.has("mute")) game.save.data.sound = false;
@@ -127,10 +135,12 @@ async function boot(): Promise<void> {
     else window.setTimeout(() => enterEl.classList.add("shown"), 1400);
   }, 100);
 
-  // scrolling down closes the world like a curtain and hands over to the website below
+  // scrolling down closes the world like a curtain and hands over to the website below;
+  // once the site is up the world waits (no simulation, its sound fades) until you scroll back
   const onScroll = (): void => {
     const p = Math.min(1, Math.max(0, window.scrollY / Math.max(1, window.innerHeight * 0.8)));
     game.camera.extraBars = p * 0.5;
+    game.setAway(p > 0.6);
   };
   window.addEventListener("scroll", onScroll, { passive: true });
 

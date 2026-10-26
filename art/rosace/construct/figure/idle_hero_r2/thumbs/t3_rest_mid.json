@@ -1,0 +1,65 @@
+{
+ "name": "t3_rest_mid",
+ "idea": "between R1 and t2: grip 92 px up at 18 deg, butt 4 px nearer",
+ "set": {
+  "neck": {
+   "pit_dx": 13,
+   "back": 4
+  },
+  "head": {
+   "chin_dx": 15
+  },
+  "ribcage": {
+   "dx": 12
+  },
+  "waist": {
+   "dx": 12
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "angle_deg": 18,
+   "butt": [
+    -11,
+    0
+   ],
+   "grip_along": 92
+  }
+ },
+ "score": 10,
+ "gap_area": 337,
+ "width": 89,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-N02"
+ ],
+ "near_reach_px": 44.0,
+ "failed": [
+  "GR-P10: closest clear gap 1.0 px; overlap 0 px"
+ ],
+ "verdict": "dropped (#5, 10/11): GR-P10, 1 px",
+ "kept": false,
+ "rank": 5
+}

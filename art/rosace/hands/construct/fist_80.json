@@ -1,0 +1,49 @@
+{
+ "_doc": "Constructed fist, 80 px (glaive-hands lane round 1): 5 across x 5 along with the haft under the middle column (2 px of hand each side of it, GR-P06 at 80), the wrist 'w' one cell out; the same canonical frame and labels as fist_144.json. The knuckle ridge 'r' is one lit cell beside the thumb (round 1: N2 at 80 had no S1 on either fist).",
+ "haft_cols": [
+  2,
+  2
+ ],
+ "views": {
+  "back": {
+   "rows": [
+    ".OOO..",
+    "OkrtO.",
+    "Okbbbw",
+    "OkddO.",
+    ".OOO.."
+   ]
+  },
+  "fingers": {
+   "rows": [
+    ".OOO..",
+    "OtttO.",
+    "Obnbbw",
+    "OdddO.",
+    ".OOO.."
+   ]
+  },
+  "back_along": {
+   "rows": [
+    ".OOO..",
+    "OkrtO.",
+    "OkbbO.",
+    ".Odww.",
+    "..ww.."
+   ]
+  },
+  "fingers_along": {
+   "rows": [
+    ".OOO..",
+    "OtttO.",
+    "ObnbO.",
+    ".Odww.",
+    "..ww.."
+   ]
+  }
+ },
+ "origin": [
+  2,
+  2
+ ]
+}

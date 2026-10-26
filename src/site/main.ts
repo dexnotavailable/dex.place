@@ -9,6 +9,7 @@ import { initFloats } from "./motion/floats.ts";
 import { initKeys } from "./motion/keys.ts";
 import { initScenes } from "./motion/magnet.ts";
 import { initMenu, initNav, initStuck } from "./motion/nav.ts";
+import { initSharpen } from "./motion/piece.ts";
 import { initIdle, initReveal } from "./motion/reveal.ts";
 import { initWorld } from "./motion/world.ts";
 
@@ -32,6 +33,8 @@ const failed = (name: string) => (error: unknown): void => {
 const steps: [string, () => void][] = [
   // Gallery tiles past the first screen (render/gallery.ts).
   ["defer", () => initDefer()],
+  // Piece pages: a sharper copy of the big image when the line allows (render/gallery.ts).
+  ["sharpen", () => initSharpen()],
   ["reveal", () => initReveal()],
   ["idle", () => initIdle()],
   ["world", () => initWorld(reduced)],

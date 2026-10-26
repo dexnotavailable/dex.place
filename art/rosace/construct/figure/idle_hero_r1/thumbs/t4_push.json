@@ -1,0 +1,33 @@
+{
+ "name": "t4_push",
+ "idea": "push the contrapposto a step (FG-N09): shoulders -10, hips +10, head roll 1 more",
+ "set": {
+  "shoulders": {
+   "tilt_deg": -10
+  },
+  "pelvis": {
+   "tilt_deg": 10
+  }
+ },
+ "score": 10,
+ "gap_area": 318,
+ "width": 93,
+ "passed": [
+  "FG-P08",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [
+  "FG-P09: +10.0 deg vs shoulders -10.0"
+ ],
+ "verdict": "dropped (#3, 10/11): +/-10 deg tilts sit outside FG-P09 (hip 4-10 each way was read as +10 vs -10 failing); by eye the extra tilt reads as a sway, not more attitude",
+ "rank": 3,
+ "kept": false
+}

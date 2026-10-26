@@ -1,0 +1,147 @@
+{
+ "_doc": "Drive 9 round 2 face spec (d9_post.py, merged over art/rosace/faces/wh2.json + finish_f2/faces_f2.json 'eyes_big'). One face spec for idle and back (the critique: 'lock one face spec for all idle and back frames'). Same stamp grammar as wh2.json (authored for a face turned toward +x: the near eye on the left with its outer corner at the left end; mirrored for -x). Legend: '.' keep, O lash (OL), a iris dark (A2), c iris mid (A3), d iris light crescent (A4), w catchlight (A5), W eye white (W2), K pupil / iris top rim (I4, the darkest hair tone), k lash taper (I3), m soft hair tone (I2: brows), 1-4 skin S1-S4, b blush. The critique's face fixes, as drawn here: a 4-tone iris (K top rim under the lid, a, c, d crescent) with a 2 px catchlight and a 1 px secondary; the upper lash tapers (two rows at the outer corner, one row, then the k taper at the inner end) and lifts at the outer corner (the flick goes up, not down); the lower lash is 1-2 px of S4 (a mid tone, never black); the lid sits one row over the iris top (knowing, not sleepy); a 4 px closed smile with the camera-side corner lifted (144) and 3 px (80); arched brows in a soft hair tone drawn only where the fringe leaves skin.",
+ "stamps": {
+  "144": {
+   "eye_near_open": {
+    "c": [
+     3.5,
+     3.5
+    ],
+    "rows": [
+     "O.......",
+     ".OOOOOk.",
+     ".OOaaaOW",
+     "..awKaW.",
+     "..awKc..",
+     "..ccdw..",
+     ".44dd..."
+    ]
+   },
+   "eye_far_open": {
+    "c": [
+     2.5,
+     3.5
+    ],
+    "rows": [
+     "......O",
+     ".kOOOOO",
+     "WaaaOO.",
+     "WwKaa..",
+     ".wKca..",
+     ".cdwc4.",
+     "..dd44."
+    ]
+   },
+   "eye_profile": {
+    "c": [
+     2.0,
+     3.5
+    ],
+    "rows": [
+     "O....",
+     ".OOOO",
+     ".OaaO",
+     ".awKW",
+     ".acc.",
+     ".4dd."
+    ]
+   },
+   "mouth_smirk": {
+    "c": [
+     1.5,
+     1.0
+    ],
+    "rows": [
+     "4...",
+     ".444"
+    ]
+   },
+   "brow_near": {
+    "c": [
+     1.5,
+     1.0
+    ],
+    "dy": -6,
+    "dx": 0,
+    "rows": [
+     ".mmm",
+     "m..."
+    ]
+   },
+   "brow_far": {
+    "c": [
+     1.5,
+     1.0
+    ],
+    "dy": -6,
+    "dx": 0,
+    "rows": [
+     "mmm.",
+     "...m"
+    ]
+   }
+  },
+  "80": {
+   "eye_near_open": {
+    "c": [
+     1.5,
+     1.5
+    ],
+    "rows": [
+     "OOO",
+     "wKa",
+     ".dc"
+    ]
+   },
+   "eye_far_open": {
+    "c": [
+     0.5,
+     1.5
+    ],
+    "rows": [
+     "OOO",
+     "wKa",
+     "dc."
+    ]
+   },
+   "eye_profile": {
+    "c": [
+     1.0,
+     1.5
+    ],
+    "rows": [
+     "OO",
+     "wK",
+     "d."
+    ]
+   },
+   "mouth_smirk": {
+    "c": [
+     1.0,
+     0.5
+    ],
+    "rows": [
+     "4..",
+     ".44"
+    ]
+   }
+  }
+ },
+ "rgb": {
+  "OL": "#2a1a2c",
+  "A2": "#253f98",
+  "A3": "#3f76cc",
+  "A4": "#86c6ec",
+  "A5": "#f6fcff",
+  "W2": "#ece5e3",
+  "SB": "#e79a92",
+  "S4": "#8e4450"
+ },
+ "profile_below": 0.3,
+ "paint": {
+  "fringe_shadow_t": 0.3,
+  "fringe_shadow2_k": 0.35,
+  "far_cheek_t": 0.27,
+  "hair_aa_k": 0.35
+ }
+}

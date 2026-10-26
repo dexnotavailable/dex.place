@@ -46,11 +46,25 @@ function drawLampFlame(p: Part, level: number, t: number, seed: number): void {
 
 export const donationBox = defineRecipe<{ lamp: boolean }, BoxRefs>({
   id: "donationBox",
+  breakage: "never",
   reason: "Donations in the world: at every shrine, a safe spot where E opens the real donate panel (Ko-fi / MB Bank). Never gates anything.",
+  demo: {
+    w: 4, indoor: true,
+    with: [{ id: "donorPlaque", dx: 0.9, at: 0.9 }],
+    script: [
+      { label: "idle", wait: 0.8 },
+      { label: "E: the donate panel opens, lamp flares, chime", use: true, from: -0.6, wait: 2.4 },
+      { label: "slash: flashes, never breaks", hit: "slash", from: -0.8, wait: 1 },
+      { label: "heavy", hit: "heavy", from: -1.0, wait: 1.5 },
+      { label: "mends", wait: 5 },
+    ],
+  },
   defaults: { lamp: true },
   use: { reach: 0.8, prompt: "donate" },
+  standard: { h: 0.5, parts: ["box"], note: "donation box" },
   build(b, p) {
-    const u = (f: number): number => b.u(f);
+    // WORLD-PLAN section 1: the box stands 0.5 H (plinth, box and lid); drawn at 0.595 of the proof size
+    const u = (f: number): number => b.u(f * 0.595);
     const w = u(0.82), plH = u(0.3), boxH = u(0.46), lidH = u(0.08);
     const h = plH + boxH + lidH;
     const cx = Math.floor(w / 2);
@@ -101,6 +115,7 @@ export const donationBox = defineRecipe<{ lamp: boolean }, BoxRefs>({
     const light = b.light({ part: "lamp", at: [fw / 2, fh / 2], colour: [1, 0.72, 0.4], radius: u(1.3), intensity: 0.4, flicker: 0.4, height: u(0.3) });
     const glow = b.glow({ part: "lamp", at: [fw / 2, fh * 0.6], colour: [1, 0.62, 0.3], radius: u(0.22), intensity: 0.45, flicker: 0.5 });
     const refs: BoxRefs = { lamp: b.get("lamp"), light, glow, flare: 0 };
+    refs.lamp.dynamicEvery = 4;
     refs.lamp.dynamic = (part) => drawLampFlame(part, p.lamp ? 0.35 + refs.flare * 0.65 : 0, part.prop?.world.time ?? 0, p.seed);
     return refs;
   },
@@ -149,30 +164,41 @@ export interface PlaqueParams {
 
 export const donorPlaque = defineRecipe<PlaqueParams, null>({
   id: "donorPlaque",
+  breakage: "never",
   reason: "Top donors beside each donation box, engraved from real data only; E opens the full donor record.",
-  defaults: { names: [], rows: 4 },
+  demo: {
+    w: 3, at: 0.9, indoor: true,
+    script: [
+      { label: "blank engraved rules (no donor data in the sandbox)", wait: 1 },
+      { label: "E: the donors panel", use: true, from: -0.5, wait: 1.2 },
+    ],
+  },
+  defaults: { names: [], rows: 3 },
+  standard: { w: 0.6, h: 0.4, parts: ["plaque"], note: "donor plaque" },
   use: { reach: 0.8, prompt: "read" },
   build(b, p) {
     const u = (f: number): number => b.u(f);
-    const w = u(0.56), rowH = 7, h = u(0.14) + p.rows * rowH + 6;
+    // WORLD-PLAN section 1: 0.6 x 0.4 H
+    const w = u(0.6), h = u(0.4), rowH = Math.max(6, Math.floor((h - u(0.125) - 4) / Math.max(1, p.rows)));
     const pl = b.part("plaque", { w, h, pivot: [Math.floor(w / 2), h], at: [0, 0], layer: "bg", z: 20 });
     // wooden backboard, brass plate
     pl.roundRect(0, 0, w, h, 3, { mat: "woodDark", profile: "bevel", r: 2, depth: 3, piece: "board" });
     pl.roundRect(3, 3, w - 6, h - 6, 2, { mat: "brass", profile: "bevel", r: 2, depth: 2, z: 3, piece: "plate" });
     pl.rivets([[5, 5], [w - 6, 5], [5, h - 6], [w - 6, h - 6]], { mat: "iron", r: 1, z: 6 });
     // engraved heading mark (a small lamp) and rows
-    pl.ornament(Math.floor(w / 2) - 2, 6, `
+    pl.ornament(Math.floor(w / 2) - 1, 4, `
       .#.
       ###
       .#.
     `, { "#": { mat: "brass", tone: -2 } }, { mode: "paint" });
-    const top = u(0.14);
+    const top = u(0.125);
+    const maxChars = Math.floor((w - 7) / 4);
     for (let r = 0; r < p.rows; r++) {
       const y = top + r * rowH;
       const name = p.names[r];
       if (name) {
-        const { w: tw } = textPixels(name.slice(0, 14));
-        pl.text(name.slice(0, 14), Math.floor(w / 2 - tw / 2), y, { tone: -2 });
+        const { w: tw } = textPixels(name.slice(0, maxChars));
+        pl.text(name.slice(0, maxChars), Math.floor(w / 2 - tw / 2), y, { tone: -2 });
       } else {
         // blank engraved rule: room for a real name, nothing invented
         pl.rect(8, y + 3, w - 16, 1, { mat: "brass", mode: "paint", tone: -1 });

@@ -1,0 +1,21 @@
+{
+ "_doc": "glaive-hands round 2: r3 fist template (construct/fist_<px>_r3.json: one continuous knuckle line, lit thumb over the haft, S3 wrist step); the N2 pivot (back view, pose n2_r2b/j_narrow): both fists on the haft, ringed in OL against the hair.",
+ "hands": [
+  {
+   "side": "L",
+   "kind": "fist",
+   "template": "r3"
+  },
+  {
+   "side": "R",
+   "kind": "fist",
+   "template": "r3"
+  }
+ ],
+ "rose": {
+  "proc": true,
+  "arm_du": 11.5,
+  "nub_r": 1.2,
+  "_note": "80 px: arms past DESIGN's 8.5 du so the cross holds at 1x (round-2 _work/t_rose80.png, variant c of 4)"
+ }
+}

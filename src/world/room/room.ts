@@ -4,6 +4,7 @@
 // are disposed (GPU programs, textures). Only the current room simulates.
 
 import type { PixelMatterEngine, Prop, PropCanvas, PropLayer, PropLight, PropWorld } from "../props-api.ts";
+import { PixelRoom, resolveRecipe, type PixelDraw } from "../pixel/adapter.ts";
 import { Backdrop } from "../backdrop/engine.ts";
 import { withWeather } from "../weather.ts";
 import { SCALE } from "../config.ts";
@@ -27,12 +28,19 @@ interface TerrainSprite {
 
 const SEG = 1024;
 
+/** Pixel kit recipes whose persisted key mirrors a world flag given as params.flag. */
+const PIXEL_FLAG_KEYS: Record<string, string> = { lever: "on", shrineLantern: "lit", door: "unlatched" };
+
 export interface RoomDeps {
   r: WorldRenderer;
   gate: () => boolean;
   engine: PixelMatterEngine;
   /** Save flag lookup (recipes read cut state at build). */
   flag: (key: string) => boolean;
+  /** The pixel-matter renderer on the world's context (room teardown frees its textures). */
+  pixelDraw: () => PixelDraw | null;
+  /** Saved pixel-matter prop data (persisted keys per prop id). */
+  pixelSave: () => Record<string, Record<string, unknown>>;
 }
 
 export class Room {
@@ -40,6 +48,8 @@ export class Room {
   backdrop: Backdrop | null = null;
   collision: Collision;
   props: Prop[] = [];
+  /** The room's pixel-matter props (src/pixel), when it places any. */
+  pixel: PixelRoom | null = null;
   private terrain: TerrainSprite[] = [];
   private textures: WebGLTexture[] = [];
   private staticSolids: Solid[] = [];
@@ -72,24 +82,46 @@ export class Room {
     this.staticSolids = [];
     this.staticOneWays = [];
     for (const t of d.terrain) {
-      if (t.oneWay) this.staticOneWays.push({ x: t.x, y: t.y, w: t.w, surface: t.surface });
+      if (t.oneWay) this.staticOneWays.push({ x: t.x, y: t.y, w: t.w, surface: t.surface, stair: t.stair });
       else this.staticSolids.push({ x: t.x, y: t.y, w: t.w, h: t.h, surface: t.surface });
       if (t.art !== "none") this.bakeTerrain(t);
     }
-    this.collision.open.left = d.exits.some((e) => e.side === "left");
-    this.collision.open.right = d.exits.some((e) => e.side === "right");
-    // props
-    this.props = d.props.map((pl) =>
-      engine.create(pl.recipe, {
-        id: pl.id,
-        x: pl.x,
-        y: pl.y,
-        H: SCALE.H,
-        seed: hashId(pl.id),
-        cut: this.deps.flag(`cut:${pl.id}`),
-        ...(pl.params ?? {}),
-      }),
-    );
+    const band = (e: RoomDef["exits"][number]): [number, number] => [e.y0 ?? -1e9, e.y1 ?? 1e9];
+    this.collision.open.left = d.exits.filter((e) => e.side === "left").map(band);
+    this.collision.open.right = d.exits.filter((e) => e.side === "right").map(band);
+    // props: the runtime's stub recipes, or pixel matter (src/pixel) through the adapter
+    this.props = [];
+    const saved = this.deps.pixelSave();
+    for (const pl of d.props) {
+      const how = resolveRecipe(pl.recipe, pl.engine, (n) => engine.has(n));
+      if (!how) throw new Error(`room ${d.id}: no prop recipe "${pl.recipe}" (stub or pixel matter)`);
+      if (how.engine === "pixel") {
+        if (!this.pixel) {
+          // the room's terrain is the pixel world's ground too (cut cords and debris come to rest on it)
+          const ground = (x: number, y: number): boolean =>
+            this.staticSolids.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h) || this.staticOneWays.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + 2);
+          this.pixel = new PixelRoom(d.w, d.h, SCALE.H, saved, ground);
+        }
+        if (this.deps.flag(`cut:${pl.id}`) && !saved[pl.id]) this.pixel.world.saveData[pl.id] = { cut: true };
+        // a world flag named in the placement (lever:culvert, shrine:1, latch:sky-door) sets the kit prop's own persisted key
+        const flag = pl.params?.["flag"] as string | undefined;
+        const key = PIXEL_FLAG_KEYS[how.recipe.id];
+        if (flag && key && this.deps.flag(flag)) this.pixel.world.saveData[pl.id] = { ...(this.pixel.world.saveData[pl.id] ?? {}), [key]: true };
+        this.pixel.add(how.recipe, pl.id, pl.x, pl.y, { seed: hashId(pl.id) % 997, ...(pl.params ?? {}) }, !!pl.flip);
+        continue;
+      }
+      this.props.push(
+        engine.create(pl.recipe, {
+          id: pl.id,
+          x: pl.x,
+          y: pl.y,
+          H: SCALE.H,
+          seed: hashId(pl.id),
+          cut: this.deps.flag(`cut:${pl.id}`),
+          ...(pl.params ?? {}),
+        }),
+      );
+    }
     this.syncCollision();
     this.built = true;
     this.buildMs = Math.round(performance.now() - t0);
@@ -104,7 +136,8 @@ export class Room {
     const rim = art === "rock" ? Math.round(SCALE.H * 0.16) : art === "earth" ? Math.round(SCALE.H * 0.05) : 0;
     for (let x = 0; x < t.w; x += SEG) {
       const w = Math.min(SEG, t.w - x);
-      const tex = terrainTexture(w, h + rim, art, (t.seed ?? 1) * 97 + x, SCALE.H, t.ramp, { left: x === 0, right: x + w >= t.w }, rim);
+      const seed = art === "block" ? (((t.x + x) % 65536) << 16) | ((t.seed ?? 1) & 0xffff) : (t.seed ?? 1) * 97 + x;
+      const tex = terrainTexture(w, h + rim, art, seed, SCALE.H, t.ramp, { left: x === 0, right: x + w >= t.w }, rim);
       const albedo = r.texture({ w: tex.w, h: tex.h, data: tex.albedo });
       const normal = r.texture({ w: tex.w, h: tex.h, data: tex.normal });
       this.textures.push(albedo.tex, normal.tex);
@@ -129,6 +162,12 @@ export class Room {
         else solids.push({ x: b.x, y: b.y, w: b.w, h: b.h, surface: "stone", mover, id: p.id });
       }
     }
+    if (this.pixel) {
+      for (const b of this.pixel.colliders()) {
+        if (b.platform) ones.push({ x: b.x, y: b.y, w: b.w, surface: "wood", id: b.id });
+        else solids.push({ x: b.x, y: b.y, w: b.w, h: b.h, surface: "stone", id: b.id });
+      }
+    }
     this.collision.solids = solids;
     this.collision.oneWays = ones;
   }
@@ -140,8 +179,9 @@ export class Room {
     this.syncCollision();
   }
 
-  lights(out: PropLight[]): void {
+  lights(out: PropLight[], view?: { x: number; y: number; w: number; h: number }): void {
     for (const p of this.props) p.lights(out);
+    if (this.pixel && view) for (const l of this.pixel.lights(view)) out.push({ ...l });
   }
 
   /** Terrain sprites: back (behind the player) or front. */
@@ -177,6 +217,8 @@ export class Room {
     this.terrain = [];
     for (const p of this.props) p.dispose();
     this.props = [];
+    if (this.pixel) this.deps.pixelDraw()?.release(this.pixel.world);
+    this.pixel = null;
     this.built = false;
   }
 }
@@ -195,15 +237,19 @@ function hexRgb(h: string): [number, number, number, number] {
 /** Keeps the current room and its neighbours built; disposes the rest. */
 export class RoomStream {
   rooms = new Map<string, Room>();
-  constructor(private defs: Map<string, RoomDef>, private deps: RoomDeps, private keepDepth: number) {}
+  /** `resolve` gives a room's data at build time (story hooks may adjust it: the evening after the round). */
+  constructor(private defs: Map<string, RoomDef>, private deps: RoomDeps, private keepDepth: number, private resolve: (d: RoomDef) => RoomDef = (d) => d) {}
 
   get(id: string): Room {
     let r = this.rooms.get(id);
-    if (!r) {
+    if (!r || !r.built) {
       const def = this.defs.get(id);
       if (!def) throw new Error(`no room "${id}"`);
-      r = new Room(def, this.deps);
-      this.rooms.set(id, r);
+      // a room that was disposed is made again from fresh data
+      if (!r || r.def !== this.resolve(def)) {
+        r = new Room(this.resolve(def), this.deps);
+        this.rooms.set(id, r);
+      }
     }
     return r;
   }

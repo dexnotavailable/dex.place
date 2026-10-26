@@ -9,7 +9,10 @@ Additions over the spike (the spike critics' asks):
   * view-space specular band (hair sheen, gold/blade glint) from a camera-space half vector
     that the renderer sets per shot (node 'spec_h').
   * backfaces fall into the deep band (inside of sleeves, tabard underside).
-Passes: beauty, albedo, id, normal, depth.  set_pass() relinks every material's output.
+Passes: beauty, albedo, id, normal, depth, light, depth2.  set_pass() relinks every material's output.
+The light pass (shading lane round 1) holds the continuous ramp input (R), ao (G) and the spec
+band (B), so rosace_post.py --shade can re-band per material instead of taking the render's steps.
+depth2 carries the fine depth in R/G and (shading lane round 2) the limb id in B.
 """
 import bpy
 
@@ -20,10 +23,27 @@ PAL = None
 
 
 def palette():
+    """palette.json, plus any per-build material overrides stored on the open scene
+    (scene['rosace_palette_overrides'] = {material: {key: value}}; the v2 refit uses it for the
+    revision-3 ramps so v1 builds and renders stay exactly as they were)"""
     global PAL
     if PAL is None:
         PAL = load_palette()
-    return PAL
+    ov = None
+    try:
+        ov = bpy.context.scene.get("rosace_palette_overrides")
+    except AttributeError:
+        ov = None
+    if not ov:
+        return PAL
+    import copy
+    P = copy.deepcopy(PAL)
+    for name, cfg in ov.items():
+        cfg = cfg.to_dict() if hasattr(cfg, "to_dict") else dict(cfg)
+        P["materials"].setdefault(name, {}).update(
+            {k: (list(v) if hasattr(v, "__len__") and not isinstance(v, (str, dict)) and not hasattr(v, "to_dict")
+                 else (v.to_dict() if hasattr(v, "to_dict") else v)) for k, v in cfg.items()})
+    return P
 
 
 def code_rgb(code):
@@ -169,6 +189,17 @@ def make_material(name, spec_cfg=None, depth_range=(8.0, 16.0)):
         col = mixs.outputs["Result"]
     em_toon = N("ShaderNodeEmission")
     L(col, em_toon.inputs[0])
+    # light (shading lane, round 1): the continuous ramp input before quantising, so the post can
+    # re-band with its own thresholds and smoothing. R = v (occluded N.L + ambient; back faces
+    # 0.02), G = ao, B = 1 where the spec band fires. Written as raw bytes (Raw view transform).
+    spec_fac = f2.outputs[0] if sp else None
+    light_c = N("ShaderNodeCombineXYZ")
+    L(mixb.outputs["Result"], light_c.inputs[0])
+    L(ao.outputs["Fac"], light_c.inputs[1])
+    if spec_fac is not None:
+        L(spec_fac, light_c.inputs[2])
+    em_light = N("ShaderNodeEmission")
+    L(light_c.outputs[0], em_light.inputs[0])
     # albedo: the lit colour, flat
     em_alb = N("ShaderNodeEmission")
     em_alb.inputs[0].default_value = code_rgb(cfg["ramp"][2]) + (1,)
@@ -200,11 +231,43 @@ def make_material(name, spec_cfg=None, depth_range=(8.0, 16.0)):
     L(cd.outputs["View Z Depth"], dm.inputs["Value"])
     em_d = N("ShaderNodeEmission")
     L(dm.outputs["Result"], em_d.inputs[0])
+    # depth2 (shading lane): the same mapped depth in two bytes, R = coarse, G = fract(t * 255),
+    # so screen-space cast shadows get ~0.1 mm steps instead of the 8-bit pass's 2.4 cm
+    d255 = N("ShaderNodeMath")
+    d255.operation = "MULTIPLY"
+    d255.inputs[1].default_value = 255.0
+    L(dm.outputs["Result"], d255.inputs[0])
+    dfr = N("ShaderNodeMath")
+    dfr.operation = "FRACT"
+    L(d255.outputs[0], dfr.inputs[0])
+    dfl = N("ShaderNodeMath")
+    dfl.operation = "FLOOR"
+    L(d255.outputs[0], dfl.inputs[0])
+    dco = N("ShaderNodeMath")
+    dco.operation = "DIVIDE"
+    dco.inputs[1].default_value = 255.0
+    L(dfl.outputs[0], dco.inputs[0])
+    d2c = N("ShaderNodeCombineXYZ")
+    L(dco.outputs[0], d2c.inputs[0])
+    L(dfr.outputs[0], d2c.inputs[1])
+    # depth2 B (shading lane round 2): the limb id (a FACE-domain 'limb' attribute the shading lane's
+    # builder writes from each face's dominant deform bone, rosace_shade_lane.py LIMBS) / 255, so the
+    # post can give each thigh, arm, bust and glute its own terminator. Meshes without it write 0.
+    limb = N("ShaderNodeAttribute")
+    limb.attribute_type = "GEOMETRY"
+    limb.attribute_name = "limb"
+    ldiv = N("ShaderNodeMath")
+    ldiv.operation = "DIVIDE"
+    ldiv.inputs[1].default_value = 255.0
+    L(limb.outputs["Fac"], ldiv.inputs[0])
+    L(ldiv.outputs[0], d2c.inputs[2])
+    em_d2 = N("ShaderNodeEmission")
+    L(d2c.outputs[0], em_d2.inputs[0])
     for key, node in (("beauty", em_toon), ("albedo", em_alb), ("id", em_id), ("normal", em_n),
-                      ("depth", em_d)):
+                      ("depth", em_d), ("light", em_light), ("depth2", em_d2)):
         node.name = "pass_" + key
     PASS_NODES[name] = {"beauty": em_toon, "albedo": em_alb, "id": em_id, "normal": em_n,
-                        "depth": em_d, "_out": out}
+                        "depth": em_d, "light": em_light, "depth2": em_d2, "_out": out}
     L(em_toon.outputs[0], out.inputs["Surface"])
     return m
 
@@ -223,6 +286,9 @@ def rebind():
             continue
         nodes = m.node_tree.nodes
         d = {k: nodes["pass_" + k] for k in ("beauty", "albedo", "id", "normal", "depth")}
+        for k in ("light", "depth2"):         # files built before the shading lane's passes have none
+            if nodes.get("pass_" + k):
+                d[k] = nodes["pass_" + k]
         d["_out"] = next(n for n in nodes if n.type == "OUTPUT_MATERIAL")
         PASS_NODES[name] = d
 
@@ -233,7 +299,7 @@ def set_pass(p):
         out = d["_out"]
         for l in list(out.inputs["Surface"].links):
             nt.links.remove(l)
-        nt.links.new(d[p].outputs[0], out.inputs["Surface"])
+        nt.links.new(d.get(p, d["albedo"]).outputs[0], out.inputs["Surface"])   # no light pass: flat albedo
 
 
 def set_spec_half(h_cam):

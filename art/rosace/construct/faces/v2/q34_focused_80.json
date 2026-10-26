@@ -1,0 +1,21 @@
+{
+ "_doc": "q34 focused at 80 px: glyph names from lib_80.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "q34",
+ "expr": "focused",
+ "px": 80,
+ "eye_near": "near_focused",
+ "eye_far": "far_focused",
+ "eye_far_strong": null,
+ "brow_near": null,
+ "brow_far": null,
+ "mouth": "focused",
+ "gaze": "target (the way she faces)",
+ "nose": null,
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": 1
+ }
+}

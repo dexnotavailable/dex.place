@@ -1,0 +1,65 @@
+{
+ "name": "t2_hip",
+ "idea": "one step more contrapposto (FG-N09): the hip rides 2 px further out over the weight leg, pelvis tilt 7 -> 10 deg, shoulders -7 -> -9 deg",
+ "set": {
+  "head": {
+   "chin_dx": 15
+  },
+  "neck": {
+   "back": 6
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -9,
+     7
+    ],
+    "knee_hint": [
+     3,
+     40
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ]
+  },
+  "pelvis": {
+   "dx": 15,
+   "tilt_deg": 10
+  },
+  "shoulders": {
+   "tilt_deg": -9
+  }
+ },
+ "score": 11,
+ "gap_area": 357,
+ "width": 93,
+ "passed": [
+  "FG-P08",
+  "FG-P11",
+  "FG-P12",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02",
+  "CL-P05"
+ ],
+ "feet_apart": 24,
+ "failed": [
+  "FG-P09: +10.0 deg vs shoulders -9.0",
+  "FG-P10: weight leg 5.2 deg; free knee bend 19 deg; free knee +2.4 px lower"
+ ],
+ "verdict": "dropped (#7, 11/13): FG-P09 (the hip tilt 10 deg against shoulders -9 overshoots the 2-4 px drop) and FG-P10 (weight leg 5.2 deg); by eye a sway, as R2's t5 found [M; visible]",
+ "kept": false,
+ "rank": 7
+}

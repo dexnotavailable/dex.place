@@ -1,0 +1,22 @@
+{
+ "_doc": "F2 profile focused at 144 px: glyph names from lib_144.json; params tune the placement (face_f2.py). Written by face_f2_lib.py.",
+ "facing": "profile",
+ "expr": "focused",
+ "px": 144,
+ "eye_near": "profile_focused",
+ "brow_near": "profile_focused",
+ "mouth": "profile",
+ "gaze": "target",
+ "nose": null,
+ "params": {
+  "edge_keep": 1,
+  "strand_max": 3,
+  "jaw": false,
+  "taper": true,
+  "lash_gap": 0,
+  "lash_clip": 1,
+  "near_dx": -2,
+  "brow_over": true,
+  "brow_ch": "O"
+ }
+}

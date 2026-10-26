@@ -1,0 +1,447 @@
+{
+ "_doc": "Construct wireframe for rules_check.py (schema: docs/character/art-rules/checklist.json inputs). Canvas pixel coordinates, x right, y down; sole_y is the floor row.",
+ "name": "idle_hero_r2__t6_control",
+ "H": 144,
+ "canvas": [
+  152,
+  206
+ ],
+ "sole_y": 198,
+ "cx": 90,
+ "intent": "idle",
+ "move": "idle",
+ "carry": "rest",
+ "facing": "right",
+ "weight_foot": "far",
+ "expression": "confident",
+ "gaze_target": "viewer",
+ "landmarks": {
+  "skull_top": [
+   97.5,
+   54.0
+  ],
+  "chin": [
+   105.0,
+   80.0
+  ],
+  "pit_neck": [
+   103.0,
+   87.0
+  ],
+  "shoulder_near": [
+   87.0,
+   88.0
+  ],
+  "shoulder_far": [
+   115.0,
+   88.0
+  ],
+  "pelvis_c": [
+   103.0,
+   122.0
+  ],
+  "hip_near": [
+   96.0,
+   122.0
+  ],
+  "hip_far": [
+   110.0,
+   122.0
+  ],
+  "pelvis_edge_near": [
+   92.0,
+   122.0
+  ],
+  "pelvis_edge_far": [
+   114.0,
+   122.0
+  ],
+  "crotch": [
+   104.0,
+   126.0
+  ],
+  "waist_c": [
+   102.0,
+   112.0
+  ],
+  "rib_c": [
+   102.0,
+   98.0
+  ],
+  "heel_near": [
+   81.0,
+   197.0
+  ],
+  "ankle_near": [
+   81.0,
+   193.0
+  ],
+  "knee_near": [
+   87.99,
+   157.1
+  ],
+  "toe_near": [
+   85.0,
+   198.0
+  ],
+  "heel_far": [
+   103.0,
+   197.0
+  ],
+  "ankle_far": [
+   103.0,
+   193.0
+  ],
+  "knee_far": [
+   105.89,
+   157.77
+  ],
+  "toe_far": [
+   114.0,
+   198.0
+  ],
+  "haft_butt": [
+   75.0,
+   198.0
+  ],
+  "haft_tip": [
+   54.72,
+   5.06
+  ],
+  "grip_near": [
+   64.76,
+   100.54
+  ],
+  "hand_near": [
+   64.76,
+   100.54
+  ],
+  "wrist_near": [
+   67.85,
+   102.17
+  ],
+  "elbow_near": [
+   86.41,
+   111.99
+  ],
+  "hand_far": [
+   115.0,
+   118.0
+  ],
+  "wrist_far": [
+   117.38,
+   115.43
+  ],
+  "elbow_far": [
+   130.23,
+   101.57
+  ],
+  "neck_top": [
+   101.0,
+   79.0
+  ],
+  "loa": [
+   [
+    100.0,
+    54.0
+   ],
+   [
+    114.0,
+    122.0
+   ],
+   [
+    103.0,
+    197.0
+   ]
+  ],
+  "loa_curve": [
+   [
+    100.0,
+    54.0
+   ],
+   [
+    104.91,
+    67.38
+   ],
+   [
+    108.77,
+    81.05
+   ],
+   [
+    111.57,
+    95.02
+   ],
+   [
+    113.33,
+    109.28
+   ],
+   [
+    114.03,
+    123.84
+   ],
+   [
+    113.68,
+    138.69
+   ],
+   [
+    112.28,
+    153.83
+   ],
+   [
+    109.83,
+    169.27
+   ],
+   [
+    106.32,
+    185.01
+   ],
+   [
+    103.0,
+    197.0
+   ]
+  ],
+  "head_axis": [
+   [
+    104.14,
+    63.57
+   ],
+   [
+    105.0,
+    80.0
+   ]
+  ],
+  "neck_axis": [
+   [
+    101.0,
+    79.0
+   ],
+   [
+    103.0,
+    87.0
+   ]
+  ],
+  "torso_centerline": [
+   [
+    103.0,
+    87.0
+   ],
+   [
+    102.0,
+    98.0
+   ],
+   [
+    102.0,
+    112.0
+   ],
+   [
+    104.0,
+    126.0
+   ]
+  ]
+ },
+ "feet": {
+  "near": [
+   79,
+   86
+  ],
+  "far": [
+   101,
+   115
+  ]
+ },
+ "haft": {
+  "butt": [
+   75.0,
+   198.0
+  ],
+  "tip": [
+   54.72,
+   5.06
+  ]
+ },
+ "grips": [
+  {
+   "hand": "near",
+   "point": [
+    64.76,
+    100.54
+   ],
+   "kind": "rest"
+  }
+ ],
+ "hands": {
+  "near": {
+   "kind": "fist",
+   "on": "haft",
+   "palm_box": true,
+   "mitten": true,
+   "thumb_wedge": true,
+   "wrist_step": true,
+   "knuckle_side": "out",
+   "centre": [
+    64.76,
+    100.54
+   ]
+  },
+  "far": {
+   "kind": "open_relaxed",
+   "on": "hip",
+   "palm_box": true,
+   "mitten": true,
+   "thumb_wedge": true,
+   "wrist_step": true,
+   "knuckle_side": "up",
+   "centre": [
+    115.0,
+    118.0
+   ]
+  }
+ },
+ "face": {
+  "origin": [
+   83,
+   44
+  ],
+  "params": {
+   "yaw": "q34",
+   "expression": "confident",
+   "gaze": [
+    -1,
+    0
+   ],
+   "roll": -1,
+   "pitch": 0,
+   "gaze_target": "viewer"
+  }
+ },
+ "light": [
+  0.6,
+  -0.8
+ ],
+ "zones": {
+  "keep_out": [
+   {
+    "name": "torso centre band",
+    "kind": "weapon",
+    "rule": "GR-N03",
+    "poly": [
+     [
+      101.0,
+      87.0
+     ],
+     [
+      107.0,
+      87.0
+     ],
+     [
+      108.0,
+      126.0
+     ],
+     [
+      102.0,
+      126.0
+     ]
+    ]
+   },
+   {
+    "name": "between the eyes below the lash top",
+    "kind": "hair",
+    "rule": "FC-N17",
+    "poly": [
+     [
+      102.0,
+      66.0
+     ],
+     [
+      104.0,
+      66.0
+     ],
+     [
+      104.0,
+      71.0
+     ],
+     [
+      102.0,
+      71.0
+     ]
+    ]
+   }
+  ],
+  "must_be": [
+   {
+    "name": "collar_cross",
+    "expect": "gold_cross",
+    "rule": "CL-P05",
+    "poly": [
+     [
+      101.0,
+      81.0
+     ],
+     [
+      108.0,
+      81.0
+     ],
+     [
+      108.0,
+      88.0
+     ],
+     [
+      101.0,
+      88.0
+     ]
+    ]
+   },
+   {
+    "name": "fist at the grip",
+    "expect": "hand_near",
+    "rule": "GR-N01",
+    "poly": [
+     [
+      62.8,
+      98.5
+     ],
+     [
+      67.8,
+      98.5
+     ],
+     [
+      67.8,
+      103.5
+     ],
+     [
+      62.8,
+      103.5
+     ]
+    ]
+   },
+   {
+    "name": "dark between the legs",
+    "expect": "dark",
+    "rule": "CL-P04",
+    "poly": [
+     [
+      83.7,
+      179.0
+     ],
+     [
+      104.1,
+      179.0
+     ],
+     [
+      103.6,
+      186.0
+     ],
+     [
+      82.4,
+      186.0
+     ]
+    ]
+   }
+  ]
+ },
+ "cross_centre": [
+  104,
+  84
+ ],
+ "route": "r2 figure_r2 (painted head, paint passes, painted hands)"
+}

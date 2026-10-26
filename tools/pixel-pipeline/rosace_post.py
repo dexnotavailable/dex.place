@@ -40,13 +40,28 @@ ap.add_argument("--no-clean", action="store_true")
 ap.add_argument("--no-selout", action="store_true")
 ap.add_argument("--frames", action="store_true")
 ap.add_argument("--rim", default=None, help="bake the lit outline: 'cool:half' | 'cool:full' | 'warm:half' ...")
+ap.add_argument("--shade", default=None,
+                help="shading lane: a preset JSON (art/rosace/overrides/global/shading_*.json) that re-bands the "
+                     "materials from the light pass (rosace_shade.py). Off by default: the output is unchanged")
 args = ap.parse_args()
 OUT = args.out or args.raw
 os.makedirs(OUT, exist_ok=True)
+SHADE = json.load(open(args.shade, encoding="utf-8")) if args.shade else None
 meta = json.load(open(os.path.join(args.raw, "meta.json")))
 SS = meta.get("ss", 1)
-COL = {k: np.array([int(v[i:i + 2], 16) for i in (1, 3, 5)], np.uint8) for k, v in meta["colors"].items()}
-CODES = list(meta["colors"].keys())
+_COLS = dict(meta["colors"])
+if SHADE:
+    # shading lane round 2: codes the palette gained after this render (K1-K3, the stocking ramp) are
+    # appended after the render's own, so every existing code keeps its index; a code no render ramp
+    # uses takes palette.json's current hex (it cannot matter to classify(), and a stale meta must not
+    # pin a retuned colour)
+    _used = {c for m in meta["materials"].values()
+             for c in list(m.get("ramp", [])) + [m["spec"]["code"] if isinstance(m.get("spec"), dict) else m.get("spec")]}
+    for k, v in json.load(open(os.path.join(REPO, "art", "rosace", "palette.json"), encoding="utf-8"))["colors"].items():
+        if k not in _COLS or k not in _used:
+            _COLS[k] = v
+COL = {k: np.array([int(v[i:i + 2], 16) for i in (1, 3, 5)], np.uint8) for k, v in _COLS.items()}
+CODES = list(_COLS.keys())
 CIDX = {c: i for i, c in enumerate(CODES)}
 PALARR = np.array([COL[c] for c in CODES], np.uint8)
 MATS = meta["materials"]
@@ -66,6 +81,7 @@ LS = np.array([LC[0], -LC[1]])
 LS /= np.linalg.norm(LS) + 1e-9
 N4 = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 N8 = N4 + [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+EX = None           # shading-lane passes (load_ex), carried through downsample and cleanup
 
 
 def shift(a, dy, dx, fill=0):
@@ -97,6 +113,24 @@ def classify(rgb, mat):
     return code
 
 
+def load_ex(f, alpha):
+    """shading-lane passes when the render has them: v (continuous ramp input), ao, spec flag, and a
+    fine depth (metres). Missing passes -> v from nothing (NaN) and the 8-bit depth."""
+    H, W = alpha.shape
+    ex = np.full((H, W, 5), np.nan, np.float32)      # v, ao, spec, fine depth, limb id (round 2)
+    lp = os.path.join(args.raw, "light", f"{f:04d}.png") if f is not None else os.path.join(args.raw, "light.png")
+    if os.path.exists(lp):
+        li = load("light", f).astype(np.float32) / 255.0
+        ex[..., 0], ex[..., 1], ex[..., 2] = li[..., 0], li[..., 1], li[..., 2]
+    dp = os.path.join(args.raw, "depth2", f"{f:04d}.png") if f is not None else os.path.join(args.raw, "depth2.png")
+    if os.path.exists(dp):
+        d2 = load("depth2", f).astype(np.float64)
+        t = d2[..., 0] / 255.0 + d2[..., 1] / 255.0 / 255.0
+        ex[..., 3] = D0 + t * (D1 - D0)
+        ex[..., 4] = d2[..., 2]                      # limb id (rosace_shade_lane.py LIMBS), 0 = none
+    return ex
+
+
 def read_frame(f):
     b = load("beauty", f)
     idp = load("id", f)
@@ -109,6 +143,8 @@ def read_frame(f):
     n = nrm[..., :3].astype(np.float32) / 255.0 * 2 - 1
     d = D0 + dep[..., 0].astype(np.float32) / 255.0 * (D1 - D0)
     d = np.where(alpha, d, 1e9)
+    global EX
+    EX = load_ex(f, alpha) if args.shade else None
     return alpha, mat, code, part, n, d
 
 
@@ -137,6 +173,22 @@ def downsample(alpha, mat, code, part, n, d, k):
     n2 = (nb * same[..., None]).sum(2) / np.maximum(same.sum(-1, keepdims=True), 1)
     n2 /= np.linalg.norm(n2, axis=-1, keepdims=True) + 1e-6
     d2 = np.where(a2, np.where(same, db, 1e9).min(-1), 1e9)
+    global EX
+    if EX is not None:
+        # shading lane: the light pass averages over the winning label's sub-pixels (as the normals);
+        # the spec flag is the share of them it fired on; the fine depth takes the nearest, like d
+        C = EX.shape[-1]
+        eb = EX[:h * k, :w * k].reshape(h, k, w, k, C).transpose(0, 2, 1, 3, 4).reshape(h, w, k * k, C)
+        cnt = np.maximum(same.sum(-1), 1)
+        e2 = np.full((h, w, C), np.nan, np.float32)
+        for ch in range(3):
+            e2[..., ch] = np.nansum(np.where(same, eb[..., ch], 0), -1) / cnt
+        dsub = np.where(same, np.nan_to_num(eb[..., 3], nan=1e9), 1e9)
+        e2[..., 3] = dsub.min(-1)
+        if C > 4:
+            # limb id: the winning label's nearest sub-pixel (an id, never averaged)
+            e2[..., 4] = np.take_along_axis(np.nan_to_num(eb[..., 4]), dsub.argmin(-1)[..., None], -1)[..., 0]
+        EX = e2
     return a2, m2.astype(np.int32), c2.astype(np.int32), p2.astype(np.int32), n2, d2
 
 
@@ -171,6 +223,8 @@ def cleanup(alpha, mat, code, part, n, d):
         best = min(((y + dy, x + dx) for dy, dx in N4), key=lambda q: d[q])
         alpha[y, x] = True
         mat[y, x], code[y, x], part[y, x], n[y, x], d[y, x] = mat[best], code[best], part[best], n[best], d[best]
+        if EX is not None:
+            EX[y, x] = EX[best]
     H, W = alpha.shape
     # material orphans (not thin gold)
     for y, x in zip(*np.nonzero(alpha)):
@@ -281,8 +335,43 @@ WHITES = {MID[n] for n in ("white", "stocking", "veil", "beige") if n in MID}
 # shadow-side outline for skin: warm dark brown instead of the near-black OL (craft critic:
 # the refs' skin edges are coloured; OL stays for cloth shadow sides and bottom / contact edges)
 SHADOW_LINE = {"skin": "G4"}
+INNER_SAME, LIT_DROP, LIT_DROP_THR = {}, {}, 0.6
+OL_CORNER = None
+NO_INNER_UNDER, NO_INNER_ON = [], []
 KEEP_SINGLE = {CIDX[c] for c in ("G0", "A5", "A4", "S1", "W1") if c in CIDX}   # glints / hot spots
 NO_ORPHAN = {MID[n] for n in ("glass", "glass2", "glasscore", "edge") if n in MID}
+if SHADE and SHADE.get("lines"):
+    # shading lane: the preset may set the outline policy (sel-out arc, bottom cut-off, the
+    # shadow-side line per material, e.g. {"skin": "S4"}); unset keys keep the values above
+    _ln = SHADE["lines"]
+    SELOUT_LIT = _ln.get("selout_lit", SELOUT_LIT)
+    SELOUT_DOWN = _ln.get("selout_down", SELOUT_DOWN)
+    SHADOW_LINE = _ln.get("shadow_line", SHADOW_LINE)
+    # round 2: per-material sel-out / inner-line tones (the dark stockings: a W4 lavender sel-out
+    # would ring them in a light line), and materials that count as dark for the occluder rule
+    for _n, _c in _ln.get("selout", {}).items():
+        if _n in MATS:
+            MATS[_n] = dict(MATS[_n], selout=_c)
+    for _n, _c in _ln.get("inner", {}).items():
+        if _n in MATS:
+            MATS[_n] = dict(MATS[_n], inner=_c)
+    for _n in _ln.get("dark", []):
+        if _n in MID:
+            DARK.add(MID[_n])
+    # round 2b (critique 16 / 14a): an inner line where a form crosses its own material (thigh over
+    # thigh) takes this tone instead of the material's dark inner line, so value separates the forms,
+    # not a contour; and the outline's most lit arc takes a light tone of the material (the line drops
+    # out on the lit edge, as the refs' do)
+    INNER_SAME = {MID[_n]: CIDX[_c] for _n, _c in _ln.get("inner_same", {}).items() if _n in MID and _c in CIDX}
+    LIT_DROP = {_n: _c for _n, _c in _ln.get("lit_drop", {}).items() if _c in CIDX}
+    LIT_DROP_THR = _ln.get("lit_drop_thr", 0.6)
+    NO_INNER_UNDER = [MID[_n] for _n in _ln.get("no_inner_under", []) if _n in MID]
+    NO_INNER_ON = [MID[_n] for _n in _ln.get("no_inner_on", ["skin"]) if _n in MID]
+    # round 3 (critique 16): the outline takes the darkest shade of the fill it borders on the whole
+    # contour (skin red-umber, white slate-lavender, gold umber), and the near-black OL stays only on the
+    # outer corners of the shadow side (a ring pixel with <= ol_corner_nb figure pixels of its 8 on the
+    # side facing away from the key light) and where she meets the ground
+    OL_CORNER = _ln.get("ol_corner")
 
 
 def orphan_kill(alpha, mat, code):
@@ -385,6 +474,9 @@ def lines(img, alpha, mat, code, part, d):
     H, W = alpha.shape
     out = img.copy()
     ln = np.zeros((H, W), bool)
+    occ_same = np.zeros((H, W), bool)
+    occ_other = np.zeros((H, W), bool)
+    occ_flush = np.zeros((H, W), bool)
     under_face = np.zeros((H, W), bool)
     for dy, dx in N4:
         qa = shift(alpha, dy, dx, False)
@@ -403,16 +495,38 @@ def lines(img, alpha, mat, code, part, d):
         # it layers in front instead of slicing through the body as one jaggy bar)
         cand &= ~(np.isin(qm, list(DARK)) & ~np.isin(mat, list(DARK)) & (qm != HAFT))
         ln |= cand
+        occ_same |= cand & (qm == mat)
+        occ_other |= cand & (qm != mat) & ~np.isin(qm, NO_INNER_UNDER)
+        occ_flush |= cand & np.isin(qm, NO_INNER_UNDER)
         if HEAD_PART is not None:
             # the collar's dark trim line against the chin read as jowls / stubble (round 2)
             under_face |= cand & (qp == HEAD_PART) & (qm == MID.get("skin"))
         # hair clump separation: a nearer, different clump next to this one
         hl = alpha & qa & np.isin(mat, HAIR) & np.isin(qm, HAIR) & (qp != part) & (qd + 0.012 < d)   # 0.004 in round 1: crown noise
         ln |= hl
+    if SHADE and SHADE.get("lines", {}).get("no_edge_inner"):
+        # shading lane round 2: an inner line pixel that also touches the silhouette (a 1 px sliver
+        # between an occluder and the outline) keeps its fill: OL + inner line + trim read as a
+        # double line along the outline (the far thigh beside its garter strap)
+        # only a true sliver: the outline on one side and the occluding part straight across on the
+        # other (an inner line that merely ends at the outline stays; dropping those made equal runs
+        # along the outline, +8 hugging pairs on the idle)
+        out_ = ~alpha
+        other = lambda dy, dx: alpha & shift(alpha, dy, dx, False) & ((shift(mat, dy, dx, -1) != mat) | (shift(part, dy, dx, -1) != part))
+        sliver = np.zeros_like(alpha)
+        for dy, dx in ((0, 1), (1, 0)):
+            sliver |= (shift(out_, dy, dx, True) & other(-dy, -dx)) | (shift(out_, -dy, -dx, True) & other(dy, dx))
+        ln &= ~(alpha & sliver)
+    if NO_INNER_UNDER:
+        # round 2b: a flush strap (gold harness, garter chains) reads by its own value against the skin;
+        # its inner line on the skin beside it drew a dotted stair-step along every strap
+        ln &= ~(occ_flush & ~occ_other & np.isin(mat, NO_INNER_ON))
     inner_code = {MATS[n]["id"]: CIDX[MATS[n]["inner"]] for n in MATS}
     for mid, ci in inner_code.items():
         sel = ln & (mat == mid)
         out[sel, :3] = PALARR[ci]
+    for mid, ci in INNER_SAME.items():
+        out[ln & (mat == mid) & occ_same & ~occ_other, :3] = PALARR[ci]
     out[ln & under_face, :3] = PALARR[CIDX["S3"]]
     ring = (~alpha) & (sum(shift(alpha.astype(np.int8), dy, dx) for dy, dx in N4) > 0)
     ol = CIDX["OL"]
@@ -436,10 +550,16 @@ def lines(img, alpha, mat, code, part, d):
         # OL stays only on the shadow side (facing away from the key light) and on bottom edges,
         # where the figure sits on the ground and overlaps read as contact.
         if not args.no_selout and name and m not in DARK and oy < SELOUT_DOWN:
-            if float(o @ LS) > SELOUT_LIT:
+            if name in LIT_DROP and float(o @ LS) > LIT_DROP_THR:
+                ci = CIDX[LIT_DROP[name]]
+            elif float(o @ LS) > SELOUT_LIT:
                 ci = CIDX[MATS[name]["selout"]]
             elif name in SHADOW_LINE:
                 ci = CIDX[SHADOW_LINE[name]]
+                if OL_CORNER is not None and float(o @ LS) < OL_CORNER.get("thr", -0.35):
+                    nb8 = sum(1 for dy, dx in N8 if 0 <= y + dy < H and 0 <= x + dx < W and alpha[y + dy, x + dx])
+                    if nb8 <= OL_CORNER.get("nb", 2):
+                        ci = ol
         out[y, x, :3] = PALARR[ci]
         out[y, x, 3] = 255
     if not args.no_selout:
@@ -447,7 +567,10 @@ def lines(img, alpha, mat, code, part, d):
         # jaggy contour) reads as a speck: it takes its outline neighbours' colour
         ry, rx = np.nonzero(ring)
         cur = {(y, x): tuple(out[y, x, :3]) for y, x in zip(ry, rx)}
+        olc = tuple(int(v) for v in PALARR[CIDX["OL"]])
         for (y, x), c in cur.items():
+            if OL_CORNER is not None and tuple(int(v) for v in c) == olc:
+                continue                  # round 3: a shadow-side corner keeps its OL accent
             nbs = [cur[(y + dy, x + dx)] for dy, dx in N8 if (y + dy, x + dx) in cur]
             if len(nbs) >= 2 and c not in nbs:
                 vals, cnt = np.unique(np.array(nbs), axis=0, return_counts=True)
@@ -494,6 +617,13 @@ def process(f, anchors):
     if not args.no_clean:
         alpha, mat, code, part, n, d = cleanup(alpha, mat, code, part, n, d)
     face_flat(alpha, mat, code, part)
+    if args.shade:
+        # shading lane: re-band the body materials from the light pass (form light, cast shadows,
+        # clean clusters). Runs before the gold / trim / orphan passes so they tidy its result too
+        import rosace_shade
+        rosace_shade.apply(SHADE, meta, alpha, mat, code, part, n, d, EX, CIDX, MID, BYID)
+        if SHADE.get("dejag"):
+            print("shade: dejag changed", rosace_shade.dejag(SHADE, meta, alpha, mat, code, part, n, d, EX, MID), "rows")
     if not args.no_clean:
         gold_fragments(alpha, mat, code, part)
     trim_edges(alpha, mat, code)
@@ -501,6 +631,13 @@ def process(f, anchors):
         orphan_kill(alpha, mat, code)
     img = colour(alpha, code)
     img, ring, ln = lines(img, alpha, mat, code, part, d)
+    if args.shade and SHADE.get("final_antihug"):
+        import rosace_shade
+        nh = rosace_shade.final_antihug(SHADE, img, alpha, mat, part, ln, MID, PARTS, SHADE.get("final_antihug", 2))
+        print("shade: final anti-hug changed", nh, "px")
+    if args.shade and SHADE.get("final_clusters"):
+        import rosace_shade
+        print("shade: final clusters changed", rosace_shade.final_clusters(SHADE, img, alpha, mat, part, ln, MID, PARTS), "px")
     if not args.no_face:
         img = stamp_face(img, alpha, mat, anchors, meta.get("expression") or "serene")
     if args.rim:
@@ -536,6 +673,14 @@ def process(f, anchors):
     idm[alpha, 0] = mat[alpha]
     idm[alpha, 1] = part[alpha]
     idm[alpha, 3] = 255
+    global LIMBS_OUT
+    LIMBS_OUT = None
+    if EX is not None and EX.shape[-1] > 4:
+        # shading lane round 2: B = limb id (rosace_shade_lane.py LIMBS), and each limb's mean view
+        # depth, so the rule checker's adapter can tell the near leg / arm / sleeve from the far one
+        lb = np.nan_to_num(EX[..., 4]).astype(np.int32)
+        idm[alpha, 2] = lb[alpha]
+        LIMBS_OUT = {int(l): round(float(d[alpha & (lb == l)].mean()), 4) for l in np.unique(lb[alpha]) if l > 0}
     return img, alb, nm, idm
 
 
@@ -550,7 +695,13 @@ def stats(img):
     return {"colours": len(named), "off_palette": off, "counts": named}
 
 
+LIMBS_OUT = None
+
+
 def save_set(tag, img, alb, nm, idm):
+    if LIMBS_OUT is not None:
+        json.dump({"_doc": "limb id -> mean view depth (m) of its pixels; ids in rosace_shade.LIMB_NAMES",
+                   "depth": LIMBS_OUT}, open(os.path.join(OUT, f"{tag}_limbs.json"), "w"))
     Image.fromarray(img).save(os.path.join(OUT, f"{tag}.png"))
     Image.fromarray(alb).save(os.path.join(OUT, f"{tag}_albedo.png"))
     Image.fromarray(nm).save(os.path.join(OUT, f"{tag}_normal.png"))

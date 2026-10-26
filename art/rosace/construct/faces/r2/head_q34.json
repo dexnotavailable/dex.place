@@ -1,0 +1,1785 @@
+{
+ "_doc": "Round R2 painted head, three-quarter view facing screen-right, 144 px sprite; written by tools/art-construct/heads_r2.py (every stroke is in that file). Construction grid as R1 (chin y 36, rows above the chin: mouth 2, nose 6, eye bottom 10, lash top 14, brow 16-17, hairline 20, skull top 26, hair top 29). Layers back -> skin -> front, expression overlays at anchors; format: head_paint.py.",
+ "view": "q34",
+ "gaze": [
+  -1,
+  0
+ ],
+ "gaze_target": "viewer",
+ "roll": -1,
+ "rows": {
+  "mouth": 2,
+  "nose": 6,
+  "eye_bottom": 10,
+  "lash_top": 14,
+  "brow": 16,
+  "hairline": 20,
+  "skull_top": 26,
+  "hair_top": 29
+ },
+ "anchors": {
+  "c0": 21,
+  "chin": [
+   22,
+   36
+  ],
+  "eye_near": [
+   13,
+   22,
+   6,
+   6
+  ],
+  "eye_far": [
+   22,
+   22,
+   5,
+   6
+  ]
+ },
+ "bangs": [
+  {
+   "root": [
+    10,
+    15
+   ],
+   "tip_y": 23
+  },
+  {
+   "root": [
+    16,
+    20
+   ],
+   "tip_y": 20
+  },
+  {
+   "root": [
+    21,
+    24
+   ],
+   "tip_y": 19
+  },
+  {
+   "root": [
+    25,
+    29
+   ],
+   "tip_y": 22
+  }
+ ],
+ "layers": {
+  "back": [
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   ".............nlkkkkk..................",
+   "..........nnlkkkkkkkkkl...............",
+   "........nnlllkkklkkkkkkkl.............",
+   "......dnnllllkkklkklklkkkkl...........",
+   ".....dnnllljjjjnjjjnljnkjjjl..........",
+   "....ddnnnljjlllnllnlljlnkklll.........",
+   "nddddnnnnllllllnlllnllllnkklkkkln.....",
+   ".n.ddnnnlllllnllllnllllnlkklkklln.....",
+   "..ddnnnnlllllnllllllllllnlkklklln.....",
+   "..ddnnnnlllllllllllllllllllllllllll...",
+   ".nndllllllllln..............nlllkll...",
+   ".nndllkkllllnn..............nlnlkn....",
+   ".nnndlkklllnnn..............lnnlk.....",
+   ".nnndlklllnnnn..............lnnkl.....",
+   ".nnndldlldnnnn..............lnnkl.....",
+   ".nndnldlndnnnn..............lnnk......",
+   ".nndkndnndnnnn..............lnnlk.....",
+   ".nndkdlndnnnnn..............lnnlk.....",
+   ".ndkndlndnnnnn..............lnnlk.....",
+   ".ndkndlndnnnnn...............nnk......",
+   ".ndnllddnnnnnn...............nnk......",
+   ".nndllddnnnnnn...............nlk......",
+   ".nndllddnnnnnln.............lnlk......",
+   ".nndnllddnnnnlln............lnlk......",
+   ".lnndllddnnnnlnln...........lllk......",
+   ".lnndllddnnnnllnln..........lllk......",
+   ".lnndnllddnnnllnlln.........bbc.......",
+   ".nlnndklddnnnlllnlln.........bc.......",
+   ".nlnndklddnnnlllnllln........c........",
+   ".nknndkdnndnnllllllln.................",
+   ".lkndnldnndnnnnn......................",
+   ".lkndnldnndnnnnn......................",
+   ".lnndnnlddnnnnnn......................",
+   ".nndnnnlddnnnnnn......................",
+   ".dddnnnlndnnnnnn......................",
+   ".dddnnnnnndnnnnn......................",
+   ".ddnddndnndnnnnn......................",
+   ".dddddddnndnnnnn......................",
+   ".nnndnnnnnnnnnnn......................"
+  ],
+  "skin": [
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "............ssssssssssssssss..........",
+   "............ssssssssssssssss..........",
+   "............ssttttssssssssss..........",
+   "............stssssssssssssss..........",
+   "............stsssssttttsssss..........",
+   "............ssssssstssssssss..........",
+   "............ssssssssssssssss..........",
+   "............tsssssssssssssss..........",
+   "............tsssssssssssssss..........",
+   "............ssssssssssssssss..........",
+   "............sssssssssssssssss.........",
+   "............ssss11sssssssssss.........",
+   "............sssssssssssssssss.........",
+   "..............ssssssssssssss..........",
+   "...............sssssssssssts..........",
+   "................ssssssssstt...........",
+   ".................ssssssssts...........",
+   "..................ssssssss............",
+   "...................ssssss.............",
+   "....................ssss..............",
+   ".....................sss..............",
+   "................ttmmmm................",
+   "................tttmms................",
+   "................ttssss................",
+   "................ttssss................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................"
+  ],
+  "front": [
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "..........lllkkknlkklnkkknlkkl........",
+   "..........llllkdlllkkdlkkdlkkl........",
+   "..........nlln....nkkkln...lk.........",
+   "..........nln.....nl.ln....nl.........",
+   "..........nll.....n.........n.........",
+   ".......nllll................l.........",
+   ".......nllkl................n.........",
+   ".......nllkn..........................",
+   "......nllnkl..........................",
+   "......nllnkll.........................",
+   "......nllnlkl.........................",
+   ".......nllnkl.........................",
+   ".......nllnkl.........................",
+   ".......nllnkl.........................",
+   "........nllkl.........................",
+   "........nllkl.........................",
+   "........nllkl.........................",
+   ".........nllk.........................",
+   ".........nllk.........................",
+   ".........nllk.........................",
+   "........nlllk.........................",
+   "........nzxxv.........................",
+   "........nllll.........................",
+   ".........nlll.........................",
+   ".........nbbb.........................",
+   "..........bcc.........................",
+   "..........cc..........................",
+   "..........c...........................",
+   "......................................",
+   "......................................"
+  ]
+ },
+ "expressions": {
+  "confident": {
+   "_doc": "default face: open eyes at the viewer, lash heavy at the outer end with an up-and-out flick, A2 iris top (A2/OL 3.24:1 [M]), A3, an A4 crescent; brows level-to-rising outward; a 3 px S4 smirk with the near corner stepped up; the near lower lid lifted 1 px (the smile reaches the eye); head tilted 1 px (far eye higher)",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "OO......",
+     ".OOOO...",
+     ".OOaOOO.",
+     ".Oanhe..",
+     "..bbb...",
+     ".OOcb..."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     ".....O",
+     ".OOOOO",
+     "OOah..",
+     ".anbe.",
+     ".bbbe.",
+     ".ccbO."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     18
+    ],
+    "rows": [
+     "#...",
+     ".##.",
+     "...#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     18
+    ],
+    "rows": [
+     "..#",
+     ".#.",
+     "#.."
+    ]
+   },
+   "nose": {
+    "at": [
+     22,
+     29
+    ],
+    "rows": [
+     "t",
+     "t"
+    ]
+   },
+   "mouth": {
+    "at": [
+     18,
+     32
+    ],
+    "rows": [
+     "t...",
+     ".m..",
+     "..mm"
+    ]
+   },
+   "blush_near": {
+    "at": [
+     13,
+     28
+    ],
+    "rows": [
+     "pp"
+    ]
+   },
+   "blush_far": {
+    "at": [
+     25,
+     28
+    ],
+    "rows": [
+     "pp"
+    ]
+   }
+  },
+  "focused": {
+   "_doc": "attacks: the lash flattened to a straight 2-row bar lowered onto the iris, the lower lid pushed up at the outer corner (2 iris rows show), irises on the target (screen-right), brows angled down to the nose and 1 px closer, a pressed 2 px mouth; no blush. Differs from Confident in lids, brows and mouth (critique 2g: the lids must differ, not only the brows)",
+   "gaze": [
+    1,
+    0
+   ],
+   "gaze_target": "enemy",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "OOOOOO..",
+     ".OOOOOO.",
+     "..eaah..",
+     ".Oebcc..",
+     ".OOO...."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "OOOOOO",
+     "OOOOO.",
+     ".eaah.",
+     ".ebcc.",
+     "...OO."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     "#...",
+     ".##.",
+     "...#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     19
+    ],
+    "rows": [
+     "..#",
+     ".#.",
+     "#.."
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     34
+    ],
+    "rows": [
+     "mm"
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null
+  },
+  "radiant": {
+   "_doc": "wins: the eyes closed into arcs that curve up in the middle, brows raised 1 px into a soft arch, an open smile (S4 corners up, SB inside), a 3 px blush (FC-N20: the eyes change with the smile)",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "........",
+     "....OO..",
+     "..OO..O.",
+     ".O......",
+     "........"
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     ".OO...",
+     "O..OO.",
+     ".....O",
+     "......"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     18
+    ],
+    "rows": [
+     ".##.",
+     "#..#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     19
+    ],
+    "rows": [
+     ".##",
+     "#.."
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "m..m",
+     ".pp."
+    ]
+   },
+   "skin_fix": {
+    "at": [
+     14,
+     18
+    ],
+    "rows": [
+     "s..s"
+    ]
+   },
+   "blush_near": {
+    "at": [
+     13,
+     28
+    ],
+    "rows": [
+     "ppp"
+    ]
+   },
+   "blush_far": {
+    "at": [
+     25,
+     28
+    ],
+    "rows": [
+     "pp"
+    ]
+   }
+  },
+  "serene": {
+   "_doc": "prayer beats only (the one half-lid): the lash lowered so 2 iris rows show, the outer end softly down, level brows, a small closed smile with the near corner up",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "........",
+     ".OOOOO..",
+     "OOOOOOO.",
+     "..aahe..",
+     ".Obcb..."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     ".OOOO.",
+     "OOOOOO",
+     ".aahe.",
+     ".bcbO."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     "####"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     19
+    ],
+    "rows": [
+     "###"
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "m.",
+     ".m"
+    ]
+   },
+   "skin_fix": {
+    "at": [
+     12,
+     23
+    ],
+    "rows": [
+     "s"
+    ]
+   }
+  },
+  "ignited": {
+   "_doc": "R / Illumination: the Focused lids and brows; the iris keeps a dark A2 core inside an A4 rim (critique 2g: a pale iris reads blind) and a 1 px A4 glow sits beside each eye; a shout with a W1 tooth",
+   "gaze": [
+    1,
+    0
+   ],
+   "gaze_target": "enemy",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "OOOOOO..",
+     ".OOOOOO.",
+     "..ecah..",
+     ".Oecac..",
+     ".OOO...."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "OOOOOO",
+     "OOOOO.",
+     ".ecah.",
+     ".ecac.",
+     "...OO."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     "#...",
+     ".##.",
+     "...#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     19
+    ],
+    "rows": [
+     "..#",
+     ".#.",
+     "#.."
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "mwm",
+     "mpm"
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null,
+   "extra": [
+    {
+     "at": [
+      11,
+      23
+     ],
+     "rows": [
+      "c"
+     ]
+    },
+    {
+     "at": [
+      28,
+      22
+     ],
+     "rows": [
+      "c"
+     ]
+    }
+   ]
+  },
+  "hurt": {
+   "_doc": "hit reactions: the eyes squeezed into > < shapes pointing at the nose, the inner brow ends raised (the worry brow, used here on purpose), a wince with the far corner down",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     ".OO.....",
+     "...OO...",
+     ".....OO.",
+     "...OO...",
+     ".OO....."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "....OO",
+     "..OO..",
+     "OO....",
+     "..OO..",
+     "....OO"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     18
+    ],
+    "rows": [
+     "...#",
+     "..#.",
+     "##.."
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     19
+    ],
+    "rows": [
+     "#..",
+     ".##"
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "mm.",
+     "..m"
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null
+  }
+ },
+ "trials": {
+  "a": {
+   "expr": "confident",
+   "base_patch": {
+    "replace_layers": {
+     "back": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      ".............nlkkkkk..................",
+      "..........nnlkkkkkkkkkl...............",
+      "........nnlllkkklkkkkkkkl.............",
+      "......dnnllllkkklkklklkkkkl...........",
+      ".....dnnllljjjlnjjlnljnkjjjl..........",
+      "....ddnnnljjlllnllnlljlnkklll.........",
+      "...ddnnnnllllllnlllnllllnkklkkkln.....",
+      "...ddnnnlllllnllllnllllnlkklkklln.....",
+      "..ddnnnnlllllnllllllllllnlkklklln.....",
+      "..ddnnnnllllllllllllllllllllllllll....",
+      ".nndllllllllln..............nlllk.....",
+      ".nndllkkllllnn..............nlnlk.....",
+      ".nnndlkklllnnn..............lnnlk.....",
+      ".nnndlklllnnnn..............lnnkl.....",
+      ".nnndldlldnnnn..............lnnkl.....",
+      ".nndnldlndnnnn..............lnnk......",
+      ".nndnndnndnnnn..............lnnlk.....",
+      ".nndndlndnnnnn..............lnnlk.....",
+      ".ndnndlndnnnnn..............lnnlk.....",
+      ".ndnndlndnnnnn...............nnk......",
+      ".ndnllddnnnnnn...............nnk......",
+      ".nndllddnnnnnn...............nlk......",
+      ".nndllddnnnnnnn.............lnlk......",
+      ".nndnllddnnnnnnn............lnlk......",
+      ".lnndllddnnnnnnnn...........lllk......",
+      ".lnndllddnnnnnnnnn..........lllk......",
+      ".lnndnllddnnnnnnnnn.........bbc.......",
+      ".nlnndnlddnnnnnnnnnn.........bc.......",
+      ".nlnndnlddnnnnnnnnnnn........c........",
+      ".nlnndldnndnnnnnnnnnn.................",
+      ".lnndnldnndnnnnn......................",
+      ".lnndnldnndnnnnn......................",
+      ".lnndnnlddnnnnnn......................",
+      ".nndnnnlddnnnnnn......................",
+      ".nndnnnlndnnnnnn......................",
+      ".nndnnnnnndnnnnn......................",
+      ".nnndnnnnndnnnnn......................",
+      ".nnndnnnnndnnnnn......................",
+      ".nnndnnnnnnnnnnn......................"
+     ],
+     "front": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "..........lllkkknlkklnkkknlkkl........",
+      "..........llllkdlllkkdlkkdlkkl........",
+      "..........nlln....nkkkln...ll.........",
+      "..........nln.....nl.ln....nl.........",
+      "..........nll.....n.........n.........",
+      ".......nllll................l.........",
+      ".......nllkl................n.........",
+      ".......nllkn..........................",
+      "......nllnkl..........................",
+      "......nllnkll.........................",
+      "......nllnlkl.........................",
+      ".......nllnkl.........................",
+      ".......nllnkl.........................",
+      ".......nllnkl.........................",
+      "........nllkl.........................",
+      "........nllkl.........................",
+      "........nllkl.........................",
+      ".........nllk.........................",
+      ".........nllk.........................",
+      ".........nllk.........................",
+      "........nlllk.........................",
+      "........nzxxv.........................",
+      "........nllll.........................",
+      ".........nlll.........................",
+      ".........nbbb.........................",
+      "..........bcc.........................",
+      "..........cc..........................",
+      "..........c...........................",
+      "......................................",
+      "......................................"
+     ]
+    },
+    "expressions": {
+     "confident": {
+      "blush_near": {
+       "at": [
+        13,
+        28
+       ],
+       "rows": [
+        "p.p"
+       ]
+      },
+      "blush_far": {
+       "at": [
+        24,
+        28
+       ],
+       "rows": [
+        "p.p"
+       ]
+      },
+      "brow_near": {
+       "at": [
+        14,
+        19
+       ],
+       "rows": [
+        "###.",
+        "...#"
+       ]
+      },
+      "brow_far": {
+       "at": [
+        24,
+        19
+       ],
+       "rows": [
+        "..#",
+        "##."
+       ]
+      },
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm..",
+        "..mm"
+       ]
+      },
+      "eye_near": {
+       "at": [
+        12,
+        21
+       ],
+       "box": [
+        1,
+        1,
+        6,
+        6
+       ],
+       "rows": [
+        "O.......",
+        ".OOOOO..",
+        ".OOaheO.",
+        ".Oabbe..",
+        "..bbb...",
+        ".OOcb..."
+       ]
+      },
+      "eye_far": {
+       "at": [
+        22,
+        21
+       ],
+       "box": [
+        0,
+        1,
+        5,
+        6
+       ],
+       "rows": [
+        ".....O",
+        ".OOOOO",
+        "OaahO.",
+        ".abbe.",
+        ".bbbe.",
+        ".ccbO."
+       ]
+      }
+     }
+    }
+   },
+   "base_verdict": "all automatic FC/HR rules pass (60; FC-P19/N19 need the rest of the set); by eye awake and friendly, but the iris is glassy and the hair is one flat blue next to 07/08",
+   "base_idea": "the repaint: A2 iris top, lash heavy at the outer end with a flick, lid lifted on the smirk side, brows in forehead windows, 3 px S4 smirk, 1 px head tilt",
+   "variants": {
+    "iris_deep": {
+     "axis": "iris value",
+     "kept": true,
+     "verdict": "KEPT: at x6 beside 07/08 the mostly-A3 base iris reads glassy; two A2 rows give the eye a dark upper mass (csp-okids) and it still passes FC-P13 (4 rows >= 2:1)",
+     "idea": "the top half of each iris A2 (2 rows), A3 under it, the A4 crescent kept: a darker upper area (csp-okids) instead of the mostly-A3 iris",
+     "expressions": {
+      "confident": {
+       "eye_near": {
+        "at": [
+         12,
+         21
+        ],
+        "box": [
+         1,
+         1,
+         6,
+         6
+        ],
+        "rows": [
+         "O.......",
+         ".OOOOO..",
+         ".OOaheO.",
+         ".Oaabe..",
+         "..bbb...",
+         ".OOcb..."
+        ]
+       },
+       "eye_far": {
+        "at": [
+         22,
+         21
+        ],
+        "box": [
+         0,
+         1,
+         5,
+         6
+        ],
+        "rows": [
+         ".....O",
+         ".OOOOO",
+         "OaahO.",
+         ".aabe.",
+         ".bbbe.",
+         ".ccbO."
+        ]
+       }
+      }
+     }
+    },
+    "pupil": {
+     "axis": "pupil",
+     "kept": true,
+     "verdict": "KEPT (with iris_deep; the pupil row is iris_deep's second row): the I3 dot on the gaze side makes the look land on the viewer; at 2x the eyes stop reading as pale discs",
+     "idea": "a 1 px I3 pupil in the iris middle on the gaze side (FC-P14 option)",
+     "expressions": {
+      "confident": {
+       "eye_near": {
+        "at": [
+         12,
+         21
+        ],
+        "box": [
+         1,
+         1,
+         6,
+         6
+        ],
+        "rows": [
+         "O.......",
+         ".OOOOO..",
+         ".OOaheO.",
+         ".Oanbe..",
+         "..bbb...",
+         ".OOcb..."
+        ]
+       },
+       "eye_far": {
+        "at": [
+         22,
+         21
+        ],
+        "box": [
+         0,
+         1,
+         5,
+         6
+        ],
+        "rows": [
+         ".....O",
+         ".OOOOO",
+         "OaahO.",
+         ".anbe.",
+         ".bbbe.",
+         ".ccbO."
+        ]
+       }
+      }
+     }
+    },
+    "brow_window": {
+     "axis": "fringe shadow over the near brow",
+     "kept": false,
+     "verdict": "rejected: no visible change at x6 or 2x; the S3 band over the brow is what separates it from the fringe, so it stays",
+     "idea": "the S3 cast shadow under the fringe stops at x 15, so skin shows over the inner half of the near brow",
+     "replace_layers": {
+      "skin": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "............ssssssssssssssss..........",
+       "............ssssssssssssssss..........",
+       "............ssttssssssssssss..........",
+       "............stssssssssssssss..........",
+       "............stsssssttttsssss..........",
+       "............ssssssstssssssss..........",
+       "............ssssssssssssssss..........",
+       "............tsssssssssssssss..........",
+       "............tsssssssssssssss..........",
+       "............ssssssssssssssss..........",
+       "............sssssssssssssssss.........",
+       "............ssss11sssssssssss.........",
+       "............sssssssssssssssss.........",
+       "..............ssssssssssssss..........",
+       "...............sssssssssssts..........",
+       "................ssssssssstt...........",
+       ".................ssssssssts...........",
+       "..................ssssssss............",
+       "...................ssssss.............",
+       "....................ssss..............",
+       ".....................sss..............",
+       "................ttmmmm................",
+       "................tttmms................",
+       "................ttssss................",
+       "................ttssss................",
+       "................tsssss................",
+       "................tsssss................",
+       "................tsssss................",
+       "................tsssss................",
+       "................tsssss................"
+      ]
+     }
+    },
+    "jaw_shade": {
+     "axis": "face form shading",
+     "kept": false,
+     "verdict": "rejected by the checker: FC-N24 (the band's steps made vertical pairs beside the nose: tear streaks again), FC-P17 (blush touching S3), FC-N15; by eye it dirtied the jaw. Form on the face stays in the cast shadows, not a jaw band",
+     "idea": "a 2 px S3 band along the near jaw: the side plane turned from the key light (one terminator, PX-P02)",
+     "replace_layers": {
+      "skin": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "............ssssssssssssssss..........",
+       "............ssssssssssssssss..........",
+       "............ssttttssssssssss..........",
+       "............stssssssssssssss..........",
+       "............stsssssttttsssss..........",
+       "............ssssssstssssssss..........",
+       "............ssssssssssssssss..........",
+       "............tsssssssssssssss..........",
+       "............tsssssssssssssss..........",
+       "............ssssssssssssssss..........",
+       "............sssssssssssssssss.........",
+       "............ssss11sssssssssss.........",
+       "............sttssssssssssssss.........",
+       "..............ttssssssssssss..........",
+       "...............ttsssssssssts..........",
+       "................tsssssssstt...........",
+       ".................tsssssssts...........",
+       "..................ssssssss............",
+       "...................ssssss.............",
+       "....................ssss..............",
+       ".....................sss..............",
+       "................ttmmmm................",
+       "................tttmms................",
+       "................ttssss................",
+       "................ttssss................",
+       "................tsssss................",
+       "................tsssss................",
+       "................tsssss................",
+       "................tsssss................",
+       "................tsssss................"
+      ]
+     }
+    },
+    "no_blush": {
+     "axis": "blush",
+     "kept": false,
+     "verdict": "rejected: without blush the face goes cold at 2x; but the p.p hatch reads as two dots at x6, so round b tries a solid 2 px blush",
+     "idea": "no blush at all: does the hatch add warmth or noise at 1x?",
+     "expressions": {
+      "confident": {
+       "blush_near": null,
+       "blush_far": null
+      }
+     }
+    },
+    "smirk4": {
+     "axis": "mouth width",
+     "kept": false,
+     "verdict": "rejected: at 2x the 4 px mouth reads as a flat line; 3 px S4 with the S3 dimple keeps the curl (FC-N11 would allow it, the eye says no)",
+     "idea": "a 4 px smirk (S4 step + 3 px lip) instead of 3 + dimple",
+     "expressions": {
+      "confident": {
+       "mouth": {
+        "at": [
+         18,
+         33
+        ],
+        "rows": [
+         "mm..",
+         "..mm"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "b": {
+   "expr": "confident",
+   "base_patch": {
+    "replace_layers": {
+     "back": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      ".............nlkkkkk..................",
+      "..........nnlkkkkkkkkkl...............",
+      "........nnlllkkklkkkkkkkl.............",
+      "......dnnllllkkklkklklkkkkl...........",
+      ".....dnnllljjjlnjjlnljnkjjjl..........",
+      "....ddnnnljjlllnllnlljlnkklll.........",
+      "...ddnnnnllllllnlllnllllnkklkkkln.....",
+      "...ddnnnlllllnllllnllllnlkklkklln.....",
+      "..ddnnnnlllllnllllllllllnlkklklln.....",
+      "..ddnnnnllllllllllllllllllllllllll....",
+      ".nndllllllllln..............nlllk.....",
+      ".nndllkkllllnn..............nlnlk.....",
+      ".nnndlkklllnnn..............lnnlk.....",
+      ".nnndlklllnnnn..............lnnkl.....",
+      ".nnndldlldnnnn..............lnnkl.....",
+      ".nndnldlndnnnn..............lnnk......",
+      ".nndnndnndnnnn..............lnnlk.....",
+      ".nndndlndnnnnn..............lnnlk.....",
+      ".ndnndlndnnnnn..............lnnlk.....",
+      ".ndnndlndnnnnn...............nnk......",
+      ".ndnllddnnnnnn...............nnk......",
+      ".nndllddnnnnnn...............nlk......",
+      ".nndllddnnnnnnn.............lnlk......",
+      ".nndnllddnnnnnnn............lnlk......",
+      ".lnndllddnnnnnnnn...........lllk......",
+      ".lnndllddnnnnnnnnn..........lllk......",
+      ".lnndnllddnnnnnnnnn.........bbc.......",
+      ".nlnndnlddnnnnnnnnnn.........bc.......",
+      ".nlnndnlddnnnnnnnnnnn........c........",
+      ".nlnndldnndnnnnnnnnnn.................",
+      ".lnndnldnndnnnnn......................",
+      ".lnndnldnndnnnnn......................",
+      ".lnndnnlddnnnnnn......................",
+      ".nndnnnlddnnnnnn......................",
+      ".nndnnnlndnnnnnn......................",
+      ".nndnnnnnndnnnnn......................",
+      ".nnndnnnnndnnnnn......................",
+      ".nnndnnnnndnnnnn......................",
+      ".nnndnnnnnnnnnnn......................"
+     ],
+     "front": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "..........lllkkknlkklnkkknlkkl........",
+      "..........llllkdlllkkdlkkdlkkl........",
+      "..........nlln....nkkkln...ll.........",
+      "..........nln.....nl.ln....nl.........",
+      "..........nll.....n.........n.........",
+      ".......nllll................l.........",
+      ".......nllkl................n.........",
+      ".......nllkn..........................",
+      "......nllnkl..........................",
+      "......nllnkll.........................",
+      "......nllnlkl.........................",
+      ".......nllnkl.........................",
+      ".......nllnkl.........................",
+      ".......nllnkl.........................",
+      "........nllkl.........................",
+      "........nllkl.........................",
+      "........nllkl.........................",
+      ".........nllk.........................",
+      ".........nllk.........................",
+      ".........nllk.........................",
+      "........nlllk.........................",
+      "........nzxxv.........................",
+      "........nllll.........................",
+      ".........nlll.........................",
+      ".........nbbb.........................",
+      "..........bcc.........................",
+      "..........cc..........................",
+      "..........c...........................",
+      "......................................",
+      "......................................"
+     ]
+    },
+    "expressions": {
+     "confident": {
+      "blush_near": {
+       "at": [
+        13,
+        28
+       ],
+       "rows": [
+        "p.p"
+       ]
+      },
+      "blush_far": {
+       "at": [
+        24,
+        28
+       ],
+       "rows": [
+        "p.p"
+       ]
+      },
+      "eye_near": {
+       "at": [
+        12,
+        21
+       ],
+       "box": [
+        1,
+        1,
+        6,
+        6
+       ],
+       "rows": [
+        "O.......",
+        ".OOOOO..",
+        ".OOaheO.",
+        ".Oanbe..",
+        "..bbb...",
+        ".OOcb..."
+       ]
+      },
+      "eye_far": {
+       "at": [
+        22,
+        21
+       ],
+       "box": [
+        0,
+        1,
+        5,
+        6
+       ],
+       "rows": [
+        ".....O",
+        ".OOOOO",
+        "OaahO.",
+        ".anbe.",
+        ".bbbe.",
+        ".ccbO."
+       ]
+      },
+      "brow_near": {
+       "at": [
+        14,
+        19
+       ],
+       "rows": [
+        "###.",
+        "...#"
+       ]
+      },
+      "brow_far": {
+       "at": [
+        24,
+        19
+       ],
+       "rows": [
+        "..#",
+        "##."
+       ]
+      },
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm..",
+        "..mm"
+       ]
+      }
+     }
+    }
+   },
+   "base_verdict": "the base after round a; everything passes; the hair still reads as one flat blue beside 07/08",
+   "base_idea": "round a base + iris_deep + pupil",
+   "variants": {
+    "hair_contrast": {
+     "axis": "hair value range",
+     "kept": true,
+     "verdict": "KEPT: small at x6, but at 2x the mass stops being one flat blue: the I1 strands and the tucked I4 underside give the near hair a light-to-dark turn",
+     "idea": "wider value range in the back mass (critique 4: the refs hair is value-rich): thin I1 strands on the S-curves, an I4 underside where the mass tucks toward the neck, 3 px crown dashes",
+     "replace_layers": {
+      "back": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       ".............nlkkkkk..................",
+       "..........nnlkkkkkkkkkl...............",
+       "........nnlllkkklkkkkkkkl.............",
+       "......dnnllllkkklkklklkkkkl...........",
+       ".....dnnllljjjjnjjjnljnkjjjl..........",
+       "....ddnnnljjlllnllnlljlnkklll.........",
+       "...ddnnnnllllllnlllnllllnkklkkkln.....",
+       "...ddnnnlllllnllllnllllnlkklkklln.....",
+       "..ddnnnnlllllnllllllllllnlkklklln.....",
+       "..ddnnnnllllllllllllllllllllllllll....",
+       ".nndllllllllln..............nlllk.....",
+       ".nndllkkllllnn..............nlnlk.....",
+       ".nnndlkklllnnn..............lnnlk.....",
+       ".nnndlklllnnnn..............lnnkl.....",
+       ".nnndldlldnnnn..............lnnkl.....",
+       ".nndnldlndnnnn..............lnnk......",
+       ".nndkndnndnnnn..............lnnlk.....",
+       ".nndkdlndnnnnn..............lnnlk.....",
+       ".ndkndlndnnnnn..............lnnlk.....",
+       ".ndkndlndnnnnn...............nnk......",
+       ".ndnllddnnnnnn...............nnk......",
+       ".nndllddnnnnnn...............nlk......",
+       ".nndllddnnnnnnn.............lnlk......",
+       ".nndnllddnnnnnnn............lnlk......",
+       ".lnndllddnnnnnnnn...........lllk......",
+       ".lnndllddnnnnnnnnn..........lllk......",
+       ".lnndnllddnnnnnnnnn.........bbc.......",
+       ".nlnndklddnnnnnnnnnn.........bc.......",
+       ".nlnndklddnnnnnnnnnnn........c........",
+       ".nknndlknndnnnnnnnnnn.................",
+       ".lkndnldnndnnnnn......................",
+       ".knndnldnndnnnnn......................",
+       ".lnndnnlddnnnnnn......................",
+       ".nndnnnlddnnnnnn......................",
+       ".dddnnnlndnnnnnn......................",
+       ".dddnnnnnndnnnnn......................",
+       ".ddnddndnndnnnnn......................",
+       ".dddddddnndnnnnn......................",
+       ".nnndnnnnnnnnnnn......................"
+      ]
+     }
+    },
+    "fringe_gloss": {
+     "axis": "fringe highlight",
+     "kept": true,
+     "verdict": "KEPT with a fix: the I0 dabs broke HR-P08 (8 dashes for 4 clumps: the gloss has to stay one band) so the fringe streaks are I1 only; by eye the clumps read as separate ribbons",
+     "idea": "one tapered I1 -> I0 streak down the lit side of each fringe clump (kawaiihannah / slynyrd-29 gloss), tips kept I3",
+     "replace_layers": {
+      "front": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "..........lllkjknljklnkjknlkkl........",
+       "..........llllkdllljkdljkdlkjl........",
+       "..........nllk....nkkkkn...lk.........",
+       "..........nln.....nl.ln....nl.........",
+       "..........nll.....n.........n.........",
+       ".......nllll................l.........",
+       ".......nllkl................n.........",
+       ".......nllkn..........................",
+       "......nllnkl..........................",
+       "......nllnkll.........................",
+       "......nllnlkl.........................",
+       ".......nllnkl.........................",
+       ".......nllnkl.........................",
+       ".......nllnkl.........................",
+       "........nllkl.........................",
+       "........nllkl.........................",
+       "........nllkl.........................",
+       ".........nllk.........................",
+       ".........nllk.........................",
+       ".........nllk.........................",
+       "........nlllk.........................",
+       "........nzxxv.........................",
+       "........nllll.........................",
+       ".........nlll.........................",
+       ".........nbbb.........................",
+       "..........bcc.........................",
+       "..........cc..........................",
+       "..........c...........................",
+       "......................................",
+       "......................................"
+      ]
+     }
+    },
+    "silhouette_breaks": {
+     "axis": "head silhouette",
+     "kept": true,
+     "verdict": "KEPT: the two temple flicks break the helmet outline at 2x without an antenna; all rules still pass",
+     "idea": "two locks break the round outline at the temples (skyrye-hair: break the silhouette with uneven clumps; no crown antenna, R1 round a)",
+     "replace_layers": {
+      "back": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       ".............nlkkkkk..................",
+       "..........nnlkkkkkkkkkl...............",
+       "........nnlllkkklkkkkkkkl.............",
+       "......dnnllllkkklkklklkkkkl...........",
+       ".....dnnllljjjlnjjlnljnkjjjl..........",
+       "....ddnnnljjlllnllnlljlnkklll.........",
+       "nddddnnnnllllllnlllnllllnkklkkkln.....",
+       ".n.ddnnnlllllnllllnllllnlkklkklln.....",
+       "..ddnnnnlllllnllllllllllnlkklklln.....",
+       "..ddnnnnllllllllllllllllllllllllllk...",
+       ".nndllllllllln..............nlllkll...",
+       ".nndllkkllllnn..............nlnlkn....",
+       ".nnndlkklllnnn..............lnnlk.....",
+       ".nnndlklllnnnn..............lnnkl.....",
+       ".nnndldlldnnnn..............lnnkl.....",
+       ".nndnldlndnnnn..............lnnk......",
+       ".nndnndnndnnnn..............lnnlk.....",
+       ".nndndlndnnnnn..............lnnlk.....",
+       ".ndnndlndnnnnn..............lnnlk.....",
+       ".ndnndlndnnnnn...............nnk......",
+       ".ndnllddnnnnnn...............nnk......",
+       ".nndllddnnnnnn...............nlk......",
+       ".nndllddnnnnnnn.............lnlk......",
+       ".nndnllddnnnnnnn............lnlk......",
+       ".lnndllddnnnnnnnn...........lllk......",
+       ".lnndllddnnnnnnnnn..........lllk......",
+       ".lnndnllddnnnnnnnnn.........bbc.......",
+       ".nlnndnlddnnnnnnnnnn.........bc.......",
+       ".nlnndnlddnnnnnnnnnnn........c........",
+       ".nlnndldnndnnnnnnnnnn.................",
+       ".lnndnldnndnnnnn......................",
+       ".lnndnldnndnnnnn......................",
+       ".lnndnnlddnnnnnn......................",
+       ".nndnnnlddnnnnnn......................",
+       ".nndnnnlndnnnnnn......................",
+       ".nndnnnnnndnnnnn......................",
+       ".nnndnnnnndnnnnn......................",
+       ".nnndnnnnndnnnnn......................",
+       ".nnndnnnnnnnnnnn......................"
+      ]
+     }
+    },
+    "blush_solid": {
+     "axis": "blush",
+     "kept": true,
+     "verdict": "KEPT: the solid 2 px reads as warmth at 2x where p.p read as two dots; FC-P17 (one row, on S2) holds",
+     "idea": "a solid 2 px SB blush instead of the p.p hatch",
+     "expressions": {
+      "confident": {
+       "blush_near": {
+        "at": [
+         13,
+         28
+        ],
+        "rows": [
+         "pp"
+        ]
+       },
+       "blush_far": {
+        "at": [
+         25,
+         28
+        ],
+        "rows": [
+         "pp"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "c": {
+   "expr": "confident",
+   "base_patch": {
+    "expressions": {
+     "confident": {
+      "eye_near": {
+       "at": [
+        12,
+        21
+       ],
+       "box": [
+        1,
+        1,
+        6,
+        6
+       ],
+       "rows": [
+        "O.......",
+        ".OOOOO..",
+        ".OOaheO.",
+        ".Oanbe..",
+        "..bbb...",
+        ".OOcb..."
+       ]
+      },
+      "eye_far": {
+       "at": [
+        22,
+        21
+       ],
+       "box": [
+        0,
+        1,
+        5,
+        6
+       ],
+       "rows": [
+        ".....O",
+        ".OOOOO",
+        "OaahO.",
+        ".anbe.",
+        ".bbbe.",
+        ".ccbO."
+       ]
+      },
+      "brow_near": {
+       "at": [
+        14,
+        19
+       ],
+       "rows": [
+        "###.",
+        "...#"
+       ]
+      },
+      "brow_far": {
+       "at": [
+        24,
+        19
+       ],
+       "rows": [
+        "..#",
+        "##."
+       ]
+      },
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm..",
+        "..mm"
+       ]
+      }
+     }
+    }
+   },
+   "base_idea": "rounds a + b folded in. Question for this round (critique 3): smug or tired? Beside 08 the base reads awake and pleasant but not smug: round open eyes, a small mouth",
+   "variants": {
+    "cat_lid": {
+     "axis": "upper lid line",
+     "kept": true,
+     "verdict": "KEPT (with a fix): beside 07/08 at x6 this is the first base that reads sure of itself rather than pleasant: the lid line falls toward the nose. As first drawn it failed FC-P10 (the far iris lost the lash above its inner column) and FC-P24 (the pupil row made the bottom iris row as wide as the row above); the pupil moved up a row and the far lash runs one column further in",
+     "idea": "the lash slopes down toward the nose (outer end high with a 2 px flick, inner third covering the top of the iris): the sharp, sure eye of 07/08 (csp-yitsuin: the angle of the lid line carries the character; down at the outside reads tired, so the slope goes the other way)",
+     "expressions": {
+      "confident": {
+       "eye_near": {
+        "at": [
+         12,
+         21
+        ],
+        "box": [
+         1,
+         1,
+         6,
+         6
+        ],
+        "rows": [
+         "OO......",
+         ".OOOO...",
+         ".OOaOOO.",
+         ".Oaahe..",
+         "..bnb...",
+         ".OOcb..."
+        ]
+       },
+       "eye_far": {
+        "at": [
+         22,
+         21
+        ],
+        "box": [
+         0,
+         1,
+         5,
+         6
+        ],
+        "rows": [
+         ".....O",
+         "..OOOO",
+         "OOah..",
+         ".anbe.",
+         ".bbbe.",
+         ".ccbO."
+        ]
+       }
+      }
+     }
+    },
+    "smirk_lift": {
+     "axis": "mouth corner",
+     "kept": true,
+     "verdict": "KEPT: the 2-row rise is the first mouth that reads as a smirk at 2x; still 3 S4-class px wide (FC-N11)",
+     "idea": "the near corner rises 2 px in a diagonal (S3 tip, S4 step) instead of 1",
+     "expressions": {
+      "confident": {
+       "mouth": {
+        "at": [
+         18,
+         32
+        ],
+        "rows": [
+         "t...",
+         ".m..",
+         "..mm"
+        ]
+       }
+      }
+     }
+    },
+    "brow_arch": {
+     "axis": "brow angle",
+     "kept": true,
+     "verdict": "KEPT: the raised outer ends read surer; FC-N26 holds (inner ends lower)",
+     "idea": "both brows 1 px higher at the outer end (a surer, slightly arched brow)",
+     "expressions": {
+      "confident": {
+       "brow_near": {
+        "at": [
+         14,
+         18
+        ],
+        "rows": [
+         "#...",
+         ".##.",
+         "...#"
+        ]
+       },
+       "brow_far": {
+        "at": [
+         24,
+         18
+        ],
+        "rows": [
+         "..#",
+         ".#.",
+         "#.."
+        ]
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

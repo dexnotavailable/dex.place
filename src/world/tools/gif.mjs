@@ -10,14 +10,14 @@ import { execFileSync } from "node:child_process";
 const require = createRequire(new URL("../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const i = process.argv.indexOf("--port");
-const PORT = i >= 0 ? process.argv[i + 1] : process.env.WORLD_PORT ?? "22763";
+const PORT = i >= 0 ? process.argv[i + 1] : process.env.WORLD_PORT ?? "24001";
 const FFMPEG = process.env.FFMPEG ?? "D:/Dex/Tools/ffmpeg-9.0.1-full_build/bin/ffmpeg.exe";
 const OUT = "review/world/runtime/gif";
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch({ channel: "msedge", args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-await page.goto(`http://127.0.0.1:${PORT}/world/?manual&fresh`, { waitUntil: "load" });
+await page.goto(`http://127.0.0.1:${PORT}/world/?manual&fresh&world=test`, { waitUntil: "load" });
 await page.waitForFunction(() => !!window.__world, null, { timeout: 60000 });
 const ev = (fn, a) => page.evaluate(fn, a);
 const adv = (n) => ev((n) => window.__world.advance(n), n);

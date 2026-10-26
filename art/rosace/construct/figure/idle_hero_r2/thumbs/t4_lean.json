@@ -1,0 +1,57 @@
+{
+ "name": "t4_lean",
+ "idea": "the upper body leans toward the staff (pit of the neck and head 3 px toward it) so the near shoulder comes to the grip and the elbow can bend; the weight heel moves under the new plumb line",
+ "set": {
+  "neck": {
+   "pit_dx": 10,
+   "back": 4
+  },
+  "head": {
+   "chin_dx": 12
+  },
+  "ribcage": {
+   "dx": 9
+  },
+  "waist": {
+   "dx": 10
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     12,
+     1
+    ],
+    "knee_hint": [
+     20,
+     40
+    ],
+    "toe": [
+     23,
+     0
+    ]
+   }
+  }
+ },
+ "score": 10,
+ "gap_area": 329,
+ "width": 92,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "near_reach_px": 41.9,
+ "failed": [
+  "FG-P10: weight leg 6.0 deg; free knee bend 21 deg; free knee +1.8 px lower"
+ ],
+ "verdict": "dropped (#6, 10/11): the full 3 px lean moved the weight heel and tipped the weight leg to 6 deg (FG-P10); t7 is the same idea at two-thirds strength",
+ "kept": false,
+ "rank": 6
+}

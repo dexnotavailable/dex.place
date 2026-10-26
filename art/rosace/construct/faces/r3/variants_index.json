@@ -1,0 +1,564 @@
+{
+ "_doc": "WF-P04 one-axis face variants (round R1): each moves one feature group 1 px up; the base is kept unless a variant beats it on the rules and by eye (verdicts: ART-RULES 10, round R1)",
+ "variants": [
+  {
+   "base": "q34_confident_144",
+   "axis": "eye_row",
+   "passed": 63,
+   "failed": [
+    "FC-P01 mouth 3, nose 6, eye_bottom 11, lash_top 16, brow 2, hair_top 29 [pixels]",
+    "FC-P02 width 16 px at the eye row; (lash top - chin) / width = 1.00",
+    "FC-N09 width 16 px at the eye row; (lash top - chin) / width = 1.00",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 1 clumps",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 2 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 70
+  },
+  {
+   "base": "q34_confident_144",
+   "axis": "brow_raise",
+   "passed": 67,
+   "failed": [
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 2 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 70
+  },
+  {
+   "base": "q34_confident_144",
+   "axis": "mouth_row",
+   "passed": 68,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 15, brow 2, hair_top 29 [pixels]"
+   ],
+   "base_passed": 70
+  },
+  {
+   "base": "q34_focused_144",
+   "axis": "eye_row",
+   "passed": 61,
+   "failed": [
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 2/3 skin under; far: 1 hair px touching, 1/2 sk"
+   ],
+   "base_passed": 64
+  },
+  {
+   "base": "q34_focused_144",
+   "axis": "brow_raise",
+   "passed": 61,
+   "failed": [
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 3/3 skin under; far: 1 hair px touching, 2/2 sk"
+   ],
+   "base_passed": 64
+  },
+  {
+   "base": "q34_focused_144",
+   "axis": "mouth_row",
+   "passed": 62,
+   "failed": [
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 64
+  },
+  {
+   "base": "q34_radiant_144",
+   "axis": "eye_row",
+   "passed": 46,
+   "failed": [
+    "FC-P16 S2 91% of face skin; fringe shadow 13 px in 3 clusters (1 single); under-",
+    "FC-N15 2 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 3 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 52
+  },
+  {
+   "base": "q34_radiant_144",
+   "axis": "brow_raise",
+   "passed": 46,
+   "failed": [
+    "FC-P16 S2 90% of face skin; fringe shadow 13 px in 3 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 3 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 52
+  },
+  {
+   "base": "q34_radiant_144",
+   "axis": "mouth_row",
+   "passed": 49,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 2, hair_top 29 [constru",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 52
+  },
+  {
+   "base": "q34_serene_144",
+   "axis": "eye_row",
+   "passed": 56,
+   "failed": [
+    "FC-P16 S2 89% of face skin; fringe shadow 13 px in 3 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 3/3 skin under; far: 3 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 62
+  },
+  {
+   "base": "q34_serene_144",
+   "axis": "brow_raise",
+   "passed": 56,
+   "failed": [
+    "FC-P16 S2 89% of face skin; fringe shadow 13 px in 3 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 3/3 skin under; far: 3 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 62
+  },
+  {
+   "base": "q34_serene_144",
+   "axis": "mouth_row",
+   "passed": 60,
+   "failed": [
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 62
+  },
+  {
+   "base": "q34_ignited_144",
+   "axis": "eye_row",
+   "passed": 53,
+   "failed": [
+    "FC-P16 S2 89% of face skin; fringe shadow 14 px in 3 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 2/3 skin under; far: 3 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 59
+  },
+  {
+   "base": "q34_ignited_144",
+   "axis": "brow_raise",
+   "passed": 53,
+   "failed": [
+    "FC-P16 S2 89% of face skin; fringe shadow 14 px in 3 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 3 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 59
+  },
+  {
+   "base": "q34_ignited_144",
+   "axis": "mouth_row",
+   "passed": 56,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 1, hair_top 29 [constru",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 59
+  },
+  {
+   "base": "q34_hurt_144",
+   "axis": "eye_row",
+   "passed": 45,
+   "failed": [
+    "FC-P16 S2 89% of face skin; fringe shadow 14 px in 3 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 2/3 skin under; far: 2 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 51
+  },
+  {
+   "base": "q34_hurt_144",
+   "axis": "brow_raise",
+   "passed": 45,
+   "failed": [
+    "FC-P16 S2 89% of face skin; fringe shadow 14 px in 3 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 3/3 skin under; far: 2 hair px touching, 2/2 sk",
+    "FC-N27 most single-px hair/shadow runs on one row: 3 (y 18)"
+   ],
+   "base_passed": 51
+  },
+  {
+   "base": "q34_hurt_144",
+   "axis": "mouth_row",
+   "passed": 48,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 1, hair_top 29 [constru",
+    "HR-P08 4 dashes over 3 rows, dash rows [10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 51
+  },
+  {
+   "base": "front_confident_144",
+   "axis": "eye_row",
+   "passed": 61,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 19 px in 4 clusters (1 single); under-",
+    "FC-N15 2 stray single px in the face (8-connected)",
+    "FC-P27 near: 3 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 65
+  },
+  {
+   "base": "front_confident_144",
+   "axis": "brow_raise",
+   "passed": 60,
+   "failed": [
+    "FC-P16 S2 85% of face skin; fringe shadow 20 px in 4 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 3 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 65
+  },
+  {
+   "base": "front_confident_144",
+   "axis": "mouth_row",
+   "passed": 62,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 2, hair_top 29 [pixels]",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 65
+  },
+  {
+   "base": "front_focused_144",
+   "axis": "eye_row",
+   "passed": 55,
+   "failed": [
+    "FC-P16 S2 87% of face skin; fringe shadow 20 px in 4 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 2/3 skin under; far: 0 hair px touching, 1/3 sk"
+   ],
+   "base_passed": 60
+  },
+  {
+   "base": "front_focused_144",
+   "axis": "brow_raise",
+   "passed": 55,
+   "failed": [
+    "FC-P16 S2 87% of face skin; fringe shadow 20 px in 4 clusters (1 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 60
+  },
+  {
+   "base": "front_focused_144",
+   "axis": "mouth_row",
+   "passed": 58,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 60
+  },
+  {
+   "base": "front_radiant_144",
+   "axis": "eye_row",
+   "passed": 46,
+   "failed": [
+    "FC-P16 S2 89% of face skin; fringe shadow 20 px in 3 clusters (0 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 51
+  },
+  {
+   "base": "front_radiant_144",
+   "axis": "brow_raise",
+   "passed": 48,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 51
+  },
+  {
+   "base": "front_radiant_144",
+   "axis": "mouth_row",
+   "passed": 48,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 2, hair_top 29 [constru",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 51
+  },
+  {
+   "base": "front_serene_144",
+   "axis": "eye_row",
+   "passed": 56,
+   "failed": [
+    "FC-P16 S2 87% of face skin; fringe shadow 21 px in 3 clusters (0 single); under-",
+    "FC-N15 1 stray single px in the face (8-connected)",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 61
+  },
+  {
+   "base": "front_serene_144",
+   "axis": "brow_raise",
+   "passed": 58,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 61
+  },
+  {
+   "base": "front_serene_144",
+   "axis": "mouth_row",
+   "passed": 59,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 61
+  },
+  {
+   "base": "front_ignited_144",
+   "axis": "eye_row",
+   "passed": 55,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 3 hair px touching, 2/3 skin under; far: 1 hair px touching, 2/3 sk"
+   ],
+   "base_passed": 58
+  },
+  {
+   "base": "front_ignited_144",
+   "axis": "brow_raise",
+   "passed": 55,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 3 hair px touching, 3/3 skin under; far: 1 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 58
+  },
+  {
+   "base": "front_ignited_144",
+   "axis": "mouth_row",
+   "passed": 55,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 1, hair_top 29 [constru",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 58
+  },
+  {
+   "base": "front_hurt_144",
+   "axis": "eye_row",
+   "passed": 47,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 2/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 50
+  },
+  {
+   "base": "front_hurt_144",
+   "axis": "brow_raise",
+   "passed": 47,
+   "failed": [
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps",
+    "FC-P27 near: 1 hair px touching, 3/3 skin under; far: 0 hair px touching, 3/3 sk"
+   ],
+   "base_passed": 50
+  },
+  {
+   "base": "front_hurt_144",
+   "axis": "mouth_row",
+   "passed": 47,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 1, hair_top 29 [constru",
+    "HR-P08 4 dashes over 4 rows, dash rows [9, 10, 11, 12]; 6 clumps"
+   ],
+   "base_passed": 50
+  },
+  {
+   "base": "profile_confident_144",
+   "axis": "eye_row",
+   "passed": 49,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 9 px in 2 clusters (0 single); under-c",
+    "FC-P27 near: 6 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 52
+  },
+  {
+   "base": "profile_confident_144",
+   "axis": "brow_raise",
+   "passed": 48,
+   "failed": [
+    "FC-P01 mouth 2, nose 6, eye_bottom 10, lash_top 14, brow 4, hair_top 29 [pixels]",
+    "FC-P16 S2 86% of face skin; fringe shadow 9 px in 2 clusters (0 single); under-c",
+    "FC-P27 near: 6 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 52
+  },
+  {
+   "base": "profile_confident_144",
+   "axis": "mouth_row",
+   "passed": 51,
+   "failed": [],
+   "base_passed": 52
+  },
+  {
+   "base": "profile_focused_144",
+   "axis": "eye_row",
+   "passed": 44,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 10 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 4 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 47
+  },
+  {
+   "base": "profile_focused_144",
+   "axis": "brow_raise",
+   "passed": 44,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 10 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 4 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 47
+  },
+  {
+   "base": "profile_focused_144",
+   "axis": "mouth_row",
+   "passed": 45,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 2, hair_top 29 [constru"
+   ],
+   "base_passed": 47
+  },
+  {
+   "base": "profile_radiant_144",
+   "axis": "eye_row",
+   "passed": 38,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 11 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "profile_radiant_144",
+   "axis": "brow_raise",
+   "passed": 38,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 11 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "profile_radiant_144",
+   "axis": "mouth_row",
+   "passed": 40,
+   "failed": [],
+   "base_passed": 41
+  },
+  {
+   "base": "profile_serene_144",
+   "axis": "eye_row",
+   "passed": 47,
+   "failed": [],
+   "base_passed": 48
+  },
+  {
+   "base": "profile_serene_144",
+   "axis": "brow_raise",
+   "passed": 47,
+   "failed": [],
+   "base_passed": 48
+  },
+  {
+   "base": "profile_serene_144",
+   "axis": "mouth_row",
+   "passed": 46,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 2, hair_top 29 [constru"
+   ],
+   "base_passed": 48
+  },
+  {
+   "base": "profile_ignited_144",
+   "axis": "eye_row",
+   "passed": 42,
+   "failed": [
+    "FC-P16 S2 87% of face skin; fringe shadow 10 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 3 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 45
+  },
+  {
+   "base": "profile_ignited_144",
+   "axis": "brow_raise",
+   "passed": 42,
+   "failed": [
+    "FC-P16 S2 87% of face skin; fringe shadow 10 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 3 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 45
+  },
+  {
+   "base": "profile_ignited_144",
+   "axis": "mouth_row",
+   "passed": 43,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 2, hair_top 29 [constru"
+   ],
+   "base_passed": 45
+  },
+  {
+   "base": "profile_hurt_144",
+   "axis": "eye_row",
+   "passed": 37,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 11 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 40
+  },
+  {
+   "base": "profile_hurt_144",
+   "axis": "brow_raise",
+   "passed": 37,
+   "failed": [
+    "FC-P16 S2 86% of face skin; fringe shadow 11 px in 2 clusters (0 single); under-",
+    "FC-P27 near: 2 hair px touching, 3/3 skin under"
+   ],
+   "base_passed": 40
+  },
+  {
+   "base": "profile_hurt_144",
+   "axis": "mouth_row",
+   "passed": 38,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 2, hair_top 29 [constru"
+   ],
+   "base_passed": 40
+  }
+ ]
+}

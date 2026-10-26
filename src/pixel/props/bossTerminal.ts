@@ -125,12 +125,25 @@ function setMode(c: Prop<Refs>, m: GlyphMode): void {
 
 export const bossTerminal = defineRecipe<Record<string, unknown>, Refs>({
   id: "bossTerminal",
+  breakage: "never",
   reason: "Downloads in the world: every product visit is summoned here as a fresh warden fight; win, and the product's menu opens.",
+  demo: {
+    w: 6, indoor: true,
+    script: [
+      { label: "dormant", wait: 1 },
+      { label: "E: woken (the screen lights)", use: true, from: -0.9, wait: 2 },
+      { label: "E: summoning (seal forms, beam rises)", use: true, from: -0.9, wait: 3.5 },
+      { label: "host: cooldown", go: "cooldown", wait: 3 },
+      { label: "hit: dents, sparks, glitch, never breaks", hit: "slash", from: -1.0, wait: 2 },
+    ],
+  },
   defaults: {},
   use: { reach: 0.9, prompt: "use" },
+  standard: { w: 1.0, h: 1.4, parts: ["terminal"], note: "boss terminal" },
   build(b, p) {
-    const u = (f: number): number => b.u(f);
-    const W = u(1.25), Ht = u(1.82);
+    // WORLD-PLAN section 1: 1.4 H tall, 1.0 H wide; the details keep the proof's proportions at 0.78
+    const u = (f: number): number => b.u(f * 0.78);
+    const W = b.u(1.0), Ht = b.u(1.4);
     const cx = Math.floor(W / 2);
     const t = b.part("terminal", { w: W, h: Ht, pivot: [cx, Ht], at: [0, 0], layer: "mid", z: 8, collide: "solid" });
     // stepped plinth
@@ -309,7 +322,12 @@ function tick(c: Prop<Refs>, dt: number): void {
   // screen colour follows the mode
   R.screenLight.colour = R.mode === "summon" || R.mode === "cooldown" ? [1, 0.3, 0.32] : [1, 0.64, 0.32];
   R.screenGlow.colour = R.screenLight.colour;
-  drawGlyphs(c, R.glyphs);
+  // redraw only when the picture changes: the standby cursor blinks, the rest animate at 15 Hz
+  const key = R.glitch > 0 ? -1 - c.world.stats.steps : R.mode === "standby" ? ((R.modeT * 0.8) % 1 < 0.5 ? 1 : 0) + (R.deny > 0 ? 2 : 0) : Math.floor(c.world.time * 15) * 4 + (R.deny > 0 ? 1 : 0);
+  if (key !== R.glyphs.tag["key"]) {
+    R.glyphs.tag["key"] = key;
+    drawGlyphs(c, R.glyphs);
+  }
   if (R.seal.grid.count === 0) drawSeal(R.seal, c.params.H);
   R.seal.visible = R.seal.dissolve < 0.999;
   R.crest.visible = R.crest.dissolve < 0.999;

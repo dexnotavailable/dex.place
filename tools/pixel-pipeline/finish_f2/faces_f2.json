@@ -1,0 +1,18 @@
+{
+ "_doc": "Route F2 additions to art/rosace/faces/wh2.json (read at run time and merged by stills_f2.py into <out>/<variant>/_faces.json, which wh2_px.py's face step reads instead of wh2.json). 'expressions': the two figure-pose appeal poses (the wh2 table is keyed by pose file name, and idle_appeal/back_appeal are not in it: they take idle_hero's and n2_pivot's). 'eyes_big': the 144 px eye stamps one column wider and one row taller (+14% wide, +17% tall; the iris gains a column and a row, the pupil a second pixel on the open eyes), same codes and the same construction as the wh2 stamps (two-row dark lid with the outer flick, 2-tone iris, pupil, catchlights). At 80 the wh2 eyes (3x3) stay: one pixel there is +33%, not +10-15%.",
+ "expressions": {
+  "idle_appeal": {"eyes": "open", "mouth": "smirk", "blush": true, "note": "idle_hero's: signature smirk"},
+  "back_appeal": {"eyes": "profile", "mouth": "smirk", "blush": true, "note": "n2_pivot's: the back glance"}
+ },
+ "eyes_big": {
+  "144": {
+   "eye_near_open": {"c": [4.0, 4.0], "rows": ["...OOOO.", ".OOOOOOO", "OOaaaawW", "..aaKKaW", "..aaKaaW", "..ccacc.", "..wdddc."]},
+   "eye_far_open": {"c": [2.5, 4.0], "rows": [".OOOOO.", "OOOOOOO", "WaaawO.", "WaKKa..", "WaKaa..", ".ccac..", ".dddc.."]},
+   "eye_near_focus": {"c": [4.0, 3.5], "rows": ["...OOOO.", "OOOOOOOO", ".OaaKawW", "..aaKaaW", "..ccacc.", "..wdddc."]},
+   "eye_far_focus": {"c": [2.5, 3.5], "rows": [".OOOOO.", "OOOOOOO", "WaaKwO.", "WaKaa..", ".ccac..", ".dddc.."]},
+   "eye_near_fierce": {"c": [4.0, 3.5], "rows": ["OOO.....", ".OOOOOO.", "..aOOOOO", "..aaKawW", "..aaKaa.", "..cdddc."]},
+   "eye_far_fierce": {"c": [2.5, 3.5], "rows": ["....OOO", ".OOOOOO", "OOOOawO", ".aaKa..", ".aKaa..", ".cddc.."]},
+   "eye_profile": {"c": [2.0, 3.5], "rows": [".OOOO", "OOOOO", ".aaw.", ".aKa.", ".aKc.", ".cdd."]}
+  }
+ }
+}

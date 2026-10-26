@@ -8,6 +8,7 @@ Headless only, through the isolated wrapper (never Dex's own Blender, never the 
       --out D:/Dex/Projects/dex-place-art/rosace/motion-ai/renders/n1 [--px 144] [--yaw 60] [--elev 8] \
       [--no-render] [--no-drape] [--save-blend PATH] [--keep-root] [--expression resolute]
       [--hero tools/motion-ai/timing/n1_r2.json]   (round 2: hand-posed hero keys + spring cloth)
+      [--no-jiggle]   (v2 base: skip the bust / glute / thigh springs stored on the rig)
 
 Then the pixel post-process (outside Blender):
   python tools/pixel-pipeline/rosace_post.py --raw <out>/px144 --frames
@@ -86,6 +87,7 @@ KEEP_ROOT = opt("--keep-root", False, bool)
 EXPR = opt("--expression", "resolute")
 HERO = opt("--hero", None)
 PAD = opt("--pad", 6, int)          # round 3b: canvas margin (px) so a wide smear fits
+JIGGLE = not opt("--no-jiggle", False, bool)   # v2 base: soft-tissue springs, when the rig carries them
 for _p in (OUT, SAVE, BLEND, NPZ, HERO):
     # a relative path resolves against Blender's cwd (round 1 leaked frames to C:/review)
     assert _p is None or os.path.isabs(_p), f"absolute paths only: {_p}"
@@ -721,6 +723,22 @@ if DRAPE:
         prev = (f, chest_g.copy())
     log("draped", len(RENDER_FRAMES), "drawings")
 
+# ---------------------------------------------------------------------------- 4b. soft tissue (v2 base)
+# The v2 rig (tools/pixel-pipeline/rosace_v2) stores damped-spring settings for the bust, glutes and
+# thighs in arm.data['jiggle']; they are simulated over every game frame once the body is keyed, so
+# held drawings keep settling. v1 rigs have no settings: nothing changes for them.
+JIGGLE_META = None
+if JIGGLE and arm.data.get("jiggle"):
+    sys.path.insert(0, PIPE)
+    from rosace_v2 import jiggle as _jig  # noqa: E402
+    _sim = _jig.bake(arm, 0, F - 1)
+    _lag = {}
+    for _f, _bones in _sim.items():
+        for _n, (_x, _t, _h) in _bones.items():
+            _lag[_n] = max(_lag.get(_n, 0.0), (_x - _t).length)
+    JIGGLE_META = {"settings": _jig.settings(arm), "max_tip_lag_cm": {k: round(v * 100, 2) for k, v in _lag.items()}}
+    log("jiggle baked", JIGGLE_META["max_tip_lag_cm"])
+
 # stepped exposure: every game frame shows its drawing's pose exactly (constant interpolation
 # between keys is not needed: every frame is keyed; held frames repeat the drawing's values)
 # ---------------------------------------------------------------------------- 5. measurements
@@ -844,7 +862,7 @@ if RENDER:
                    "body_sample_frame": [int(x) for x in SAMPLE],
                    "drawing": DRAWING, "root_motion_px": root_motion,
                    "root_motion_total_px": round(sum(root_motion), 2), "in_place": not KEEP_ROOT,
-                   "leg_scale": S_LEG, "measurements": meas, "hero": HERO_META}})
+                   "leg_scale": S_LEG, "measurements": meas, "hero": HERO_META, "jiggle": JIGGLE_META}})
     log("rendered", out, shot["canvas"])
 print("APPLY_DONE", json.dumps({"frames": F, "drawings": len(RENDER_FRAMES),
                                 "max_hand_gap_cm": max(meas["hand_gap_to_shaft_cm"] or [0]),

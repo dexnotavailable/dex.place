@@ -1,0 +1,12 @@
+{"_doc":"glaive-hands round 1: N1 contact grip thumbnails (gh_probe.py). Control: the haft 6 deg from horizontal through the pelvis (GR-N05), hands 49 px apart (GR-P01 24-30), the front (far) hand 12.5 cm off the haft (GR-N01). Joints (control): shoulders L (0.146, -0.612, 1.085) R (-0.055, -0.549, 1.135), hips L (0.066, -0.391, 0.787) R (-0.075, -0.401, 0.792). Variants: the rear (near, R) hand at the near hip, the front hand 0.36 m up the haft (27 px), the haft rising (m1-m3) or falling (m4) through the grip.",
+ "base":"art/rosace/poses/n1_contact.json","variants":{
+ "n0_control":{},
+ "m1_rise19":{"weapon":{"socket":"grip_off","at":[-0.10,-0.50,0.80],"dir":[0.10,-0.95,0.33],"edge":[0,0.3,0.95]},
+   "hands":{"R":{"grip":"grip_off","slide":0.0},"L":{"grip":"grip_mid","slide":0.08}}},
+ "m2_rise15":{"weapon":{"socket":"grip_off","at":[-0.10,-0.52,0.82],"dir":[0.12,-0.96,0.26],"edge":[0,0.25,0.97]},
+   "hands":{"R":{"grip":"grip_off","slide":0.0},"L":{"grip":"grip_mid","slide":0.08}}},
+ "m3_rise24_belly":{"weapon":{"socket":"grip_off","at":[-0.03,-0.56,0.80],"dir":[0.06,-0.92,0.40],"edge":[0,0.4,0.92]},
+   "hands":{"R":{"grip":"grip_off","slide":0.0},"L":{"grip":"grip_mid","slide":0.06}}},
+ "m4_fall17":{"weapon":{"socket":"grip_off","at":[-0.10,-0.50,0.86],"dir":[0.10,-0.96,-0.28],"edge":[0,0.3,0.95]},
+   "hands":{"R":{"grip":"grip_off","slide":0.0},"L":{"grip":"grip_mid","slide":0.08}}}
+}}

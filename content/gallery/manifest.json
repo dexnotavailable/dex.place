@@ -10,7 +10,7 @@
       "thumb": "/gallery/01-t.webp",
       "thumbWidth": 512,
       "thumbHeight": 288,
-      "widths": [160, 384, 512, 640, 960, 1280]
+      "widths": [160, 384, 512, 560, 640, 960, 1280]
     },
     {
       "id": "02",
@@ -21,7 +21,7 @@
       "thumb": "/gallery/02-t.webp",
       "thumbWidth": 512,
       "thumbHeight": 288,
-      "widths": [160, 384, 512, 640, 960, 1280]
+      "widths": [160, 384, 512, 560, 640, 960, 1280]
     },
     {
       "id": "03",
@@ -32,7 +32,7 @@
       "thumb": "/gallery/03-t.webp",
       "thumbWidth": 512,
       "thumbHeight": 288,
-      "widths": [160, 384, 512, 640, 960, 1280]
+      "widths": [160, 384, 512, 560, 640, 960, 1280]
     },
     {
       "id": "04",
@@ -43,7 +43,7 @@
       "thumb": "/gallery/04-t.webp",
       "thumbWidth": 512,
       "thumbHeight": 288,
-      "widths": [160, 384, 512, 640, 960, 1280]
+      "widths": [160, 384, 512, 560, 640, 960, 1280]
     },
     {
       "id": "05",
@@ -54,7 +54,7 @@
       "thumb": "/gallery/05-t.webp",
       "thumbWidth": 512,
       "thumbHeight": 288,
-      "widths": [160, 384, 512, 640, 960, 1280]
+      "widths": [160, 384, 512, 560, 640, 960, 1280]
     },
     {
       "id": "06",
@@ -65,7 +65,7 @@
       "thumb": "/gallery/06-t.webp",
       "thumbWidth": 342,
       "thumbHeight": 512,
-      "widths": [160, 384, 512, 640, 960]
+      "widths": [160, 384, 512, 560, 640, 960]
     },
     {
       "id": "07",
@@ -76,7 +76,7 @@
       "thumb": "/gallery/07-t.webp",
       "thumbWidth": 288,
       "thumbHeight": 512,
-      "widths": [160, 384, 512, 640, 960]
+      "widths": [160, 384, 512, 560, 640, 960]
     },
     {
       "id": "08",
@@ -87,7 +87,7 @@
       "thumb": "/gallery/08-t.webp",
       "thumbWidth": 288,
       "thumbHeight": 512,
-      "widths": [160, 384, 512, 640, 960]
+      "widths": [160, 384, 512, 560, 640, 960]
     },
     {
       "id": "09",
@@ -98,7 +98,7 @@
       "thumb": "/gallery/09-t.webp",
       "thumbWidth": 288,
       "thumbHeight": 512,
-      "widths": [160, 384, 512, 640, 960]
+      "widths": [160, 384, 512, 560, 640, 960]
     }
   ]
 }

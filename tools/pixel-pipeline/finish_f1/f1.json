@@ -1,0 +1,39 @@
+{
+ "_doc": "Route F1 (hi-bit painterly finish) data. 'materials': the painterly ramp per palette material, 6 tones dark to light [deep, core, shadow, half, lit, high] and the 5 ramp-input thresholds between them (t, on v = ao*(0.82*N.L + 0.16), back faces 0.02; PIPELINE 3.5). The colours follow the FG1 chroma budget (finish-gap.md 4, PX-P39/P40/P41): dark cloth near-neutral blue-black (S <= 0.30), white shadows grey-lavender (S <= 0.12), hair and haft darker and greyer (S <= 0.40), skin 6 tones with shadow S <= 0.30, gold desaturated in the darks; strong colour stays on the glass, the azure tips and the eyes. spec = the colour the render's spec band mixes toward (null = none); rim = mix of the world rim colour into the rim band (0 = none). 'looks': the material-side settings rendered in Blender (soft = ramp softness 0 hard cel .. 1 fully linear between tone centres; tex = brush-noise amplitude in ramp-input units; rim, bounce, cav as in f1_blender.py). 'presets': a look plus the post settings (f1_post.py): palette = colours per material group before the global merge, aa = interior anti-alias amount at material borders (0 none, 1 full box mean; the silhouette is never anti-aliased, PX-N04).",
+ "rim_color": "#99d6ff",
+ "rim_dir_cam": [-0.62, 0.78],
+ "rim_graze": [0.45, 0.22],
+ "materials": {
+  "skin":      {"tones": ["#74545a", "#946a69", "#b88b83", "#d8a898", "#eecab4", "#fae6d4"], "t": [0.07, 0.14, 0.24, 0.40, 0.74], "spec": null, "rim": 0.35, "bounce": 1.0, "group": "skin"},
+  "white":     {"tones": ["#66636f", "#86838f", "#aba8b3", "#cdcad1", "#e9e6e3", "#faf8f2"], "t": [0.08, 0.18, 0.34, 0.60, 0.90], "spec": null, "rim": 0.45, "bounce": 0.6, "group": "white"},
+  "veil":      {"tones": ["#66636f", "#86838f", "#aba8b3", "#cdcad1", "#e9e6e3", "#faf8f2"], "t": [0.08, 0.16, 0.30, 0.54, 0.86], "spec": null, "rim": 0.45, "bounce": 0.6, "group": "white"},
+  "beige":     {"tones": ["#6d655c", "#8a8076", "#a99d8f", "#c7baa8", "#e0d4c2", "#f4ecde"], "t": [0.06, 0.12, 0.22, 0.38, 0.72], "spec": null, "rim": 0.35, "bounce": 0.4, "group": "white"},
+  "stocking":  {"tones": ["#141219", "#1c1a24", "#26232f", "#332f3d", "#45404f", "#686474"], "t": [0.07, 0.15, 0.30, 0.52, 0.86], "spec": "#7a7688", "rim": 0.55, "bounce": 0.0, "group": "dark"},
+  "boot":      {"tones": ["#141219", "#1c1a24", "#26232f", "#332f3d", "#45404f", "#686474"], "t": [0.07, 0.15, 0.30, 0.52, 0.86], "spec": "#7a7688", "rim": 0.55, "bounce": 0.0, "group": "dark"},
+  "thong":     {"tones": ["#141219", "#141219", "#1c1a24", "#1c1a24", "#26232f", "#26232f"], "t": [0.1, 0.2, 0.4, 0.6, 0.9], "spec": null, "rim": 0.0, "bounce": 0.0, "group": "dark"},
+  "hair":      {"tones": ["#1c1b2c", "#27253d", "#33304f", "#423e63", "#56517b", "#7e7ba6"], "t": [0.06, 0.14, 0.26, 0.46, 0.82], "spec": "#8f8cba", "rim": 0.35, "bounce": 0.0, "group": "hair"},
+  "hairtip":   {"tones": ["#262a5a", "#2e4a94", "#3d78c4", "#62a8e2", "#96d2f4", "#d4f0fc"], "t": [0.06, 0.12, 0.24, 0.40, 0.70], "spec": null, "rim": 0.3, "bounce": 0.0, "group": "accent"},
+  "indigo":    {"tones": ["#1c1b2c", "#27253d", "#33304f", "#423e63", "#56517b", "#7e7ba6"], "t": [0.05, 0.10, 0.22, 0.40, 0.76], "spec": "#8f8cba", "rim": 0.5, "bounce": 0.0, "group": "hair"},
+  "lining":    {"tones": ["#161522", "#1c1b2c", "#27253d", "#33304f", "#423e63", "#56517b"], "t": [0.08, 0.20, 0.40, 0.62, 0.90], "spec": null, "rim": 0.3, "bounce": 0.0, "group": "hair"},
+  "haft":      {"tones": ["#141320", "#1c1b2a", "#262436", "#312f45", "#403d58", "#5f5c7e"], "t": [0.08, 0.18, 0.36, 0.58, 0.86], "spec": "#7c79a4", "rim": 0.5, "bounce": 0.0, "group": "haft"},
+  "gold":      {"tones": ["#473424", "#654c31", "#86683f", "#a98750", "#cbab6c", "#f1e2b0"], "t": [0.06, 0.12, 0.22, 0.36, 0.62], "spec": "#fff4d6", "rim": 0.3, "bounce": 0.0, "group": "gold"},
+  "steel":     {"tones": ["#383d4d", "#4b5163", "#63697e", "#80879c", "#a2a9bc", "#dde3ee"], "t": [0.06, 0.12, 0.24, 0.40, 0.66], "spec": "#f2f8ff", "rim": 0.4, "bounce": 0.0, "group": "steel"},
+  "steeldark": {"tones": ["#2b2f3c", "#383d4d", "#4b5163", "#63697e", "#80879c", "#a2a9bc"], "t": [0.06, 0.12, 0.24, 0.44, 0.75], "spec": "#c4ccdc", "rim": 0.3, "bounce": 0.0, "group": "steel"},
+  "edge":      {"tones": ["#63697e", "#a2a9bc", "#dde3ee", "#eef6fc", "#f4faff", "#f8fcff"], "t": [0.04, 0.10, 0.30, 0.50, 0.70], "spec": null, "rim": 0.0, "bounce": 0.0, "group": "steel"},
+  "glass":     {"tones": ["#1a2f8c", "#2a62d0", "#2a62d0", "#3a86e0", "#4aa8f0", "#a0e6ff"], "t": [0.03, 0.06, 0.2, 0.6, 0.92], "spec": "#dff6ff", "rim": 0.0, "bounce": 0.0, "group": "accent"},
+  "glass2":    {"tones": ["#2a62d0", "#3a86e0", "#4aa8f0", "#4aa8f0", "#78c8f8", "#a0e6ff"], "t": [0.03, 0.06, 0.2, 0.6, 0.92], "spec": null, "rim": 0.0, "bounce": 0.0, "group": "accent"},
+  "glasscore": {"tones": ["#a0e6ff", "#c8f2ff", "#f0fcff", "#f0fcff", "#f0fcff", "#f0fcff"], "t": [0.05, 0.1, 0.45, 0.6, 0.8], "spec": null, "rim": 0.0, "bounce": 0.0, "group": "accent"}
+ },
+ "looks": {
+  "cel":   {"soft": 0.0,  "tex": 0.0,  "rim": 0.0, "bounce": 0.0,  "cav": 0.0,  "nscale_px": 2.5},
+  "soft":  {"soft": 0.5,  "tex": 0.05, "rim": 1.0, "bounce": 0.10, "cav": 0.05, "nscale_px": 2.5},
+  "paint": {"soft": 0.85, "tex": 0.10, "rim": 1.0, "bounce": 0.12, "cav": 0.08, "nscale_px": 2.5}
+ },
+ "presets": {
+  "P0": {"look": "cel",   "palette": 32, "aa": 0.0,  "note": "control: the F1 ramps and chroma budget, hard cel bands, no texture, no AA"},
+  "P1": {"look": "soft",  "palette": 40, "aa": 0.5,  "note": "soft ramps, light brush texture, 40 colours, half AA at interior borders"},
+  "P2": {"look": "paint", "palette": 48, "aa": 0.5,  "note": "painterly: near-linear ramps, strong brush texture, 48 colours"},
+  "P3": {"look": "soft",  "palette": 32, "aa": 0.25, "note": "soft ramps squeezed into PX-P15's 32 colours, light AA"},
+  "P4": {"look": "paint", "palette": 40, "aa": 0.35, "note": "P2's painterly look in P1's 40 colours with lighter AA (added after the first metrics: P2 had the refs' tone density and cluster size but 48-53 colours and the worst back banding)"}
+ }
+}

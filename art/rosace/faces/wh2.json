@@ -1,0 +1,42 @@
+{
+ "_doc": "Round WH2 face stamps (2026-09-29), applied by tools/art-construct/wh2_px.py 'face' as the last pixel pass before the shading preset's remap. Every feature is re-anchored per still on the v2 head's own projected features (facepass.json: eye centroids, nose tip, chin), never on a fixed offset. Stamps are authored for a face turned toward +x (the near eye on the left, its outer corner at the left end); a face turned toward -x takes them mirrored. Legend: '.' keep, O OL, a A2 (iris top), c A3 (iris low), d A4 (crescent), w A5 (catchlight), W W2 (white), K I4 (pupil), k I3, 1-4 S1-S4, b SB. 'c' of a stamp = the cell (col, row, cell centres) that lands on the anchor. Every pixel is drawn only on head skin (hair stays on top). Mouth anchor: the face's centre line (nose tip to chin) at 'mouth_k' of the way from the nose to the chin.",
+ "expressions": {
+  "idle_hero": {"eyes": "open", "mouth": "smirk", "blush": true, "note": "signature idle: one-sided smirk, camera-side corner up 1 px; brow relaxed (the fringe's own brows kept)"},
+  "n1_contact": {"eyes": "focus", "mouth": "line", "blush": false, "note": "focused: lid lowered 1 row, small set mouth"},
+  "q_stamp": {"eyes": "fierce", "mouth": "open", "blush": true, "note": "fierce, mid-attack: eyes OPEN and narrowed with the lid falling toward the nose, open mouth (never closed ^^ eyes on an attack frame)"},
+  "n2_pivot": {"eyes": "profile", "mouth": "smirk", "blush": true, "note": "back glance over the shoulder: one profile eye, the smirk"}
+ },
+ "mouth_k": {"144": 0.52, "80": 0.55},
+ "stamps": {
+  "144": {
+   "eye_near_open":   {"c": [3.5, 3.5], "rows": ["..OOOO.", ".OOOOOO", "OOaaawW", "..aKaaW", "..cacc.", "..wddc."]},
+   "eye_far_open":    {"c": [2.0, 3.5], "rows": [".OOOO.", "OOOOOO", "WaawO.", "WaKa..", ".cac..", ".ddc.."]},
+   "eye_near_focus":  {"c": [3.5, 3.0], "rows": ["..OOOO.", "OOOOOOO", ".OaKawW", "..cacc.", "..wddc."]},
+   "eye_far_focus":   {"c": [2.0, 3.0], "rows": [".OOOO.", "OOOOOO", "WaKwO.", ".cac..", ".ddc.."]},
+   "eye_near_fierce": {"c": [3.5, 3.0], "rows": ["OOO....", ".OOOOO.", "..aOOOO", "..aKawW", "..cddc."]},
+   "eye_far_fierce":  {"c": [2.0, 3.0], "rows": ["...OOO", ".OOOOO", "OOOawO", ".aKa..", ".cdc.."]},
+   "eye_profile":     {"c": [1.5, 3.0], "rows": [".OOO", "OOOO", ".aw.", ".aK.", ".cd."]},
+   "mouth_smirk":     {"c": [1.5, 1.0], "rows": ["4..", ".44"]},
+   "mouth_line":      {"c": [0.5, 0.0], "rows": ["44"]},
+   "mouth_open":      {"c": [1.5, 0.5], "rows": ["4OO4", ".Ob."]},
+   "nose":            {"c": [0.0, 0.0], "rows": ["3"]},
+   "blush_near":      {"dy": 2},
+   "blush_far":       {"dy": 2}
+  },
+  "80": {
+   "eye_near_open":   {"c": [1.5, 1.5], "rows": ["OOO", ".aw", ".cc"]},
+   "eye_far_open":    {"c": [0.5, 1.5], "rows": ["OOO", "aw.", "cc."]},
+   "eye_near_focus":  {"c": [1.5, 1.5], "rows": ["OOO", "Oaw", ".cc"]},
+   "eye_far_focus":   {"c": [0.5, 1.5], "rows": ["OOO", "awO", "cc."]},
+   "eye_near_fierce": {"c": [1.5, 1.5], "rows": ["OO.", ".OO", ".aw"]},
+   "eye_far_fierce":  {"c": [0.5, 1.5], "rows": [".OO", "OO.", "aw."]},
+   "eye_profile":     {"c": [1.0, 1.5], "rows": ["OO", "aw", "c."]},
+   "mouth_smirk":     {"c": [0.5, 0.0], "rows": ["44"]},
+   "mouth_line":      {"c": [0.0, 0.0], "rows": ["4"]},
+   "mouth_open":      {"c": [0.5, 0.0], "rows": ["4O"]},
+   "nose":            null,
+   "blush_near":      null,
+   "blush_far":       null
+  }
+ }
+}

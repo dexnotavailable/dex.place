@@ -87,6 +87,10 @@ export class Part {
   shake = 0;
   /** Re-rasterise the grid each frame (ropes, cloth, flames). */
   dynamic: ((part: Part, dt: number) => void) | null = null;
+  /** Run `dynamic` only every Nth step (a flame at 15 Hz: 4); parts out of view wait regardless. */
+  dynamicEvery = 1;
+  /** Offset so throttled parts don't all redraw on the same step. */
+  dynamicPhase = 0;
   /** Renderer-owned GPU state. */
   gpu: unknown = null;
   /** Per-part metadata for recipes. */

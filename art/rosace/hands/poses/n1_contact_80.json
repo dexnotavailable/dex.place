@@ -1,0 +1,29 @@
+{
+ "_doc": "glaive-hands round 2: r3 fist template (construct/fist_<px>_r3.json: one continuous knuckle line, lit thumb over the haft, S3 wrist step); the rear (near, R) fist choked above the butt at the near hip, the front (far, L) fist 25 px up the haft (pose n1_r2d/p_s26lo); smear: a rising-cut crescent about the front fist (variant b of 4, round-2 _work/t_smear.png).",
+ "hands": [
+  {
+   "side": "L",
+   "kind": "fist",
+   "template": "r3"
+  },
+  {
+   "side": "R",
+   "kind": "fist",
+   "template": "r3",
+   "edge": "OL"
+  }
+ ],
+ "rose": {
+  "proc": true,
+  "arm_du": 11.5,
+  "nub_r": 1.2,
+  "_note": "80 px: arms past DESIGN's 8.5 du so the cross holds at 1x (round-2 _work/t_rose80.png, variant c of 4)"
+ },
+ "smear": {
+  "pivot": "L",
+  "sweep": 30,
+  "width": 16,
+  "dir": 1,
+  "taper": 1.6
+ }
+}

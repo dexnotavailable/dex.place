@@ -308,6 +308,55 @@ def cmd_preview(a):
     print(st["_name"], "at", at, "flip", flip)
 
 
+
+# ------------------------------------------------------------------ v2 head (face lane, round F1)
+# The v2 base (MMD head) gets construction-grid faces from tools/art-construct/face_v2.py, placed on
+# the head's own projected features (author_faces_pass.py writes facepass.json + facewin.png next to
+# the render). A still with no face pass keeps the stamp route above, unchanged. The face choice per
+# pose lives in art/rosace/construct/faces/v2/stills.json; ROSACE_FACES=v1 forces the old stamps.
+V2_DIR = os.path.join(REPO, "art", "rosace", "construct", "faces", "v2")
+V2_EXPR = {"serene": "confident", "resolute": "focused", "radiant": "smile"}
+
+
+F2_DIR = os.path.join(REPO, "art", "rosace", "construct", "faces", "f2")
+
+
+def _route():
+    """which v2 composer: ROSACE_FACES=f2 -> the face lane's round-F2 composer (face_f2.py, faces/f2/stills.json);
+    anything else -> round F1 (face_v2.py, faces/v2/stills.json), the default until the Integrate step flips it"""
+    return "f2" if os.environ.get("ROSACE_FACES") == "f2" else "v2"
+
+
+def v2_choice(meta, ops):
+    """(expr, params, facing) for this still: stills.json[pose][px] > stills.json[pose]['*'] > the ops face expr"""
+    p = os.path.join(F2_DIR if _route() == "f2" else V2_DIR, "stills.json")
+    table = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
+    pose = meta.get("pose") or ""
+    row = table.get(pose, {})
+    pick = dict(row.get("*", {}))
+    pick.update(row.get(str(meta["px"]), {}))
+    f = (ops or {}).get("face", {})
+    expr = pick.get("expr") or V2_EXPR.get(f.get("expr") or meta.get("expression") or "serene", "confident")
+    return expr, pick.get("params", {}), pick.get("facing")
+
+
+def v2_face(meta, img, mat, ops, keep=None):
+    """the v2 face for a still that has a face pass; None otherwise. Returns (image, touched, name)"""
+    still = meta.get("_still")
+    if os.environ.get("ROSACE_FACES") == "v1" or not still or not os.path.exists(os.path.join(still, "facepass.json")):
+        return None
+    import sys
+    sys.path.insert(0, os.path.join(REPO, "tools", "art-construct"))
+    if _route() == "f2":
+        import face_f2 as composer
+    else:
+        import face_v2 as composer
+    expr, params, facing = v2_choice(meta, ops)
+    out, _mat, rec, log = composer.compose(still, expr, params=params, facing=facing, tag=meta.get("_tag", "noface"),
+                                           base=(img, mat))
+    touched = (out != img).any(-1)
+    return out, touched, "v2:" + (rec.get("spec") or expr)
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["png", "preview"])

@@ -206,6 +206,14 @@ export class WorldRenderer {
     this.uploadLights();
   }
 
+  /** Change the lighting and effect lights mid-pass (flushes what was drawn under the old ones). */
+  relight(lighting: Lighting, lights: PointLight[]): void {
+    this.flush();
+    this.lighting = lighting;
+    this.lightList = lights;
+    this.uploadLights();
+  }
+
   private sx(x: number): number {
     const { z, fx } = this.xf;
     return z === 1 ? x : Math.round((x - fx) * z + fx);

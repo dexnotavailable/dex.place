@@ -1,4 +1,5 @@
 {
+ "_doc": "glaive-hands round 2 pick: probe n2_r2b variant j_narrow (hands 27 px apart, the near forearm under the haft). Passes GR at 144; HD-P06 far wrist 78 deg in 2D is a foreshortened forearm (critic). Previous pose in r2a/.",
  "name": "n2_pivot",
  "note": "N2 'Gloria' anticipation A2, round 3 re-key after the round-2 critics ('profile bust bolted onto a back-view pelvis; head facing left while the glaive thrusts right; tube legs; off-model'). Now a true three-quarter back: shoulders and pelvis turned the same way (only ~15 degrees of spine twist), so the back plane, spine groove, halter yoke and cross read as one surface over the thong-cut seat. The glaive leads forward in the direction she faces (screen left, tilted up ~25 degrees) with both hands on it in front of her body, so the haft passes behind her silhouette cleanly: blade out past her far shoulder, butt out behind the near hip. She looks over her shoulder along the haft (profile). Weight on the far leg, the seat tilts toward it, the near heel lifts. The hair tail swings out to the near side, the veil trails. Round 3 fix (body/gear/overall critics: 'profile torso reads topless, one flat glute, back hidden, the shaft cuts across the waist'): a true rear three-quarter; root turned to 140 so with camera 55 the pelvis faces ~15 degrees off straight-away (both cheeks and the thong V show), the chest 15 degrees more toward screen-left, the head over the shoulder in profile; the pelvis tilts forward and the ribcage lifts (arched lower back, seat pushed back); the glaive is held level at chest/shoulder height in front of her (MOVESET A2: 'glaive at shoulder height behind her'), so its middle hides behind her body and only the blade (screen-left) and butt (screen-right) show, elbows out to both sides; hair and hair tail swing over her left shoulder so the open back, spine and halter yoke read. Round 4 fix (body/overall/gear critics: 'scarecrow T-pose, level spear cuts the figure, profile head, back covered by hair'): root 140 -> 150 (both cheeks + thong V), shoulders twisted ~28 degrees against the hips, head over the left shoulder toward three-quarter (neck/head yaw 42/48); both hands on the haft in front of her (lead hand mid-shaft on a nearly straight arm, rear hand hidden behind the body), the glaive on a ~22 degree diagonal, blade up screen-left, butt out at the right below the shoulders; hair mantle and tail swing to her right so the open back shows.",
  "camera": {
@@ -74,16 +75,16 @@
   }
  },
  "weapon": {
-  "socket": "grip_off",
+  "socket": "glaive_butt",
   "at": [
-   0.07,
-   -0.3,
-   1.34
+   -0.8992,
+   0.2,
+   0.9903
   ],
   "dir": [
-   0.915,
-   -0.032,
-   0.401
+   0.9292,
+   0.0,
+   0.3697
   ],
   "edge": [
    0,
@@ -94,17 +95,17 @@
  "hands": {
   "R": {
    "grip": "grip_off",
-   "slide": 0.0,
+   "slide": -0.1241,
    "thumb": "tip",
    "back": [
-    0.0,
+    0,
     0.6,
     0.8
    ]
   },
   "L": {
-   "grip": "grip_main",
-   "slide": 0.0,
+   "grip": "grip_off",
+   "slide": 0.2759,
    "thumb": "tip",
    "back": [
     0.2,
@@ -116,13 +117,13 @@
  "poles": {
   "arm.R": [
    -0.5,
-   -0.1,
-   0.8
+   0.3,
+   0.7
   ],
   "arm.L": [
-   0.55,
-   0.25,
-   0.9
+   0.6,
+   0.3,
+   1.1
   ],
   "leg.R": [
    -0.25,
@@ -158,26 +159,26 @@
   ],
   "chains": {
    "hair_tail": {
-    "g": 0.65,
+    "g": 0.45,
     "wind": [
-     -0.55,
-     0.05,
-     0.0
+     -1.1,
+     -0.35,
+     0.15
     ]
    },
    "hair_back": {
-    "g": 0.35,
+    "g": 0.3,
     "wind": [
-     -0.9,
-     -0.1,
-     0.2
+     -1.2,
+     -0.3,
+     0.25
     ]
    },
    "tabard": {
-    "g": 0.9,
+    "g": 0.8,
     "wind": [
-     -0.45,
-     -0.35,
+     -1.0,
+     0.05,
      0.0
     ]
    },
@@ -223,5 +224,7 @@
    }
   }
  },
- "expression": "serene"
+ "expression": "serene",
+ "note_glaive_hands": "glaive-hands lane round 1: the main hand slides down to 25 px from the rear hand (was 39 px apart and 5 cm off the haft).",
+ "note_integrate": "Integrate step 2026-09-29: the glaive-hands lane's pose (art/rosace/hands/poses) with the outfit lane's R2Q drape patches (qtab, hair, tabn2 from overrides/global/outfit/pose_patches.json) folded in; the pre-integration file is build/scratch/poses_pre_artistry/"
 }

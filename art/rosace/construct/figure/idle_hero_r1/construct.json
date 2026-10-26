@@ -1,0 +1,383 @@
+{
+ "name": "idle_hero_r1",
+ "spec": {
+  "_doc": "Gesture spec for the processional hero idle at 144 px, round R1 (tools/art-construct/figure_paint.py). Starts from the C1 spec (idle_hero.gesture.json: wide stance t2, collar hand) and adds the R1 part sizes from DESIGN 2 at 144 (bell sleeves with a 27 px mouth, the hime back hair to mid-thigh, the veil), limb radii from the 3D reference layer, and a far-hand pose switch (collar | hip). Units as the C1 spec: h = px above the sole, dx = px from the body centre at the feet (+ = the facing side). Every number is [I] until the learning log (ART-RULES 10, round R1) records it.",
+  "name": "idle_hero_r1",
+  "H": 144,
+  "canvas": [
+   152,
+   206
+  ],
+  "sole_y": 198,
+  "cx": 90,
+  "intent": "idle",
+  "move": "idle",
+  "carry": "rest",
+  "facing": "right",
+  "weight_foot": "far",
+  "expression": "confident",
+  "gaze_target": "viewer",
+  "face": {
+   "yaw": "q34",
+   "gaze": [
+    -1,
+    0
+   ],
+   "roll": 0,
+   "pitch": 0
+  },
+  "head": {
+   "chin_dx": 15,
+   "chin_h": 118
+  },
+  "neck": {
+   "pit_dx": 13,
+   "pit_h": 111,
+   "width": 7,
+   "back": 4
+  },
+  "shoulders": {
+   "tilt_deg": -7,
+   "near_w": 16,
+   "far_w": 12
+  },
+  "ribcage": {
+   "h": 100,
+   "dx": 12,
+   "near_w": 11,
+   "far_w": 8
+  },
+  "waist": {
+   "h": 86,
+   "dx": 12,
+   "near_w": 8,
+   "far_w": 6
+  },
+  "pelvis": {
+   "dx": 13,
+   "h": 76,
+   "tilt_deg": 7,
+   "near_w": 11,
+   "far_w": 10,
+   "crotch_h": 72
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   },
+   "near": {
+    "heel": [
+     -9,
+     7
+    ],
+    "knee_hint": [
+     3,
+     40
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "arms": {
+   "near": {
+    "hand": "grip",
+    "elbow_hint": [
+     -18,
+     84
+    ]
+   },
+   "far": {
+    "pose": "hip",
+    "hand": [
+     25,
+     80
+    ],
+    "elbow_hint": [
+     40,
+     96
+    ],
+    "foreshorten": [
+     0.85,
+     0.9
+    ]
+   }
+  },
+  "lengths": {
+   "upper_arm": 24,
+   "forearm": 21,
+   "thigh": 36,
+   "calf": 35
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ],
+   "angle_deg": 17,
+   "length": 194,
+   "grip_along": 98
+  },
+  "hair": {
+   "tail_h": 62,
+   "width": 15,
+   "sway": -3,
+   "tail_dx": -2
+  },
+  "zones": {
+   "_doc": "polygons in dx/h (the checker converts). keep_out: nothing of the named kind may be inside. must_be: the named thing must be there.",
+   "keep_out": [
+    {
+     "name": "centre band (no weapon)",
+     "kind": "weapon",
+     "poly": "torso_centre_band"
+    },
+    {
+     "name": "between the eyes below the lash",
+     "kind": "hair",
+     "poly": "eye_gap"
+    }
+   ],
+   "must_be": [
+    {
+     "name": "collar_cross",
+     "expect": "gold_cross",
+     "poly": "cross_box"
+    },
+    {
+     "name": "fist at the grip",
+     "expect": "hand_near",
+     "poly": "grip_box"
+    },
+    {
+     "name": "dark between the legs",
+     "expect": "dark",
+     "poly": "between_legs"
+    }
+   ]
+  },
+  "_tilt_doc": "tilt_deg = angle of the near->far line; + = the far (screen-right) side higher. Weight on the far leg: far hip up (+), shoulders the other way (-).",
+  "thumbnails": [
+   {
+    "name": "t1_c1hero",
+    "idea": "the C1 hero gesture (wide stance, glaive 17 deg out, hand at the collar cross) with the R1 masses",
+    "set": {
+     "arms": {
+      "far": {
+       "pose": "collar",
+       "hand": [
+        14,
+        103
+       ],
+       "elbow_hint": [
+        40,
+        96
+       ],
+       "foreshorten": [
+        0.62,
+        0.95
+       ]
+      }
+     }
+    },
+    "verdict": "dropped (#4, 10/11): with the DESIGN-size bell (27 px mouth) the collar hand drapes the far sleeve across the chest and closes the far arm window (FG-N04, block) and hides the chest window; C1 passed only because its sleeve was a third of the size. Built full size as idle_hero_r1_collar for the A/B record"
+   },
+   {
+    "name": "t2_hiphand",
+    "idea": "far hand on the far hip (the 3D reference's pose, C1's A/B alternative t5): the far sleeve hangs beside the hip and opens a triangle window",
+    "set": {
+     "fist_shift": 0.4
+    },
+    "verdict": "KEPT, HERO (#1, 11/11, gap 316 px2): the hand on the far hip keeps a clean triangle window; the far bell hangs beside the hip, so torso, chest window and collar cross stay clear; the most attitude at 1x"
+   },
+   {
+    "name": "t3_haft24",
+    "idea": "glaive leaning 24 deg with the butt 2 px nearer and the grip 5 px lower (so the fist can reach it: C1 log, GR-P05), the near arm reaching further out: a wider wedge of background",
+    "set": {
+     "arms": {
+      "far": {
+       "pose": "collar",
+       "hand": [
+        14,
+        103
+       ],
+       "elbow_hint": [
+        40,
+        96
+       ],
+       "foreshorten": [
+        0.62,
+        0.95
+       ]
+      }
+     },
+     "glaive": {
+      "angle_deg": 24,
+      "butt": [
+       -13,
+       0
+      ],
+      "grip_along": 93
+     }
+    },
+    "verdict": "dropped (#5, 9/11): the collar hand's FG-N04 plus the 24 deg glaive's GR-P10"
+   },
+   {
+    "name": "t4_push",
+    "idea": "push the contrapposto a step (FG-N09): shoulders -10, hips +10, head roll 1 more",
+    "set": {
+     "shoulders": {
+      "tilt_deg": -10
+     },
+     "pelvis": {
+      "tilt_deg": 10
+     }
+    },
+    "verdict": "dropped (#3, 10/11): +/-10 deg tilts sit outside FG-P09 (hip 4-10 each way was read as +10 vs -10 failing); by eye the extra tilt reads as a sway, not more attitude"
+   },
+   {
+    "name": "t5_hip_haft24",
+    "idea": "t2 and t3 together: hand on the hip plus the steeper glaive",
+    "set": {
+     "glaive": {
+      "angle_deg": 24,
+      "butt": [
+       -13,
+       0
+      ],
+      "grip_along": 93
+     }
+    },
+    "verdict": "KEPT (#2, 10/11, gap 347 px2, widest silhouette): the steeper glaive opens the wedge, but the haft passes 3 px from the near sleeve (GR-P10 wants 4-8 or an overlap >= 3); next round: move the butt 2 px out or let the haft overlap the bell"
+   },
+   {
+    "name": "t6_control",
+    "idea": "control: level shoulders and hips, both knees straight (the mannequin); must score last",
+    "set": {
+     "shoulders": {
+      "tilt_deg": 0
+     },
+     "pelvis": {
+      "tilt_deg": 0,
+      "dx": 8
+     },
+     "legs": {
+      "near": {
+       "heel": [
+        -6,
+        1
+       ],
+       "knee_hint": [
+        -4,
+        40
+       ],
+       "toe": [
+        0,
+        0
+       ]
+      }
+     },
+     "arms": {
+      "far": {
+       "pose": "collar",
+       "hand": [
+        14,
+        103
+       ],
+       "elbow_hint": [
+        40,
+        96
+       ],
+       "foreshorten": [
+        0.62,
+        0.95
+       ]
+      }
+     }
+    },
+    "verdict": "control, last (#6, 7/11): level shoulders and hips, locked knees: FG-P08/P09/P10 and FG-N04 fail as they should"
+   }
+  ],
+  "radii": {
+   "thigh": [
+    6.5,
+    4.0
+   ],
+   "calf": [
+    3.8,
+    2.3
+   ],
+   "upper_arm": [
+    3.3,
+    2.7
+   ],
+   "forearm": [
+    2.6,
+    2.1
+   ]
+  },
+  "sleeve_mouth": 27,
+  "tabard_half": 5.5,
+  "tabard_hem_h": 24,
+  "tabard_sway": -3,
+  "boot_h": 21,
+  "stock_h": 55,
+  "_decisions": [
+   "round R1 (2026-09-29): six thumbnails built with the final R1 part models and scored on 11 silhouette rules; t2_hiphand (#1) and t5_hip_haft24 (#2) kept; the hero is t2. The collar hand DESIGN 1 names fails FG-N04 once the bell sleeves are at DESIGN size (the drape closes the window and covers the chest window); that is listed for Dex in DESIGN 13 and logged in ART-RULES 10 (R1)."
+  ],
+  "fist_shift": 0.4
+ },
+ "log": [
+  "gesture: joints from targets by IK; weight on the far foot",
+  "mannequin: rib cage and pelvis boxes on one spine; limbs as tapered cylinders",
+  "r1: dressed at DESIGN sizes (bell sleeves, hime back hair, veil), painted r1 head; one key light from the upper front (the facing side); outline and contact lines as C1"
+ ],
+ "reference": {
+  "dir": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\renders\\r4fix\\idle_hero\\px144",
+  "anchor": [
+   52,
+   195
+  ],
+  "offset": [
+   38,
+   3
+  ],
+  "pose": "idle_hero",
+  "yaw": 30,
+  "glaive_angle_from_vertical": 6.5,
+  "knee_L": [
+   93.9,
+   148.6
+  ],
+  "knee_R": [
+   84.2,
+   146.3
+  ],
+  "hand_L": [
+   97.8,
+   111.7
+  ],
+  "hand_R": [
+   55.6,
+   103.2
+  ],
+  "head": [
+   83.6,
+   78.0
+  ]
+ },
+ "paint": null,
+ "_doc": "the spec this sprite was built from (tools/art-construct/figure_paint.py, round R1) and the log"
+}

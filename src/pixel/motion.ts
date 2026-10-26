@@ -198,6 +198,30 @@ export class Rope {
     if (s.pinStart !== false) this.pins[0] = [ax, ay];
     if (s.pinEnd) this.pins[n - 1] = [bx, by];
     if (s.endMass) this.inv[n - 1] = 1 / s.endMass;
+    this.grounded = new Uint8Array(n);
+    this.x0 = this.x.slice();
+    this.y0 = this.y.slice();
+  }
+
+  /** Points that touched the ground last step. */
+  grounded: Uint8Array;
+  /** Rest positions as built (restore puts the rope back here). */
+  readonly x0: Float32Array;
+  readonly y0: Float32Array;
+
+  /** Mend every cut and put the rope back at rest (a line restored after a tear). */
+  reset(): void {
+    this.cut.fill(0);
+    this.x.set(this.x0);
+    this.y.set(this.y0);
+    this.px.set(this.x0);
+    this.py.set(this.y0);
+    this.wake();
+  }
+
+  /** Has any segment been cut? */
+  get isCut(): boolean {
+    return this.cut.some((v) => v === 1);
   }
 
   /** Cut the segment nearest (x, y) within `r` px. Returns the segment index or -1. */
@@ -274,7 +298,8 @@ export class Rope {
       }
       x[i] = x[i]! + vx + ax * dt * dt;
       y[i] = y[i]! + vy + ay * dt * dt;
-      energy += vx * vx + vy * vy;
+      // points lying on the ground jitter against it; they don't keep the rope awake
+      if (!this.grounded[i]) energy += vx * vx + vy * vy;
     }
     for (let it = 0; it < 12; it++) {
       for (let i = 0; i < n; i++) {
@@ -298,10 +323,13 @@ export class Rope {
     // rest on the ground: slide back out, lose speed
     if (ground) {
       for (let i = 0; i < n; i++) {
+        this.grounded[i] = 0;
         if (pins[i] || !ground(x[i]!, y[i]!)) continue;
+        this.grounded[i] = 1;
         let up = 0;
         while (up < 10 && ground(x[i]!, y[i]! - up - 1)) up++;
-        y[i] = y[i]! - up - 1;
+        // rest just on the surface, at the same height every step, so a lying rope can fall asleep
+        y[i] = Math.floor(y[i]! - up) - 0.01;
         px[i] = x[i]! - (x[i]! - px[i]!) * 0.3;
         py[i] = y[i]!;
       }
@@ -361,6 +389,8 @@ export interface ClothSpec {
   windGain?: number;
   /** z (fold depth) to height gain. */
   foldGain?: number;
+  /** Sleep threshold multiplier (a pennant hanging off its pole buckles faintly forever: give it more). */
+  sleep?: number;
 }
 
 export class Cloth {
@@ -427,6 +457,25 @@ export class Cloth {
       this.rest[c] = Math.hypot(this.p[a * 3]! - this.p[b * 3]!, this.p[a * 3 + 1]! - this.p[b * 3 + 1]!);
     }
     if (s.pinTop !== false) for (let i = 0; i < cols; i++) this.pin(i, this.p[i * 3]!, this.p[i * 3 + 1]!, 0);
+    this.p0 = this.p.slice();
+  }
+
+  /** Rest positions as built. */
+  readonly p0: Float32Array;
+
+  /** Mend every tear and put the cloth back at rest (restore after a cut). */
+  reset(): void {
+    this.alive.fill(1);
+    this.p.set(this.p0);
+    this.q.set(this.p0);
+    this.wake();
+  }
+
+  /** How many constraints are torn. */
+  get torn(): number {
+    let n = 0;
+    for (let c = 0; c < this.alive.length; c++) if (!this.alive[c]) n++;
+    return n;
   }
 
   pin(k: number, x: number, y: number, z = 0): void {
@@ -541,7 +590,7 @@ export class Cloth {
         p[b * 3 + 2] = p[b * 3 + 2]! - dz * diff * wb;
       }
     }
-    if (energy < 0.0006 * N) {
+    if (energy < 0.0006 * N * (this.spec.sleep ?? 1)) {
       this.still += dt;
       if (this.still > 1.5 && !wind) this.sleeping = true;
     } else this.still = 0;
@@ -588,6 +637,7 @@ export class Cloth {
     const sp = spec.spacing;
     const fold = spec.foldGain ?? 1.6;
     const zbuf = new Float32Array(g.W * g.Hh).fill(-1e9);
+    let mx0 = g.W, my0 = g.Hh, mx1 = -1, my1 = -1;
     for (let j = 0; j < rows - 1; j++) {
       for (let i = 0; i < cols - 1; i++) {
         if (!this.quadAlive(i, j)) continue;
@@ -618,12 +668,19 @@ export class Cloth {
             g.flags[di] = src.flags[si]! | (g.flags[di]! & F_NOINK);
             g.height[di] = src.height[si]! + 6 + z * fold;
             g.hp[di] = src.hp[si]!;
+            const X = di % g.W, Y = (di / g.W) | 0;
+            if (X < mx0) mx0 = X;
+            if (X > mx1) mx1 = X;
+            if (Y < my0) my0 = Y;
+            if (Y > my1) my1 = Y;
           }
         }
       }
     }
     g.recount();
-    g.markAll();
+    // only the rows the cloth covers now (clearAll marked where it was)
+    if (mx1 >= 0) g.markRect(mx0, my0, mx1, my1);
+    g.shapeVersion++;
   }
 }
 

@@ -1,0 +1,22 @@
+{
+ "_doc": "front confident at 144 px: glyph names from lib_144.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "front",
+ "expr": "confident",
+ "px": 144,
+ "eye_near": "near_tall",
+ "eye_far": "front_far_open",
+ "eye_far_strong": "far_open_s",
+ "brow_near": "near_confident",
+ "brow_far": "far_confident",
+ "blush": "soft",
+ "mouth": "confident_small",
+ "gaze": "viewer",
+ "nose": "q34",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": null
+ }
+}

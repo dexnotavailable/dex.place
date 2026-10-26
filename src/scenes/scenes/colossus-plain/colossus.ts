@@ -73,8 +73,15 @@ export const LEGS: LegDef[] = [
 export const EYE: [number, number] = [-150, 207];
 export const HEAD_PIVOT: [number, number] = [-80, 195];
 
-/** Horizontal extent of the whole creature in design units (tentacle tips to the rear legs). */
-export const EXTENT = { x0: -230, x1: 300, y1: 340 };
+/**
+ * Horizontal extent of the whole creature in design units (tentacle tips to the rear legs).
+ * x1 covers the far-side rear knee at the back of its swing: the walk model's IK puts it at
+ * x 337 (hip 168 + far dx 18, knee bent toward the tail), plus the bone's bow, the swollen
+ * joint and the edge lumps (about 28 more). With the old 300 the shader's body-space clip
+ * (and the Tracker scissor built from it) sliced that leg with a hard vertical line for
+ * ~35 s of every arrival pass (lane R-A, 2026-09-29; review/world/phase2/R-A/edgecut-*.json).
+ */
+export const EXTENT = { x0: -230, x1: 380, y1: 340 };
 
 /**
  * The body is authored level, then pitched front-up by TILT radians about

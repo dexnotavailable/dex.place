@@ -1,0 +1,1822 @@
+{
+ "_doc": "Round R3 painted head, three-quarter view facing screen-right, 144 px sprite; written by tools/art-construct/heads_r3.py (every stroke is in that file). Construction grid as R1/R2 (chin y 36, rows above the chin: mouth 2, nose 6, eye bottom 10, lash top 14, brow 16-17, hairline 20, skull top 26, hair top 29). Layers back -> skin -> front, expression overlays at anchors; format: head_paint.py.",
+ "view": "q34",
+ "gaze": [
+  -1,
+  0
+ ],
+ "gaze_target": "viewer",
+ "roll": -1,
+ "pupil": true,
+ "rows": {
+  "mouth": 2,
+  "nose": 6,
+  "eye_bottom": 10,
+  "lash_top": 14,
+  "brow": 16,
+  "hairline": 20,
+  "skull_top": 26,
+  "hair_top": 29
+ },
+ "anchors": {
+  "c0": 21,
+  "chin": [
+   22,
+   36
+  ],
+  "eye_near": [
+   13,
+   22,
+   6,
+   6
+  ],
+  "eye_far": [
+   22,
+   22,
+   5,
+   6
+  ]
+ },
+ "bangs": [
+  {
+   "root": [
+    9,
+    12
+   ],
+   "tip_y": 23
+  },
+  {
+   "root": [
+    13,
+    17
+   ],
+   "tip_y": 18
+  },
+  {
+   "root": [
+    18,
+    22
+   ],
+   "tip_y": 19
+  },
+  {
+   "root": [
+    23,
+    26
+   ],
+   "tip_y": 17
+  },
+  {
+   "root": [
+    27,
+    30
+   ],
+   "tip_y": 22
+  }
+ ],
+ "layers": {
+  "back": [
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "..............lkkkkk..................",
+   "...........llllkkkklkkk...............",
+   ".........nnlllnlllknkkklk.............",
+   ".......nnnllldljjjlldjkknkk...........",
+   "......nnnjjlldkllllldljlnkkk..........",
+   ".....nnnkllldlllllldlllkldjjk.........",
+   "....nnnnllldllllllldllllldlkkk........",
+   "...nnnnnllldlllllllldllllldlkkk.......",
+   "...nnnnnlldlllllllllnlllllnllkkk.kk...",
+   "..nnnnnnllnlllllllllllllllllnlllkl....",
+   "..nnklnnnnnnn...............nlllkl....",
+   ".nnnklnnnnnnn...............nlnlk.....",
+   ".nnnlkndnnnnn...............nlnlk.....",
+   ".nnnlkndnnnnn...............nlnk......",
+   ".nndkndnnnnnn...............nnlk......",
+   ".nndlndnnnnnn...............nnlk......",
+   ".nldndnnnnnnn...............nnlk......",
+   ".ndlndnnnnnnn...............nnlk......",
+   ".ndlndnnnnnnn................nnk......",
+   ".ndllndnnnnnn................nnk......",
+   ".nndlndnnnnnn................nnk......",
+   ".nndlndnnnnnn................nnk......",
+   ".nnnllndnnnnnn..............nnlk......",
+   ".nnnllndnnnnnn..............nnk.......",
+   "..nnllndnnnnnln.............nnk.......",
+   "..nnnllndnnnnnln...........nllk.......",
+   "..nnnllndnnnnnnln..........bbk........",
+   "..nnnllndnnnnnnnnln.......nbck........",
+   ".nnnllndnnnnnnnnnnln......nck.........",
+   ".nndllndnnnnnnnnnnnln.................",
+   ".nndllndnnnnnnnn......................",
+   ".nndnllndnnnnnnn......................",
+   ".ndnnllndnnnnnnn......................",
+   ".ndnnllndnnnnnnn......................",
+   ".ndnnnllndnnnnnn......................",
+   ".nnnnnllnnnnnnnn......................",
+   ".ddnnnllnnnnnnnn......................",
+   ".dddnnddnnnnnnnn......................",
+   ".nnnnnnnnnnnnnnn......................"
+  ],
+  "skin": [
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "............ssssssssssssssss..........",
+   "............ssttssssssssttss..........",
+   "............stsstsssssttttts..........",
+   "............ssssstssssssssst..........",
+   "............ssssssttssssssss..........",
+   "............ssssssssssssssss..........",
+   "............ssssssssssssssss..........",
+   "............ssssssssssssssss..........",
+   "............ssssssssssssssss..........",
+   "............sssssssssssssssss.........",
+   ".............ssssssssssssssss.........",
+   ".............sss11sssssssssss.........",
+   ".............ssssssssssssssss.........",
+   "..............ssssssssssssts..........",
+   "..............ssssssssssttss..........",
+   "...............sssssssssssss..........",
+   "................sssssssssss...........",
+   ".................ssssssssss...........",
+   "...................sssssss............",
+   "....................sssss.............",
+   ".....................sss..............",
+   "................tsmmmm................",
+   "................tssmms................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................",
+   "................tsssss................"
+  ],
+  "front": [
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   "......................................",
+   ".........llkkdlkkkdllkkdlkkdlkk.......",
+   ".........llkdn..kdnllkdn..kndlk.......",
+   ".........nllk....nnlkl.....nlkk.......",
+   "........nnlll......nn.......lll.......",
+   "........nnll................nll.......",
+   ".......nlnll................ln........",
+   ".......nllnn.................n........",
+   "......nllln...........................",
+   "......nllllk..........................",
+   "......nllnlkl.........................",
+   ".......nlnlkl.........................",
+   ".......nlnllk.........................",
+   ".......nllnlk.........................",
+   "........nlnlk.........................",
+   "........nlnlk.........................",
+   "........nllkl.........................",
+   ".........nlkl.........................",
+   ".........nlkl.........................",
+   ".........nlkl.........................",
+   "........nlllk.........................",
+   "........nlllk.........................",
+   "........nzxxv.........................",
+   ".........nlll.........................",
+   ".........nlll.........................",
+   ".........nbbb.........................",
+   "..........bcc.........................",
+   "..........cc..........................",
+   "..........c...........................",
+   "......................................",
+   "......................................"
+  ]
+ },
+ "expressions": {
+  "confident": {
+   "_doc": "default face (R3): the near eye is the big bright one: the lash is the flick plus one row (8 OL px; R2 had 11 over three rows), so 4 iris rows show (A2 top, I3 pupil, A3, a 2 px A4 crescent) against the far eye's 3; both A5 catchlights on the top iris row, one column right of the pupil (aam-highlights); the near brow raised a step at its outer end in a clean skin window, the far brow flat under the fringe shadow; a 4 px S4 smile, both corners up (a shallow U; the WF-P11 pick over the smirk), an S3 dimple at the near corner; the smile lifts the near lower lid (proski-expr); trial rounds a-d below; head tilted 1 px (far eye higher)",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "OO......",
+     ".OOOOO..",
+     ".OaaheO.",
+     "..anbe..",
+     "..bbb...",
+     ".OOcc..."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     ".....O",
+     ".OOOOO",
+     "Oaah..",
+     ".anbe.",
+     ".ccbO.",
+     "......"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     "#..",
+     ".##"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     20
+    ],
+    "rows": [
+     "##"
+    ]
+   },
+   "nose": {
+    "at": [
+     22,
+     29
+    ],
+    "rows": [
+     "t",
+     "t"
+    ]
+   },
+   "mouth": {
+    "at": [
+     18,
+     33
+    ],
+    "rows": [
+     "tm..m",
+     "..mm."
+    ]
+   },
+   "blush_near": {
+    "at": [
+     14,
+     28
+    ],
+    "rows": [
+     "pp"
+    ]
+   },
+   "blush_far": {
+    "at": [
+     25,
+     28
+    ],
+    "rows": [
+     "pp"
+    ]
+   }
+  },
+  "focused": {
+   "_doc": "attacks: the lash flattened into a straight 2-row bar lowered onto the iris (no flick), the lower lid pushed up (2 iris rows), the irises on the target (screen-right; the whites on the nose side of the gaze), brows driven down to the nose and 1 px closer (in their windows: FC-P27), a pressed 2 px mouth, no blush. The far eye 1 px narrower than the near (FC-P26)",
+   "gaze": [
+    1,
+    0
+   ],
+   "gaze_target": "enemy",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "OOOOOO..",
+     ".OOOOOO.",
+     "..eaah..",
+     ".Oebcc..",
+     ".OOO...."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     ".OOOOO",
+     "OOOOO.",
+     "..eah.",
+     "..ebc.",
+     "...OO."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     "#..",
+     ".#.",
+     "..#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     20
+    ],
+    "rows": [
+     ".#",
+     "#."
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     34
+    ],
+    "rows": [
+     "mm"
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null
+  },
+  "radiant": {
+   "_doc": "wins (the smile): the eyes closed into arcs that curve up in the middle, the brows raised into soft arches, an open smile (S4 corners up, SB inside), a 3 px blush (FC-N20: the eyes change with the smile)",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "........",
+     "....OO..",
+     "..OO..O.",
+     ".O......",
+     "........"
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     ".OO...",
+     "O..OO.",
+     ".....O",
+     "......"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     ".#.",
+     "#.#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     20
+    ],
+    "rows": [
+     "##"
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "m..m",
+     ".pp."
+    ]
+   },
+   "blush_near": {
+    "at": [
+     14,
+     28
+    ],
+    "rows": [
+     "ppp"
+    ]
+   },
+   "blush_far": {
+    "at": [
+     25,
+     28
+    ],
+    "rows": [
+     "pp"
+    ]
+   }
+  },
+  "serene": {
+   "_doc": "prayer beats only (the one half-lid): the lash lowered so 2 iris rows show, its outer end softly down (no flick), level brows, a small closed smile with the near corner up. Now that Confident is open (critique 2a) the half-lid is Serene's own (critique 2g)",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "........",
+     ".OOOOO..",
+     "OOOOOOO.",
+     "..aahe..",
+     ".Obcb..."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     ".OOOO.",
+     "OOOOOO",
+     ".aah..",
+     ".bcbO."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     20
+    ],
+    "rows": [
+     "###"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     20
+    ],
+    "rows": [
+     "##"
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "m..",
+     ".mm"
+    ]
+   }
+  },
+  "ignited": {
+   "_doc": "R / Illumination: the Focused lids; the iris keeps a dark A2 core inside an A4 rim (a pale iris reads blind) and a 1 px A4 glow sits beside each eye; the brows lowered and pulled in toward the nose; a battle cry: a dark open mouth with the teeth as one row along its top edge (critique 2g: R2 showed 2 white px in the middle and read as buck teeth; ao-teeth: \"the top row of teeth stays in the same position\", teeth \"shown as one combined shape\"). The mouth is the winner of trial round e (deep_shout)",
+   "gaze": [
+    1,
+    0
+   ],
+   "gaze_target": "enemy",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     "OOOOOO..",
+     ".OOOOOO.",
+     "..ecah..",
+     ".Oecac..",
+     ".OOO...."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     ".OOOOO",
+     "OOOOO.",
+     "..cah.",
+     "..cac.",
+     "...OO."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     15,
+     19
+    ],
+    "rows": [
+     "#..",
+     ".#.",
+     "..#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     22,
+     20
+    ],
+    "rows": [
+     ".#",
+     "#."
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "www",
+     "OOO",
+     ".m."
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null,
+   "extra": [
+    {
+     "at": [
+      12,
+      24
+     ],
+     "rows": [
+      "c"
+     ]
+    },
+    {
+     "at": [
+      28,
+      22
+     ],
+     "rows": [
+      "c"
+     ]
+    }
+   ]
+  },
+  "hurt": {
+   "_doc": "hit reactions: the eyes squeezed into > < shapes pointing at the nose, the inner brow ends raised (the worry brow, used here on purpose), a wince with the far corner down, no blush",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "........",
+     ".OO.....",
+     "...OO...",
+     ".....OO.",
+     "...OO...",
+     ".OO....."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "....OO",
+     "..OO..",
+     "OO....",
+     "..OO..",
+     "....OO"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     20
+    ],
+    "rows": [
+     "..#",
+     "##."
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     20
+    ],
+    "rows": [
+     "#.",
+     ".#"
+    ]
+   },
+   "mouth": {
+    "at": [
+     19,
+     33
+    ],
+    "rows": [
+     "mm.",
+     "..m"
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null
+  }
+ },
+ "trials": {
+  "a": {
+   "expr": "confident",
+   "round_of": "critique 2a, 2b: the eyes",
+   "base_idea": "the R3 repaint: near lash = the flick + 1 row (9 OL px), 4 full iris rows near / 3 far, the inner lid dipping 1 px at the nose, both catchlights on the top iris row, one column right of the pupil",
+   "base_verdict": "KEPT: at x12 and 2x the near eye is the big bright one (FC-P26 [M]: 4 full iris rows / 13 iris+white px against the far eye's 3 / 10); both catchlights on the top iris row, one column right of each pupil",
+   "variants": {
+    "r2_eye": {
+     "axis": "control: the R2 eyes",
+     "kept": false,
+     "idea": "R2's eye grids on the R3 head: a 3-row near lash squeezing 1 A2 px, highlights on different rows (the control: the new checker must catch the sullen eye)",
+     "verdict": "rejected, and the control works: under the R3 checker R2's eyes fail FC-P09 (near: 3 lash rows over the first full iris row), FC-P12 (catchlight offsets (1, 0) and (1, -1) from the pupils), FC-P26 (near 3 rows / 10 px against far 4 / 13) [M]; by eye the half-lidded near eye is back",
+     "expressions": {
+      "confident": {
+       "eye_near": {
+        "at": [
+         12,
+         21
+        ],
+        "box": [
+         1,
+         1,
+         6,
+         6
+        ],
+        "rows": [
+         "OO......",
+         ".OOOO...",
+         ".OOaOOO.",
+         ".Oanhe..",
+         "..bbb...",
+         ".OOcb..."
+        ]
+       },
+       "eye_far": {
+        "at": [
+         22,
+         21
+        ],
+        "box": [
+         0,
+         1,
+         5,
+         6
+        ],
+        "rows": [
+         ".....O",
+         "..OOOO",
+         "OOah..",
+         ".anbe.",
+         ".bbbe.",
+         ".ccbO."
+        ]
+       }
+      }
+     }
+    },
+    "catch2": {
+     "axis": "catchlight size",
+     "kept": false,
+     "idea": "a 2 px catchlight in the near eye (A5 over A4), the critique's suggested A/B against ref 08 at x6",
+     "verdict": "rejected: at x12 the A4 under the A5 is a pale column that splits the iris and lowers its contrast; at 1x it merges with the white into one pale blob; ref 08's catchlight is one point on a dark iris [visible]",
+     "expressions": {
+      "confident": {
+       "eye_near": {
+        "at": [
+         12,
+         21
+        ],
+        "box": [
+         1,
+         1,
+         6,
+         6
+        ],
+        "rows": [
+         "OO......",
+         ".OOOOO..",
+         ".OaaheO.",
+         "..ance..",
+         "..bbb...",
+         ".OOcc..."
+        ]
+       }
+      }
+     }
+    },
+    "flat_lid": {
+     "axis": "lid line at the inner corner",
+     "kept": false,
+     "idea": "no inner dip: the lash runs flat across the box (the first R3 draft)",
+     "verdict": "rejected: the flat lash over the whole box reads calm and stern; the 1 px dip at the inner corner gives the almond (csp-okids: triangular ends) [visible]",
+     "expressions": {
+      "confident": {
+       "eye_near": {
+        "at": [
+         12,
+         21
+        ],
+        "box": [
+         1,
+         1,
+         6,
+         6
+        ],
+        "rows": [
+         "OO......",
+         ".OOOOOO.",
+         ".Oaahe..",
+         "..anbe..",
+         "..bbb...",
+         ".OOcc..."
+        ]
+       }
+      }
+     }
+    },
+    "white1": {
+     "axis": "white of the near eye",
+     "kept": false,
+     "idea": "one white px in the near eye instead of two",
+     "verdict": "rejected by FC-P26 (near 12 px against far 10, under the +3 margin [M]) and by eye: the near eye loses the brightness that makes it the near one",
+     "expressions": {
+      "confident": {
+       "eye_near": {
+        "at": [
+         12,
+         21
+        ],
+        "box": [
+         1,
+         1,
+         6,
+         6
+        ],
+        "rows": [
+         "OO......",
+         ".OOOOO..",
+         ".OaaheO.",
+         "..anb...",
+         "..bbb...",
+         ".OOcc..."
+        ]
+       }
+      }
+     }
+    }
+   },
+   "base_patch": {
+    "replace_layers": {
+     "back": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "..............lkkkkk..................",
+      "...........llllkkkklkkk...............",
+      ".........nnlllnlllknkkklk.............",
+      ".......nnnllldljjjlldjkknkk...........",
+      "......nnnjjlldkllllldljlnkkk..........",
+      ".....nnnkllldlllllldlllkldjjk.........",
+      "....nnnnllldllllllldllllldlkkk........",
+      "...nnnnnllldlllllllldllllldlkkk.......",
+      "...nnnnnlldlllllllllnlllllnllkkk......",
+      "..nnnnnnllnlllllllllllllllllnlllk.....",
+      "..nnklnnnnnnn...............nlllk.....",
+      ".nnnklnnnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnk......",
+      ".nndkndnnnnnn...............nnlk......",
+      ".nndlndnnnnnn...............nnlk......",
+      ".nldndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn................nnk......",
+      ".ndllndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nnnllndnnnnnn..............nnlk......",
+      ".nnnllndnnnnnn..............nnk.......",
+      "..nnllndnnnnnln.............nnk.......",
+      "..nnnllndnnnnnln...........nllk.......",
+      "..nnnllndnnnnnnln..........bbk........",
+      "..nnnllndnnnnnnnnln.......nbck........",
+      ".nnnllndnnnnnnnnnnln......nck.........",
+      ".nndllndnnnnnnnnnnnln.................",
+      ".nndllndnnnnnnnn......................",
+      ".nndnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnnllndnnnnnn......................",
+      ".nnnnnllnnnnnnnn......................",
+      ".ddnnnllnnnnnnnn......................",
+      ".dddnnddnnnnnnnn......................",
+      ".nnnnnnnnnnnnnnn......................"
+     ]
+    },
+    "expressions": {
+     "confident": {
+      "skin_fix": {
+       "at": [
+        17,
+        32
+       ],
+       "rows": [
+        "11"
+       ]
+      },
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm...",
+        "..mmm"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "b": {
+   "expr": "confident",
+   "round_of": "critique 2c: the brows",
+   "base_idea": "near brow 3 px, raised a step at its outer end, in a skin window with S2 above and below; far brow 2 px flat, right under the fringe shadow band",
+   "base_verdict": "KEPT: the near brow reads as a stroke on skin at x12 and 2x; no unibrow, no speckle (FC-P27, FC-N27 [M])",
+   "variants": {
+    "brow_level": {
+     "axis": "brow angle",
+     "kept": false,
+     "idea": "both brows flat (no raised outer end)",
+     "verdict": "rejected: flat brows over the lashes read bored (two parallel bars) [visible]; the raised outer step is the sure look",
+     "expressions": {
+      "confident": {
+       "brow_near": {
+        "at": [
+         15,
+         20
+        ],
+        "rows": [
+         "###"
+        ]
+       }
+      }
+     }
+    },
+    "brow_arch_far": {
+     "axis": "far brow shape",
+     "kept": false,
+     "idea": "the far brow arched too (outer end 1 px up)",
+     "verdict": "rejected by FC-P27 (the raised end touches the C4 clump: the far window is one row tall) and FC-N27 [M]; by eye the far brow dissolves into the fringe again, the critique's 2c",
+     "expressions": {
+      "confident": {
+       "brow_far": {
+        "at": [
+         24,
+         19
+        ],
+        "rows": [
+         ".#",
+         "#."
+        ]
+       }
+      }
+     }
+    },
+    "brow_long": {
+     "axis": "brow length",
+     "kept": false,
+     "idea": "R2 lengths: near 4 px, far 3 px",
+     "verdict": "rejected: 4 / 3 px brows fill the windows edge to edge and read heavy and stern over the lashes at x12 [visible]; 3 / 2 keeps skin round each stroke",
+     "expressions": {
+      "confident": {
+       "brow_near": {
+        "at": [
+         14,
+         19
+        ],
+        "rows": [
+         "#...",
+         ".###"
+        ]
+       },
+       "brow_far": {
+        "at": [
+         23,
+         20
+        ],
+        "rows": [
+         "###"
+        ]
+       }
+      }
+     }
+    }
+   },
+   "base_patch": {
+    "replace_layers": {
+     "back": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "..............lkkkkk..................",
+      "...........llllkkkklkkk...............",
+      ".........nnlllnlllknkkklk.............",
+      ".......nnnllldljjjlldjkknkk...........",
+      "......nnnjjlldkllllldljlnkkk..........",
+      ".....nnnkllldlllllldlllkldjjk.........",
+      "....nnnnllldllllllldllllldlkkk........",
+      "...nnnnnllldlllllllldllllldlkkk.......",
+      "...nnnnnlldlllllllllnlllllnllkkk......",
+      "..nnnnnnllnlllllllllllllllllnlllk.....",
+      "..nnklnnnnnnn...............nlllk.....",
+      ".nnnklnnnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnk......",
+      ".nndkndnnnnnn...............nnlk......",
+      ".nndlndnnnnnn...............nnlk......",
+      ".nldndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn................nnk......",
+      ".ndllndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nnnllndnnnnnn..............nnlk......",
+      ".nnnllndnnnnnn..............nnk.......",
+      "..nnllndnnnnnln.............nnk.......",
+      "..nnnllndnnnnnln...........nllk.......",
+      "..nnnllndnnnnnnln..........bbk........",
+      "..nnnllndnnnnnnnnln.......nbck........",
+      ".nnnllndnnnnnnnnnnln......nck.........",
+      ".nndllndnnnnnnnnnnnln.................",
+      ".nndllndnnnnnnnn......................",
+      ".nndnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnnllndnnnnnn......................",
+      ".nnnnnllnnnnnnnn......................",
+      ".ddnnnllnnnnnnnn......................",
+      ".dddnnddnnnnnnnn......................",
+      ".nnnnnnnnnnnnnnn......................"
+     ]
+    },
+    "expressions": {
+     "confident": {
+      "skin_fix": {
+       "at": [
+        17,
+        32
+       ],
+       "rows": [
+        "11"
+       ]
+      },
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm...",
+        "..mmm"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "c": {
+   "expr": "confident",
+   "round_of": "critique 2d: the mouth and the cheek",
+   "base_idea": "a 4 px S4 smirk (near corner 1 row up), an S3 dimple beyond the corner, a 2 px S1 cheek lift above it; the near lower lid already lifted (FC-P24)",
+   "base_verdict": "the smirk kept; the cheek lift came out (no_lift)",
+   "variants": {
+    "smirk3": {
+     "axis": "mouth width",
+     "kept": false,
+     "idea": "R2's mouth: 3 px of S4 on a diagonal with an S3 tip",
+     "verdict": "rejected: FC-P07 and FC-N11 (3 px line) and FC-N15 [M]; by eye the pout the critic named",
+     "expressions": {
+      "confident": {
+       "mouth": {
+        "at": [
+         18,
+         32
+        ],
+        "rows": [
+         "t...",
+         ".m..",
+         "..mm"
+        ]
+       }
+      }
+     }
+    },
+    "no_dimple": {
+     "axis": "dimple",
+     "kept": false,
+     "idea": "the smirk without the S3 dimple",
+     "verdict": "rejected: without the dimple the raised corner reads as the end of a slanted line, not a corner pulled up [visible]",
+     "expressions": {
+      "confident": {
+       "mouth": {
+        "at": [
+         18,
+         33
+        ],
+        "rows": [
+         ".m...",
+         "..mmm"
+        ]
+       }
+      }
+     }
+    },
+    "no_lift": {
+     "axis": "cheek lift",
+     "kept": true,
+     "idea": "no S1 cheek lift above the corner",
+     "verdict": "KEPT (the lift comes out): at x12 the 2 S1 px are a pale speck left of the corner, at 1x invisible (S1/S2 is 1.17:1 [M, PX-P05]); the lifted lower lid (FC-P24) and the dimple already carry the smile to the eye",
+     "expressions": {
+      "confident": {
+       "skin_fix": null
+      }
+     }
+    },
+    "smirk_rise2": {
+     "axis": "corner rise",
+     "kept": false,
+     "idea": "the near corner rising 2 rows (S3 tip, S4 step, then 3 px)",
+     "verdict": "rejected: the 2-row rise reads as a sneer beside open eyes, and FC-N15 [M]; one row up with the dimple reads as the smile",
+     "expressions": {
+      "confident": {
+       "mouth": {
+        "at": [
+         17,
+         32
+        ],
+        "rows": [
+         "t....",
+         ".m...",
+         "..mmm"
+        ]
+       }
+      }
+     }
+    }
+   },
+   "base_patch": {
+    "replace_layers": {
+     "back": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "..............lkkkkk..................",
+      "...........llllkkkklkkk...............",
+      ".........nnlllnlllknkkklk.............",
+      ".......nnnllldljjjlldjkknkk...........",
+      "......nnnjjlldkllllldljlnkkk..........",
+      ".....nnnkllldlllllldlllkldjjk.........",
+      "....nnnnllldllllllldllllldlkkk........",
+      "...nnnnnllldlllllllldllllldlkkk.......",
+      "...nnnnnlldlllllllllnlllllnllkkk......",
+      "..nnnnnnllnlllllllllllllllllnlllk.....",
+      "..nnklnnnnnnn...............nlllk.....",
+      ".nnnklnnnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnk......",
+      ".nndkndnnnnnn...............nnlk......",
+      ".nndlndnnnnnn...............nnlk......",
+      ".nldndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn................nnk......",
+      ".ndllndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nnnllndnnnnnn..............nnlk......",
+      ".nnnllndnnnnnn..............nnk.......",
+      "..nnllndnnnnnln.............nnk.......",
+      "..nnnllndnnnnnln...........nllk.......",
+      "..nnnllndnnnnnnln..........bbk........",
+      "..nnnllndnnnnnnnnln.......nbck........",
+      ".nnnllndnnnnnnnnnnln......nck.........",
+      ".nndllndnnnnnnnnnnnln.................",
+      ".nndllndnnnnnnnn......................",
+      ".nndnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnnllndnnnnnn......................",
+      ".nnnnnllnnnnnnnn......................",
+      ".ddnnnllnnnnnnnn......................",
+      ".dddnnddnnnnnnnn......................",
+      ".nnnnnnnnnnnnnnn......................"
+     ]
+    },
+    "expressions": {
+     "confident": {
+      "skin_fix": {
+       "at": [
+        17,
+        32
+       ],
+       "rows": [
+        "11"
+       ]
+      },
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm...",
+        "..mmm"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "d": {
+   "expr": "confident",
+   "round_of": "critique 4a, 4b: the hair",
+   "base_idea": "the angel ring as one tapering dash per crown clump on 4 different rows; three crown clump lines; the back hair as 2 big clumps with a lit ridge, I4 only under the overlap and behind the lock",
+   "base_verdict": "KEPT: the dashes follow the dome on four rows (HR-P08 [M]) and read as gloss, not a halo band",
+   "variants": {
+    "r2crown": {
+     "axis": "control: the R2 highlight",
+     "kept": false,
+     "idea": "R2's crown highlight: one straight row of equal I0 dashes",
+     "verdict": "rejected, and the control works: HR-P08 fails (4 dashes on one row [M]); at x8 it is the halo band of critique 4a",
+     "replace_layers": {
+      "back": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "..............lkkkkk..................",
+       "...........llllkkkklkkk...............",
+       ".........nnlllnlllknkkklk.............",
+       ".......nnnllldlllllldkkknkk...........",
+       "......nnnlljjjjljjjldjlljjjk..........",
+       ".....nnnlllldlllllldllllldkkk.........",
+       "....nnnnllldllllllldllllldlkkk........",
+       "...nnnnnllldlllllllldllllldlkkk.......",
+       "...nnnnnlldlllllllllnlllllnllkkk......",
+       "..nnnnnnllnlllllllllllllllllnlllk.....",
+       "..nnklnnnnnnn...............nlllk.....",
+       ".nnnklnnnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnk......",
+       ".nndkndnnnnnn...............nnlk......",
+       ".nndlndnnnnnn...............nnlk......",
+       ".nldndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn................nnk......",
+       ".ndllndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nnnllndnnnnnn..............nnlk......",
+       ".nnnllndnnnnnn..............nnk.......",
+       "..nnllndnnnnnln.............nnk.......",
+       "..nnnllndnnnnnln...........nllk.......",
+       "..nnnllndnnnnnnln..........bbk........",
+       "..nnnllndnnnnnnnnln.......nbck........",
+       ".nnnllndnnnnnnnnnnln......nck.........",
+       ".nndllndnnnnnnnnnnnln.................",
+       ".nndllndnnnnnnnn......................",
+       ".nndnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnnllndnnnnnn......................",
+       ".nnnnnllnnnnnnnn......................",
+       ".ddnnnllnnnnnnnn......................",
+       ".dddnnddnnnnnnnn......................",
+       ".nnnnnnnnnnnnnnn......................"
+      ]
+     }
+    },
+    "cowlick": {
+     "axis": "crown silhouette",
+     "kept": false,
+     "idea": "a 2 px cowlick curling back from the parting (critique 4b)",
+     "verdict": "rejected: FC-P01 and HR-P02 fail (hair top row 31 [M]); at 2x a single stray pixel on the dome: R1's antenna again",
+     "replace_layers": {
+      "back": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "...............l......................",
+       "................lk....................",
+       "..............lkkkkk..................",
+       "...........llllkkkklkkk...............",
+       ".........nnlllnlllknkkklk.............",
+       ".......nnnllldljjjlldjkknkk...........",
+       "......nnnjjlldkllllldljlnkkk..........",
+       ".....nnnkllldlllllldlllkldjjk.........",
+       "....nnnnllldllllllldllllldlkkk........",
+       "...nnnnnllldlllllllldllllldlkkk.......",
+       "...nnnnnlldlllllllllnlllllnllkkk......",
+       "..nnnnnnllnlllllllllllllllllnlllk.....",
+       "..nnklnnnnnnn...............nlllk.....",
+       ".nnnklnnnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnk......",
+       ".nndkndnnnnnn...............nnlk......",
+       ".nndlndnnnnnn...............nnlk......",
+       ".nldndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn................nnk......",
+       ".ndllndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nnnllndnnnnnn..............nnlk......",
+       ".nnnllndnnnnnn..............nnk.......",
+       "..nnllndnnnnnln.............nnk.......",
+       "..nnnllndnnnnnln...........nllk.......",
+       "..nnnllndnnnnnnln..........bbk........",
+       "..nnnllndnnnnnnnnln.......nbck........",
+       ".nnnllndnnnnnnnnnnln......nck.........",
+       ".nndllndnnnnnnnnnnnln.................",
+       ".nndllndnnnnnnnn......................",
+       ".nndnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnnllndnnnnnn......................",
+       ".nnnnnllnnnnnnnn......................",
+       ".ddnnnllnnnnnnnn......................",
+       ".dddnnddnnnnnnnn......................",
+       ".nnnnnnnnnnnnnnn......................"
+      ]
+     }
+    },
+    "flyaway": {
+     "axis": "back silhouette",
+     "kept": false,
+     "idea": "a dark lock flying out of the back of the crown (critique 4b)",
+     "verdict": "rejected: a dark horizontal strand in I3 inside its outline reads as a twig at x8 and 2x [visible]",
+     "replace_layers": {
+      "back": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "..............lkkkkk..................",
+       "...........llllkkkklkkk...............",
+       ".........nnlllnlllknkkklk.............",
+       ".......nnnllldljjjlldjkknkk...........",
+       ".nn...nnnjjlldkllllldljlnkkk..........",
+       "...nnnnnkllldlllllldlllkldjjk.........",
+       "....nnnnllldllllllldllllldlkkk........",
+       "...nnnnnllldlllllllldllllldlkkk.......",
+       "...nnnnnlldlllllllllnlllllnllkkk......",
+       "..nnnnnnllnlllllllllllllllllnlllk.....",
+       "..nnklnnnnnnn...............nlllk.....",
+       ".nnnklnnnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnk......",
+       ".nndkndnnnnnn...............nnlk......",
+       ".nndlndnnnnnn...............nnlk......",
+       ".nldndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn................nnk......",
+       ".ndllndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nnnllndnnnnnn..............nnlk......",
+       ".nnnllndnnnnnn..............nnk.......",
+       "..nnllndnnnnnln.............nnk.......",
+       "..nnnllndnnnnnln...........nllk.......",
+       "..nnnllndnnnnnnln..........bbk........",
+       "..nnnllndnnnnnnnnln.......nbck........",
+       ".nnnllndnnnnnnnnnnln......nck.........",
+       ".nndllndnnnnnnnnnnnln.................",
+       ".nndllndnnnnnnnn......................",
+       ".nndnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnnllndnnnnnn......................",
+       ".nnnnnllnnnnnnnn......................",
+       ".ddnnnllnnnnnnnn......................",
+       ".dddnnddnnnnnnnn......................",
+       ".nnnnnnnnnnnnnnn......................"
+      ]
+     }
+    },
+    "flyaway_curl": {
+     "axis": "back silhouette",
+     "kept": false,
+     "idea": "the flyaway as a clump tip curling up and back from the crown, 2 px at the root",
+     "verdict": "rejected: the second try (a tip curling up and back) still reads as a dark sprig or a horn [visible]. A break drawn in the shadow tone plus the outline is a 1 px dark line; that produced HR-N05",
+     "replace_layers": {
+      "back": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "....n.........lkkkkk..................",
+       ".....n.....llllkkkklkkk...............",
+       ".....nn..nnlllnlllknkkklk.............",
+       "......nnnnllldljjjlldjkknkk...........",
+       "......nnnjjlldkllllldljlnkkk..........",
+       ".....nnnkllldlllllldlllkldjjk.........",
+       "....nnnnllldllllllldllllldlkkk........",
+       "...nnnnnllldlllllllldllllldlkkk.......",
+       "...nnnnnlldlllllllllnlllllnllkkk......",
+       "..nnnnnnllnlllllllllllllllllnlllk.....",
+       "..nnklnnnnnnn...............nlllk.....",
+       ".nnnklnnnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnk......",
+       ".nndkndnnnnnn...............nnlk......",
+       ".nndlndnnnnnn...............nnlk......",
+       ".nldndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn................nnk......",
+       ".ndllndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nnnllndnnnnnn..............nnlk......",
+       ".nnnllndnnnnnn..............nnk.......",
+       "..nnllndnnnnnln.............nnk.......",
+       "..nnnllndnnnnnln...........nllk.......",
+       "..nnnllndnnnnnnln..........bbk........",
+       "..nnnllndnnnnnnnnln.......nbck........",
+       ".nnnllndnnnnnnnnnnln......nck.........",
+       ".nndllndnnnnnnnnnnnln.................",
+       ".nndllndnnnnnnnn......................",
+       ".nndnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnnllndnnnnnn......................",
+       ".nnnnnllnnnnnnnn......................",
+       ".ddnnnllnnnnnnnn......................",
+       ".dddnnddnnnnnnnn......................",
+       ".nnnnnnnnnnnnnnn......................"
+      ]
+     }
+    },
+    "temple_flick": {
+     "axis": "far silhouette",
+     "kept": true,
+     "idea": "the far temple clump flicking out of the dome in lit tones (I2/I1)",
+     "verdict": "KEPT: the far temple clump flicks out in I2/I1 with a 2 px root; it reads as lit hair at 2x and 1x and breaks the dome without touching the top row (FC-P01 holds) [visible]; HR-P13",
+     "replace_layers": {
+      "back": [
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "......................................",
+       "..............lkkkkk..................",
+       "...........llllkkkklkkk...............",
+       ".........nnlllnlllknkkklk.............",
+       ".......nnnllldljjjlldjkknkk...........",
+       "......nnnjjlldkllllldljlnkkk..........",
+       ".....nnnkllldlllllldlllkldjjk.........",
+       "....nnnnllldllllllldllllldlkkk........",
+       "...nnnnnllldlllllllldllllldlkkk.......",
+       "...nnnnnlldlllllllllnlllllnllkkk.kk...",
+       "..nnnnnnllnlllllllllllllllllnlllkl....",
+       "..nnklnnnnnnn...............nlllkl....",
+       ".nnnklnnnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnlk.....",
+       ".nnnlkndnnnnn...............nlnk......",
+       ".nndkndnnnnnn...............nnlk......",
+       ".nndlndnnnnnn...............nnlk......",
+       ".nldndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn...............nnlk......",
+       ".ndlndnnnnnnn................nnk......",
+       ".ndllndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nndlndnnnnnn................nnk......",
+       ".nnnllndnnnnnn..............nnlk......",
+       ".nnnllndnnnnnn..............nnk.......",
+       "..nnllndnnnnnln.............nnk.......",
+       "..nnnllndnnnnnln...........nllk.......",
+       "..nnnllndnnnnnnln..........bbk........",
+       "..nnnllndnnnnnnnnln.......nbck........",
+       ".nnnllndnnnnnnnnnnln......nck.........",
+       ".nndllndnnnnnnnnnnnln.................",
+       ".nndllndnnnnnnnn......................",
+       ".nndnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnllndnnnnnnn......................",
+       ".ndnnnllndnnnnnn......................",
+       ".nnnnnllnnnnnnnn......................",
+       ".ddnnnllnnnnnnnn......................",
+       ".dddnnddnnnnnnnn......................",
+       ".nnnnnnnnnnnnnnn......................"
+      ]
+     }
+    }
+   },
+   "base_patch": {
+    "replace_layers": {
+     "back": [
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "......................................",
+      "..............lkkkkk..................",
+      "...........llllkkkklkkk...............",
+      ".........nnlllnlllknkkklk.............",
+      ".......nnnllldljjjlldjkknkk...........",
+      "......nnnjjlldkllllldljlnkkk..........",
+      ".....nnnkllldlllllldlllkldjjk.........",
+      "....nnnnllldllllllldllllldlkkk........",
+      "...nnnnnllldlllllllldllllldlkkk.......",
+      "...nnnnnlldlllllllllnlllllnllkkk......",
+      "..nnnnnnllnlllllllllllllllllnlllk.....",
+      "..nnklnnnnnnn...............nlllk.....",
+      ".nnnklnnnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnlk.....",
+      ".nnnlkndnnnnn...............nlnk......",
+      ".nndkndnnnnnn...............nnlk......",
+      ".nndlndnnnnnn...............nnlk......",
+      ".nldndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn...............nnlk......",
+      ".ndlndnnnnnnn................nnk......",
+      ".ndllndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nndlndnnnnnn................nnk......",
+      ".nnnllndnnnnnn..............nnlk......",
+      ".nnnllndnnnnnn..............nnk.......",
+      "..nnllndnnnnnln.............nnk.......",
+      "..nnnllndnnnnnln...........nllk.......",
+      "..nnnllndnnnnnnln..........bbk........",
+      "..nnnllndnnnnnnnnln.......nbck........",
+      ".nnnllndnnnnnnnnnnln......nck.........",
+      ".nndllndnnnnnnnnnnnln.................",
+      ".nndllndnnnnnnnn......................",
+      ".nndnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnllndnnnnnnn......................",
+      ".ndnnnllndnnnnnn......................",
+      ".nnnnnllnnnnnnnn......................",
+      ".ddnnnllnnnnnnnn......................",
+      ".dddnnddnnnnnnnn......................",
+      ".nnnnnnnnnnnnnnn......................"
+     ]
+    },
+    "expressions": {
+     "confident": {
+      "skin_fix": {
+       "at": [
+        17,
+        32
+       ],
+       "rows": [
+        "11"
+       ]
+      },
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm...",
+        "..mmm"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "e": {
+   "expr": "ignited",
+   "round_of": "critique 2g: the Ignited battle cry",
+   "base_patch": {
+    "expressions": {
+     "ignited": {
+      "mouth": {
+       "at": [
+        19,
+        33
+       ],
+       "rows": [
+        "www",
+        "mOm"
+       ]
+      }
+     }
+    }
+   },
+   "base_idea": "a 3 x 2 open mouth: the teeth as one W1 row along the top edge, the dark (OL) mouth under it framed by S4 corners",
+   "base_verdict": "rejected as the base: the teeth bar over one dark px between S4 corners reads as clenched teeth, not a cry [visible, x16 and 2x]",
+   "variants": {
+    "r2_shout": {
+     "axis": "control: the R2 mouth",
+     "kept": false,
+     "idea": "R2's shout: one W1 px in the middle over SB (the critic's buck teeth)",
+     "verdict": "rejected, the control: one W1 px over SB reads as buck teeth, the critique's 2g [visible]",
+     "expressions": {
+      "ignited": {
+       "mouth": {
+        "at": [
+         19,
+         33
+        ],
+        "rows": [
+         "mwm",
+         "mpm"
+        ]
+       }
+      }
+     }
+    },
+    "wide_shout": {
+     "axis": "mouth width",
+     "kept": false,
+     "idea": "a 4 px shout: S4 corners, 2 teeth px on top, 2 dark px under",
+     "verdict": "rejected: a 4 px mouth with 2 teeth px reads as a small open mouth, not a shout; FC-N11 allows it, the eye does not [visible]",
+     "expressions": {
+      "ignited": {
+       "mouth": {
+        "at": [
+         19,
+         33
+        ],
+        "rows": [
+         "mwwm",
+         ".OO."
+        ]
+       }
+      }
+     }
+    },
+    "deep_shout": {
+     "axis": "mouth depth",
+     "kept": true,
+     "idea": "a 3 x 3 shout: the teeth row on the mouth line, the dark mouth under it and the S4 lower lip in the middle: the jaw drops, the top teeth stay (ao-teeth)",
+     "verdict": "KEPT: the teeth row over a dark mouth over the lower lip reads as a battle cry at x16, 2x and 1x (the only one of four with a dark mass under the teeth). First drawn one row high it failed FC-P01 (mouth row 4); on the mouth line, with the jaw dropped, it passes [M; visible]",
+     "expressions": {
+      "ignited": {
+       "mouth": {
+        "at": [
+         19,
+         33
+        ],
+        "rows": [
+         "www",
+         "OOO",
+         ".m."
+        ]
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "pick": {
+  "seed": 3,
+  "question": "which one would you pull for?",
+  "candidates": {
+   "r3": {
+    "idea": "the R3 face after trial rounds a-d (the smirk)",
+    "kept": false,
+    "expressions": {
+     "confident": {
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm...",
+        "..mmm"
+       ]
+      }
+     }
+    },
+    "verdict": "runner-up: open, sure of itself, but cooler; beside the grin on ref 08 the smile (r3_smile) wins at x10 and x3"
+   },
+   "r3_catch2": {
+    "idea": "R3 with the critique's 2 px catchlight (A5 over A4) in the near eye",
+    "kept": false,
+    "verdict": "no gain: the pale column splits the near iris at x10 and blurs it at 1x (as in round a)",
+    "expressions": {
+     "confident": {
+      "eye_near": {
+       "at": [
+        12,
+        21
+       ],
+       "box": [
+        1,
+        1,
+        6,
+        6
+       ],
+       "rows": [
+        "OO......",
+        ".OOOOO..",
+        ".OaaheO.",
+        "..ance..",
+        "..bbb...",
+        ".OOcc..."
+       ]
+      }
+     }
+    }
+   },
+   "r3_smirk3": {
+    "idea": "R3 with R2's 3 px mouth",
+    "kept": false,
+    "verdict": "the pout of critique 2d; at 1x the mouth is a dot",
+    "expressions": {
+     "confident": {
+      "mouth": {
+       "at": [
+        18,
+        32
+       ],
+       "rows": [
+        "t...",
+        ".m..",
+        "..mm"
+       ]
+      }
+     }
+    }
+   },
+   "r3_smile": {
+    "idea": "R3 with a smile instead of the smirk: both corners up (S4 4 px, a shallow U) and the dimple",
+    "kept": true,
+    "verdict": "PICKED: the warmest face at x10 and x3 beside ref 08; the shallow U with the near dimple reads as a smile that knows something (confident and charming), and at 1x the mouth registers as a curve, not a dot. Folded into Confident; FC-P07 and DESIGN 5 changed with it",
+    "expressions": {
+     "confident": {
+      "mouth": {
+       "at": [
+        18,
+        33
+       ],
+       "rows": [
+        "tm..m",
+        "..mm."
+       ]
+      }
+     }
+    }
+   },
+   "r2": {
+    "idea": "the R2 face as shipped last round (the control)",
+    "kept": false,
+    "verdict": "the control: at x3 the smallest near eye and the pout; the sullen read of the round-2 critique",
+    "from_spec": "art/rosace/construct/faces/r2/head_q34.json"
+   }
+  }
+ }
+}

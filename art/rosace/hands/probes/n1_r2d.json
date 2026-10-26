@@ -1,0 +1,156 @@
+{
+ "_doc": "glaive-hands round 2: N1 with the rear hand choked near the butt (a 0.12-0.20 m stub, 9-15 px at 144) so the butt no longer trails back through the pelvis and thigh (GR-N05), the rear fist raised in front of the lower belly (GR-P04), the front fist 0.36-0.38 m (26-28 px) up the haft (GR-P01). r2d: GR-P05 on the rear fist: the gold knop alone is 0.12 m, so a 0.12 m stub shows no lacquer past the fist; stubs 0.22-0.30 m; the rear fist 3-4 cm lower toward the hip (GR-P04).",
+ "base": "art/rosace/hands/poses/r1/n1_contact.json",
+ "variants": {
+  "n_s22": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.262,
+     -0.4657,
+     0.8576
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.7041
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.3541
+    }
+   }
+  },
+  "o_s26": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2733,
+     -0.4303,
+     0.8426
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.6641
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.3141
+    }
+   }
+  },
+  "p_s26lo": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2733,
+     -0.4003,
+     0.8026
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.6641
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.3141
+    }
+   }
+  },
+  "q_s30lo": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2846,
+     -0.365,
+     0.7876
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.6241
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.2741
+    }
+   }
+  },
+  "r_s26lo2": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2933,
+     -0.3903,
+     0.7826
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.6641
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.3141
+    }
+   }
+  }
+ }
+}

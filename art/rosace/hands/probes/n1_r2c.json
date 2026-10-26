@@ -1,0 +1,162 @@
+{
+ "_doc": "glaive-hands round 2: N1 with the rear hand choked near the butt (a 0.12-0.20 m stub, 9-15 px at 144) so the butt no longer trails back through the pelvis and thigh (GR-N05), the rear fist raised in front of the lower belly (GR-P04), the front fist 0.36-0.38 m (26-28 px) up the haft (GR-P01). r2c: the far (L) hand's reach: the haft crossing more toward her far side, 0.35 m spacing, the upper chest twisted toward the thrust.",
+ "base": "art/rosace/hands/poses/n1_contact.json",
+ "variants": {
+  "j_y30": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2338,
+     -0.554,
+     0.895
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.8041
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4541
+    }
+   }
+  },
+  "k_y30tw": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2338,
+     -0.554,
+     0.895
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.8041
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4541
+    }
+   },
+   "bones": {
+    "J_Bip_C_UpperChest": [
+     -3,
+     -2,
+     -14
+    ],
+    "J_Bip_C_Chest": [
+     -4,
+     -2,
+     -10
+    ]
+   }
+  },
+  "l_y22tw": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2454,
+     -0.5517,
+     0.895
+    ],
+    "dir": [
+     0.2113,
+     -0.9028,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.8041
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4441
+    }
+   },
+   "bones": {
+    "J_Bip_C_UpperChest": [
+     -3,
+     -2,
+     -14
+    ],
+    "J_Bip_C_Chest": [
+     -4,
+     -2,
+     -14
+    ]
+   }
+  },
+  "m_y30tw2": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.2338,
+     -0.554,
+     0.915
+    ],
+    "dir": [
+     0.2819,
+     -0.8833,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.8041
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4441
+    }
+   },
+   "bones": {
+    "J_Bip_C_UpperChest": [
+     -3,
+     -2,
+     -16
+    ],
+    "J_Bip_C_Chest": [
+     -4,
+     -2,
+     -16
+    ]
+   }
+  }
+ }
+}

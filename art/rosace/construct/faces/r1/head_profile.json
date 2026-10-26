@@ -1,0 +1,361 @@
+{
+ "_doc": "Round R1 painted head, profile facing screen-right, 144 px sprite. Construction: face_construct profile (ball at x 14.5, front contour c0 = 25) plus the side-view proportions of AnimeOutline (nose tip ~1/4 of the head height above the chin, bottom lip ~1/8, the eye below the head's midline and set back from the contour, the ear just behind the vertical midline, the neck at an angle). The near sidelock hangs in front of the ear (hime cut). Carries the q34 winners: dark-top eye, split bang tips, dark back value. Layers and format as head_q34.json.",
+ "view": "profile",
+ "gaze": [
+  1,
+  0
+ ],
+ "gaze_target": "forward",
+ "roll": 0,
+ "rows": {
+  "mouth": 2,
+  "nose": 6,
+  "eye_bottom": 10,
+  "lash_top": 14,
+  "brow": 16,
+  "hairline": 20,
+  "skull_top": 26,
+  "hair_top": 29
+ },
+ "anchors": {
+  "c0": 25,
+  "chin": [
+   23,
+   36
+  ],
+  "eye_near": [
+   18,
+   22,
+   4,
+   6
+  ]
+ },
+ "layers": {
+  "back": [
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "..........nlkkkkkkkl..................",
+   ".......nnllkkkkkkkkkkkl...............",
+   ".....dnnlllkkkkkkkkkkkkl..............",
+   "....dnnlljjjlljjjjlljjkkl.............",
+   "...dnnllljjllnlljjjlnlkkkl............",
+   "..dnnnllllllnllllllnllkkkl............",
+   "..ddnnlllllnlllllllnllllll............",
+   ".dnnnllllnllllllnlllllll..............",
+   ".dnnnllllnllllllnllll.................",
+   ".dnnnlllnllllll.......................",
+   ".dnnlnnnnnnnnd........................",
+   ".dnnlnnnnnnnnd........................",
+   ".dnnllnnnnnnnd........................",
+   ".dnnnlnnnnnnnd........................",
+   ".ndnnlnnnnnnnd........................",
+   ".dnnnllnnnnnnd........................",
+   ".dnnnnlnnnnnnd........................",
+   ".dnnnnlnnnnnnd........................",
+   ".ndnnnllnnnnnd........................",
+   ".dnnnnnlnnnnnd........................",
+   ".dnnnnnlnnnnnd........................",
+   ".dnnnnnllnnnnd........................",
+   ".ndnnnnnlnnnnd........................",
+   ".dnnnnnnlnnnnd........................",
+   ".dnnnnnnlnnnnd........................",
+   "..dnnlnnnnnnnnd.......................",
+   "..dnnlnnnnnnnnd.......................",
+   "..dnnllnnnnnnnd.......................",
+   "..dnnnlnnnnnnnd.......................",
+   "..ndnnlnnnnnnnd.......................",
+   "..dnnnllnnnnnnd.......................",
+   "..dnnnnlnnnnnnd.......................",
+   "..dnnnnlnnnnnnd.......................",
+   "..ndnnnllnnnnnd.......................",
+   "..dnnnnnlnnnnnd.......................",
+   "..dnnnnnlnnnnnd.......................",
+   "..dnnnnnllnnnnd.......................",
+   "..ndnnnnnlnnnnd.......................",
+   "..dnnnnnnlnnnnd......................."
+  ],
+  "skin": [
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   ".....................tttt.............",
+   "17:ttttttttt",
+   "17:ttttttttt",
+   "17:ttttttttt",
+   "17:ttttttttt",
+   "17:ttttttttt",
+   "17:tssssssss",
+   ".................tsssssss.............",
+   ".................tsssssss.............",
+   ".................tsssssss.............",
+   ".................tsssssss.............",
+   ".................tsssssss.............",
+   ".................tsssssss.............",
+   ".................tsssssss.............",
+   ".................tsssssss1............",
+   ".................tsssssss11...........",
+   ".................tssssssstts..........",
+   ".................tssssssss............",
+   ".................ttssssss.............",
+   ".................ttsssssss............",
+   "..................tssssss.............",
+   "...................ssssss.............",
+   "....................ssss..............",
+   "................tmmmmms...............",
+   "................ttmmmss...............",
+   "................ttsssss...............",
+   "................ttssssss..............",
+   "................ttssssss..............",
+   "................ttssssss..............",
+   ".................ttssssss.............",
+   ".................ttssssss.............",
+   ".................ttssssss............."
+  ],
+  "front": [
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "..................lllkkkk.............",
+   "................nllnllkkkl............",
+   "...............nlnllnlkkkl............",
+   "..............nnlnnllnllkk............",
+   ".............nllndnlldnlkdnl..........",
+   ".............nlln..nl.nl..nl..........",
+   ".............nlln..nl..n...n..........",
+   ".............nlln...n......n..........",
+   ".............nlkl...n.................",
+   ".............nlkl.....................",
+   ".............nlkl.....................",
+   ".............nlkl.....................",
+   ".............nllk.....................",
+   ".............nllk.....................",
+   ".............nllk.....................",
+   ".............nllk.....................",
+   ".............nlkl.....................",
+   ".............nlkl.....................",
+   ".............nlkl.....................",
+   ".............nlkl.....................",
+   ".............nllk.....................",
+   ".............nllk.....................",
+   ".............nllk.....................",
+   ".............nlkl.....................",
+   ".............nlkl.....................",
+   ".............zxxv.....................",
+   ".............nlkl.....................",
+   ".............nlk......................",
+   ".............bbb......................",
+   "..............bc......................",
+   "..............c.......................",
+   "",
+   ""
+  ]
+ },
+ "expressions": {
+  "confident": {
+   "_doc": "profile Confident: eye open on the path ahead, lash flick back and up, brow 2-3 rows up, a closed smile with the back corner raised",
+   "eye_near": {
+    "at": [
+     17,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     4,
+     6
+    ],
+    "rows": [
+     "O.....",
+     ".OOOO.",
+     ".OOOOO",
+     ".Onnh.",
+     "..aab.",
+     "..abb.",
+     ".nn..."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     18,
+     19
+    ],
+    "rows": [
+     ".###",
+     "#..."
+    ]
+   },
+   "mouth": {
+    "at": [
+     22,
+     33
+    ],
+    "rows": [
+     "t.",
+     ".m"
+    ]
+   },
+   "blush_near": {
+    "at": [
+     19,
+     28
+    ],
+    "rows": [
+     ".p",
+     "p."
+    ]
+   },
+   "skin_fix": {
+    "_doc": "two fringe-shadow px cut off by the brow and a tip; lifted to S2 (FC-N15)",
+    "at": [
+     21,
+     18
+    ],
+    "rows": [
+     "s.",
+     ".s"
+    ]
+   }
+  },
+  "focused": {
+   "_doc": "profile Focused: flat lash bar 1 px lower, lower lid up, brow drawn down toward the nose, an open shout at the contour",
+   "gaze_target": "enemy",
+   "eye_near": {
+    "at": [
+     17,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     4,
+     6
+    ],
+    "rows": [
+     "......",
+     "OO....",
+     ".OOOOO",
+     ".OOOOO",
+     ".Onnh.",
+     "..aab.",
+     ".nnnn."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     18,
+     19
+    ],
+    "rows": [
+     "#...",
+     ".##.",
+     "...#"
+    ]
+   },
+   "mouth": {
+    "at": [
+     22,
+     33
+    ],
+    "rows": [
+     "mw",
+     "mp"
+    ]
+   },
+   "blush_near": null,
+   "skin_fix": {
+    "_doc": "fringe/side-plane S3 px left alone by the lowered brow and lash go to S2 (FC-N15)",
+    "at": [
+     17,
+     18
+    ],
+    "rows": [
+     ".s..s",
+     ".....",
+     " ....",
+     "s...."
+    ]
+   }
+  },
+  "radiant": {
+   "_doc": "profile Radiant: a closed up-arc eye, brow up 1 px, an open smile",
+   "gaze_target": "forward",
+   "eye_near": {
+    "at": [
+     17,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     4,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     "..OOO.",
+     ".OO.OO",
+     "OO....",
+     "......",
+     "......"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     18,
+     18
+    ],
+    "rows": [
+     ".###",
+     "#..."
+    ]
+   },
+   "mouth": {
+    "at": [
+     21,
+     33
+    ],
+    "rows": [
+     "mww",
+     ".pp"
+    ]
+   },
+   "skin_fix": {
+    "_doc": "as Focused (FC-N15)",
+    "at": [
+     18,
+     18
+    ],
+    "rows": [
+     "s"
+    ]
+   }
+  }
+ }
+}

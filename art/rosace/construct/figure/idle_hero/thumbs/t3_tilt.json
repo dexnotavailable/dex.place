@@ -1,0 +1,32 @@
+{
+ "name": "t3_tilt",
+ "idea": "push the contrapposto a step (FG-N09): shoulders -10, hips +10",
+ "set": {
+  "shoulders": {
+   "tilt_deg": -10
+  },
+  "pelvis": {
+   "tilt_deg": 10
+  }
+ },
+ "score": 10,
+ "gap_area": 167,
+ "passed": [
+  "FG-P08",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [
+  "FG-P09: +10.0 deg vs shoulders -10.0"
+ ],
+ "rank": 4,
+ "kept": false,
+ "_doc": "thumbnail t3_tilt (push the contrapposto a step (FG-N09): shoulders -10, hips +10): 10/11 silhouette rules pass, gap area 167 px2. dropped: fails FG-P09: +10.0 deg vs shoulders -10.0"
+}

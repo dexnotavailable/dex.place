@@ -1,0 +1,861 @@
+{
+ "_doc": "Drive 9 finish (route F1's method, re-tuned per the finish-routes judges): per material a painterly ramp of (t, hex) stops interpolated in OKLab on the ramp input v (= the light pass R: ao * (0.82 N.L + 0.16), back faces 0.02) plus brush noise (iso), strand noise (strand, along world z), cavity and a warm bounce; the render's spec band mixes toward 'spec'. Hues are anchored on the current build (saturated violet hair, true gold, lilac-shadowed white, cool dark indigo), shadows go cooler and more saturated, highlights warmer; the darks are pushed low-key. 'tones' = colours per material after the per-material k-means (the refs run 5 skin tones and 3-4 dark-cloth tones at 1x before AA; 8-12 here with the AA in-betweens). 'group' picks the line rule: light (white, skin, gold, beige: dark line all round, the lit side in the material's deepest tone), dark (a lighter sel-out on the lit side), accent. 'rim' = strength of the 1 px rim on the back-lit silhouette edge.",
+ "rim_color": "#9fdcff",
+ "rim_color_warm": "#ffd9b0",
+ "rim_dir": [
+  -0.62,
+  -0.78
+ ],
+ "key_dir": [
+  0.5,
+  -0.62
+ ],
+ "line": "#16131d",
+ "skin_line": "#4a2230",
+ "materials": {
+  "skin": {
+   "stops": [
+    [
+     0,
+     "#45223a"
+    ],
+    [
+     0.07,
+     "#633049"
+    ],
+    [
+     0.14,
+     "#854459"
+    ],
+    [
+     0.2,
+     "#a45a64"
+    ],
+    [
+     0.245,
+     "#c9685a"
+    ],
+    [
+     0.29,
+     "#e08a6f"
+    ],
+    [
+     0.36,
+     "#eda388"
+    ],
+    [
+     0.45,
+     "#f5bca0"
+    ],
+    [
+     0.56,
+     "#f9cfb4"
+    ],
+    [
+     0.72,
+     "#fcdfc8"
+    ],
+    [
+     0.92,
+     "#fff0e3"
+    ]
+   ],
+   "tex": 0.035,
+   "strand": 0.0,
+   "cav": 0.08,
+   "bounce": 0.1,
+   "bounce_col": "#e0826a",
+   "spec": null,
+   "tones": 10,
+   "group": "light",
+   "rim": 0.45,
+   "rim_warm": true,
+   "face": {
+    "lift": 0.32,
+    "cav": 0.05
+   }
+  },
+  "white": {
+   "stops": [
+    [
+     0,
+     "#221d3c"
+    ],
+    [
+     0.06,
+     "#373060"
+    ],
+    [
+     0.12,
+     "#4f4780"
+    ],
+    [
+     0.19,
+     "#6b63a0"
+    ],
+    [
+     0.26,
+     "#8b84bb"
+    ],
+    [
+     0.33,
+     "#aba5d2"
+    ],
+    [
+     0.4,
+     "#cbc7e4"
+    ],
+    [
+     0.5,
+     "#e3e0ee"
+    ],
+    [
+     0.65,
+     "#f1eff3"
+    ],
+    [
+     0.82,
+     "#faf8f3"
+    ],
+    [
+     1,
+     "#fffdf7"
+    ]
+   ],
+   "tex": 0.05,
+   "strand": 0.03,
+   "cav": 0.1,
+   "bounce": 0.06,
+   "bounce_col": "#c7b0d6",
+   "spec": null,
+   "tones": 10,
+   "group": "light",
+   "rim": 0.55,
+   "gamma": 1.12
+  },
+  "veil": {
+   "stops": [
+    [
+     0,
+     "#221d3c"
+    ],
+    [
+     0.06,
+     "#373060"
+    ],
+    [
+     0.12,
+     "#4f4780"
+    ],
+    [
+     0.19,
+     "#6b63a0"
+    ],
+    [
+     0.26,
+     "#8b84bb"
+    ],
+    [
+     0.33,
+     "#aba5d2"
+    ],
+    [
+     0.4,
+     "#cbc7e4"
+    ],
+    [
+     0.5,
+     "#e3e0ee"
+    ],
+    [
+     0.65,
+     "#f1eff3"
+    ],
+    [
+     0.82,
+     "#faf8f3"
+    ],
+    [
+     1,
+     "#fffdf7"
+    ]
+   ],
+   "tex": 0.05,
+   "strand": 0.03,
+   "cav": 0.1,
+   "bounce": 0.0,
+   "spec": null,
+   "tones": 8,
+   "group": "light",
+   "rim": 0.55,
+   "gamma": 1.12
+  },
+  "beige": {
+   "stops": [
+    [
+     0.0,
+     "#2f2230"
+    ],
+    [
+     0.08,
+     "#4e3a45"
+    ],
+    [
+     0.18,
+     "#735a5e"
+    ],
+    [
+     0.3,
+     "#977d78"
+    ],
+    [
+     0.44,
+     "#b8a092"
+    ],
+    [
+     0.6,
+     "#d4c0ac"
+    ],
+    [
+     0.78,
+     "#e9dcc8"
+    ],
+    [
+     0.95,
+     "#f7f0e2"
+    ]
+   ],
+   "tex": 0.05,
+   "strand": 0.03,
+   "cav": 0.08,
+   "bounce": 0.0,
+   "spec": null,
+   "tones": 7,
+   "group": "light",
+   "rim": 0.4
+  },
+  "stocking": {
+   "stops": [
+    [
+     0,
+     "#0a0813"
+    ],
+    [
+     0.12,
+     "#100d1d"
+    ],
+    [
+     0.26,
+     "#171329"
+    ],
+    [
+     0.42,
+     "#1e1935"
+    ],
+    [
+     0.58,
+     "#262042"
+    ],
+    [
+     0.72,
+     "#302953"
+    ],
+    [
+     0.83,
+     "#3f376c"
+    ],
+    [
+     0.91,
+     "#5a5290"
+    ],
+    [
+     0.96,
+     "#8a84c4"
+    ],
+    [
+     1.0,
+     "#aaa5dc"
+    ]
+   ],
+   "tex": 0.03,
+   "strand": 0.0,
+   "cav": 0.06,
+   "bounce": 0.0,
+   "spec": "#a9a3dc",
+   "spec_k": 0.75,
+   "tones": 8,
+   "group": "dark",
+   "rim": 0.4,
+   "gamma": 1.05
+  },
+  "boot": {
+   "stops": [
+    [
+     0,
+     "#0a0813"
+    ],
+    [
+     0.12,
+     "#100d1d"
+    ],
+    [
+     0.26,
+     "#171329"
+    ],
+    [
+     0.42,
+     "#1e1935"
+    ],
+    [
+     0.58,
+     "#262042"
+    ],
+    [
+     0.72,
+     "#302953"
+    ],
+    [
+     0.83,
+     "#3f376c"
+    ],
+    [
+     0.91,
+     "#5a5290"
+    ],
+    [
+     0.96,
+     "#8a84c4"
+    ],
+    [
+     1.0,
+     "#aaa5dc"
+    ]
+   ],
+   "tex": 0.03,
+   "strand": 0.0,
+   "cav": 0.06,
+   "bounce": 0.0,
+   "spec": "#b3aee6",
+   "spec_k": 0.8,
+   "tones": 7,
+   "group": "dark",
+   "rim": 0.4,
+   "gamma": 1.05
+  },
+  "thong": {
+   "stops": [
+    [
+     0.0,
+     "#16131d"
+    ],
+    [
+     1.0,
+     "#16131d"
+    ]
+   ],
+   "tex": 0.0,
+   "strand": 0.0,
+   "cav": 0.0,
+   "bounce": 0.0,
+   "spec": null,
+   "tones": 1,
+   "group": "dark",
+   "rim": 0.0
+  },
+  "hair": {
+   "stops": [
+    [
+     0,
+     "#100824"
+    ],
+    [
+     0.07,
+     "#1a1036"
+    ],
+    [
+     0.14,
+     "#24174a"
+    ],
+    [
+     0.23,
+     "#2f1f5e"
+    ],
+    [
+     0.34,
+     "#3b2870"
+    ],
+    [
+     0.47,
+     "#473282"
+    ],
+    [
+     0.62,
+     "#553d94"
+    ],
+    [
+     0.78,
+     "#6449a6"
+    ],
+    [
+     0.92,
+     "#7a5fbc"
+    ],
+    [
+     1.0,
+     "#8f76cc"
+    ]
+   ],
+   "tex": 0.04,
+   "strand": 0.1,
+   "cav": 0.1,
+   "bounce": 0.0,
+   "spec": "#b4a8ec",
+   "spec_k": 0.5,
+   "tones": 10,
+   "group": "dark",
+   "rim": 0.5,
+   "rim_col": "#c8b6ff",
+   "sheen": {
+    "thr": 0.3,
+    "core": "#c4b8f4",
+    "halo": "#8e78d4"
+   },
+   "gamma": 1.15
+  },
+  "hairtip": {
+   "stops": [
+    [
+     0.0,
+     "#141b4c"
+    ],
+    [
+     0.1,
+     "#1f3478"
+    ],
+    [
+     0.22,
+     "#2750a8"
+    ],
+    [
+     0.36,
+     "#2f6fcc"
+    ],
+    [
+     0.52,
+     "#4193e6"
+    ],
+    [
+     0.7,
+     "#5fb3f2"
+    ],
+    [
+     0.86,
+     "#8ccff8"
+    ],
+    [
+     1.0,
+     "#bdeafe"
+    ]
+   ],
+   "tex": 0.04,
+   "strand": 0.08,
+   "cav": 0.06,
+   "bounce": 0.0,
+   "spec": "#d8f4ff",
+   "spec_k": 0.7,
+   "tones": 7,
+   "group": "accent",
+   "rim": 0.3
+  },
+  "indigo": {
+   "stops": [
+    [
+     0.0,
+     "#0e0a22"
+    ],
+    [
+     0.1,
+     "#171034"
+    ],
+    [
+     0.22,
+     "#221949"
+    ],
+    [
+     0.38,
+     "#2e2362"
+    ],
+    [
+     0.56,
+     "#3c2f7a"
+    ],
+    [
+     0.76,
+     "#4d3f92"
+    ],
+    [
+     0.95,
+     "#6456ac"
+    ]
+   ],
+   "tex": 0.04,
+   "strand": 0.03,
+   "cav": 0.08,
+   "bounce": 0.0,
+   "spec": "#8f86cc",
+   "spec_k": 0.6,
+   "tones": 7,
+   "group": "dark",
+   "rim": 0.5,
+   "gamma": 1.1
+  },
+  "lining": {
+   "stops": [
+    [
+     0,
+     "#0c0920"
+    ],
+    [
+     0.12,
+     "#140f30"
+    ],
+    [
+     0.24,
+     "#1d1642"
+    ],
+    [
+     0.36,
+     "#271f56"
+    ],
+    [
+     0.48,
+     "#322969"
+    ],
+    [
+     0.6,
+     "#3e357d"
+    ],
+    [
+     0.74,
+     "#4d4392"
+    ]
+   ],
+   "tex": 0.04,
+   "strand": 0.06,
+   "cav": 0.08,
+   "bounce": 0.0,
+   "spec": null,
+   "tones": 7,
+   "group": "dark",
+   "rim": 0.3,
+   "gamma": 1.1
+  },
+  "haft": {
+   "stops": [
+    [
+     0.0,
+     "#0e0a22"
+    ],
+    [
+     0.12,
+     "#171236"
+    ],
+    [
+     0.26,
+     "#221c4e"
+    ],
+    [
+     0.42,
+     "#2f2968"
+    ],
+    [
+     0.6,
+     "#3f3a84"
+    ],
+    [
+     0.8,
+     "#55519e"
+    ],
+    [
+     0.95,
+     "#7274bc"
+    ]
+   ],
+   "tex": 0.02,
+   "strand": 0.0,
+   "cav": 0.04,
+   "bounce": 0.0,
+   "spec": "#a5acdf",
+   "spec_k": 0.8,
+   "tones": 7,
+   "group": "dark",
+   "rim": 0.45,
+   "gamma": 1.1
+  },
+  "gold": {
+   "stops": [
+    [
+     0.0,
+     "#34150f"
+    ],
+    [
+     0.08,
+     "#582613"
+    ],
+    [
+     0.16,
+     "#7f3f17"
+    ],
+    [
+     0.26,
+     "#a45d1f"
+    ],
+    [
+     0.38,
+     "#c47e2b"
+    ],
+    [
+     0.52,
+     "#dca03c"
+    ],
+    [
+     0.68,
+     "#edc158"
+    ],
+    [
+     0.84,
+     "#f7dc84"
+    ],
+    [
+     1.0,
+     "#fff1bc"
+    ]
+   ],
+   "tex": 0.03,
+   "strand": 0.0,
+   "cav": 0.06,
+   "bounce": 0.0,
+   "spec": "#fff8dc",
+   "spec_k": 0.85,
+   "tones": 9,
+   "group": "light",
+   "rim": 0.25,
+   "gamma": 1.05
+  },
+  "steel": {
+   "stops": [
+    [
+     0.0,
+     "#232842"
+    ],
+    [
+     0.1,
+     "#343b5e"
+    ],
+    [
+     0.22,
+     "#48527a"
+    ],
+    [
+     0.36,
+     "#5f6b94"
+    ],
+    [
+     0.52,
+     "#7a87ae"
+    ],
+    [
+     0.68,
+     "#98a5c8"
+    ],
+    [
+     0.84,
+     "#bcc8e2"
+    ],
+    [
+     1.0,
+     "#e2eaf6"
+    ]
+   ],
+   "tex": 0.02,
+   "strand": 0.0,
+   "cav": 0.04,
+   "bounce": 0.0,
+   "spec": "#f4faff",
+   "spec_k": 0.9,
+   "tones": 7,
+   "group": "light",
+   "rim": 0.3
+  },
+  "steeldark": {
+   "stops": [
+    [
+     0.0,
+     "#1c2036"
+    ],
+    [
+     0.12,
+     "#2b3150"
+    ],
+    [
+     0.26,
+     "#3c4568"
+    ],
+    [
+     0.44,
+     "#505b82"
+    ],
+    [
+     0.66,
+     "#67739c"
+    ],
+    [
+     0.9,
+     "#8390b6"
+    ]
+   ],
+   "tex": 0.02,
+   "strand": 0.0,
+   "cav": 0.04,
+   "bounce": 0.0,
+   "spec": "#c4ccdc",
+   "spec_k": 0.7,
+   "tones": 5,
+   "group": "dark",
+   "rim": 0.3
+  },
+  "edge": {
+   "stops": [
+    [
+     0.0,
+     "#63697e"
+    ],
+    [
+     0.1,
+     "#a2a9bc"
+    ],
+    [
+     0.3,
+     "#dde3ee"
+    ],
+    [
+     0.6,
+     "#f0f6fc"
+    ],
+    [
+     1.0,
+     "#f8fcff"
+    ]
+   ],
+   "tex": 0.0,
+   "strand": 0.0,
+   "cav": 0.0,
+   "bounce": 0.0,
+   "spec": null,
+   "tones": 4,
+   "group": "light",
+   "rim": 0.0
+  },
+  "glass": {
+   "stops": [
+    [
+     0.0,
+     "#16287a"
+    ],
+    [
+     0.06,
+     "#1f45b0"
+    ],
+    [
+     0.2,
+     "#2a62d0"
+    ],
+    [
+     0.6,
+     "#3a86e0"
+    ],
+    [
+     0.92,
+     "#56b2f2"
+    ],
+    [
+     1.0,
+     "#a0e6ff"
+    ]
+   ],
+   "tex": 0.0,
+   "strand": 0.0,
+   "cav": 0.0,
+   "bounce": 0.0,
+   "spec": "#dff6ff",
+   "spec_k": 0.9,
+   "tones": 5,
+   "group": "accent",
+   "rim": 0.0
+  },
+  "glass2": {
+   "stops": [
+    [
+     0.0,
+     "#2a62d0"
+    ],
+    [
+     0.2,
+     "#3a86e0"
+    ],
+    [
+     0.6,
+     "#4aa8f0"
+    ],
+    [
+     0.92,
+     "#78c8f8"
+    ],
+    [
+     1.0,
+     "#a0e6ff"
+    ]
+   ],
+   "tex": 0.0,
+   "strand": 0.0,
+   "cav": 0.0,
+   "bounce": 0.0,
+   "spec": null,
+   "tones": 4,
+   "group": "accent",
+   "rim": 0.0
+  },
+  "glasscore": {
+   "stops": [
+    [
+     0.0,
+     "#a0e6ff"
+    ],
+    [
+     0.3,
+     "#c8f2ff"
+    ],
+    [
+     1.0,
+     "#f0fcff"
+    ]
+   ],
+   "tex": 0.0,
+   "strand": 0.0,
+   "cav": 0.0,
+   "bounce": 0.0,
+   "spec": null,
+   "tones": 3,
+   "group": "accent",
+   "rim": 0.0
+  }
+ },
+ "presets": {
+  "D1": {
+   "aa": 0.35,
+   "ramp_gain": 1.0,
+   "note": "the re-tuned painterly finish: OKLab-interpolated hue-shifted ramps, brush + strand texture, per-material tones, light interior AA, selective outline, 1 px rim"
+  }
+ },
+ "requant_extra": 3
+}

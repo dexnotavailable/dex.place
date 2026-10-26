@@ -1,0 +1,581 @@
+{
+ "_doc": "Gesture spec for the processional hero idle at 144 px, round R3 (tools/art-construct/figure_r3.py). Starts from idle_hero_r2 (its thumbnail t7: weight on the far leg, hand on the far hip, the chest and head leaning 2 px toward the glaive) and changes: the R3 painted head (faces/r3, the round-3 smile), the hair tail as clumps (render.r3_tail), and a thumbnail round on attitude (below). Units as the C1/R1/R2 specs: h = px above the sole, dx = px from the body centre at the feet (+ = the facing side). Every number is [I] until the learning log (ART-RULES 10, round R3) records it.",
+ "name": "idle_hero_r3",
+ "H": 144,
+ "canvas": [
+  152,
+  206
+ ],
+ "sole_y": 198,
+ "cx": 90,
+ "intent": "idle",
+ "move": "idle",
+ "carry": "rest",
+ "facing": "right",
+ "weight_foot": "far",
+ "expression": "confident",
+ "gaze_target": "viewer",
+ "face": {
+  "yaw": "q34",
+  "gaze": [
+   -1,
+   0
+  ],
+  "pitch": 0
+ },
+ "head": {
+  "chin_dx": 15,
+  "chin_h": 118
+ },
+ "neck": {
+  "pit_dx": 11,
+  "pit_h": 111,
+  "width": 7,
+  "back": 6
+ },
+ "shoulders": {
+  "tilt_deg": -7,
+  "near_w": 16,
+  "far_w": 12
+ },
+ "ribcage": {
+  "h": 100,
+  "dx": 10,
+  "near_w": 11,
+  "far_w": 8
+ },
+ "waist": {
+  "h": 86,
+  "dx": 11,
+  "near_w": 8,
+  "far_w": 6
+ },
+ "pelvis": {
+  "dx": 13,
+  "h": 76,
+  "tilt_deg": 7,
+  "near_w": 11,
+  "far_w": 11,
+  "crotch_h": 72
+ },
+ "legs": {
+  "far": {
+   "heel": [
+    15,
+    1
+   ],
+   "knee_hint": [
+    22,
+    40
+   ],
+   "toe": [
+    26,
+    0
+   ]
+  },
+  "near": {
+   "heel": [
+    -14,
+    8
+   ],
+   "knee_hint": [
+    -1,
+    41
+   ],
+   "toe": [
+    -11,
+    0
+   ]
+  }
+ },
+ "arms": {
+  "near": {
+   "hand": "grip",
+   "elbow_hint": [
+    -18,
+    84
+   ]
+  },
+  "far": {
+   "pose": "hip",
+   "hand": [
+    25,
+    80
+   ],
+   "elbow_hint": [
+    40,
+    96
+   ],
+   "foreshorten": [
+    0.85,
+    0.9
+   ]
+  }
+ },
+ "lengths": {
+  "upper_arm": 24,
+  "forearm": 21,
+  "thigh": 36,
+  "calf": 35
+ },
+ "glaive": {
+  "butt": [
+   -20,
+   0
+  ],
+  "angle_deg": 17,
+  "length": 194,
+  "grip_along": 98
+ },
+ "hair": {
+  "tail_h": 62,
+  "width": 15,
+  "sway": -3,
+  "tail_dx": -2
+ },
+ "zones": {
+  "_doc": "polygons in dx/h (the checker converts). keep_out: nothing of the named kind may be inside. must_be: the named thing must be there.",
+  "keep_out": [
+   {
+    "name": "centre band (no weapon)",
+    "kind": "weapon",
+    "poly": "torso_centre_band"
+   },
+   {
+    "name": "between the eyes below the lash",
+    "kind": "hair",
+    "poly": "eye_gap"
+   }
+  ],
+  "must_be": [
+   {
+    "name": "collar_cross",
+    "expect": "gold_cross",
+    "poly": "cross_box"
+   },
+   {
+    "name": "fist at the grip",
+    "expect": "hand_near",
+    "poly": "grip_box"
+   },
+   {
+    "name": "dark between the legs",
+    "expect": "dark",
+    "poly": "between_legs"
+   }
+  ]
+ },
+ "_tilt_doc": "tilt_deg = angle of the near->far line; + = the far (screen-right) side higher. Weight on the far leg: far hip up (+), shoulders the other way (-).",
+ "thumbnails": [
+  {
+   "name": "t0_r2pose",
+   "idea": "the incumbent: the R2 hero pose (demure stance, feet about 24 px apart) with the R3 head",
+   "set": {
+    "head": {
+     "chin_dx": 15
+    },
+    "neck": {
+     "back": 6
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -9,
+       7
+      ],
+      "knee_hint": [
+       3,
+       40
+      ],
+      "toe": [
+       -5,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -15,
+      0
+     ]
+    }
+   },
+   "kept": true,
+   "verdict": "KEPT as #2 (13/13): the incumbent R2 pose, the alternative if the stance reads too casual in motion; beside t7 at x3 its legs are two columns [visible]"
+  },
+  {
+   "name": "t1_wide",
+   "idea": "a wider stance: the free (near) foot steps 8 px out toward the staff (feet about 32 px apart), its knee bent, the glaive butt moved out with it (refs 07/08/09 stand 44-57 px apart; FG-P15 allows 20-30 only with a bent free knee)",
+   "set": {
+    "head": {
+     "chin_dx": 15
+    },
+    "neck": {
+     "back": 6
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -17,
+       6
+      ],
+      "knee_hint": [
+       -5,
+       40
+      ],
+      "toe": [
+       -13,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -23,
+      0
+     ]
+    }
+   },
+   "kept": false,
+   "verdict": "dropped (#4, 12/13): FG-P10 (free knee bent 2 deg: a spread heel on the ground straightens the IK leg), and moving the butt 8 px out straightened the grip arm into R2's rejected flag-holder reach [M; visible]"
+  },
+  {
+   "name": "t2_hip",
+   "idea": "one step more contrapposto (FG-N09): the hip rides 2 px further out over the weight leg, pelvis tilt 7 -> 10 deg, shoulders -7 -> -9 deg",
+   "set": {
+    "head": {
+     "chin_dx": 15
+    },
+    "neck": {
+     "back": 6
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -9,
+       7
+      ],
+      "knee_hint": [
+       3,
+       40
+      ],
+      "toe": [
+       -5,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -15,
+      0
+     ]
+    },
+    "pelvis": {
+     "dx": 15,
+     "tilt_deg": 10
+    },
+    "shoulders": {
+     "tilt_deg": -9
+    }
+   },
+   "kept": false,
+   "verdict": "dropped (#7, 11/13): FG-P09 (the hip tilt 10 deg against shoulders -9 overshoots the 2-4 px drop) and FG-P10 (weight leg 5.2 deg); by eye a sway, as R2's t5 found [M; visible]"
+  },
+  {
+   "name": "t3_head",
+   "idea": "the head cocked further toward the viewer: chin 2 px toward the facing side, the neck set back 1 px more (FG-P12 toward the top of 5-15 deg)",
+   "set": {
+    "head": {
+     "chin_dx": 17
+    },
+    "neck": {
+     "back": 7
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -9,
+       7
+      ],
+      "knee_hint": [
+       3,
+       40
+      ],
+      "toe": [
+       -5,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -15,
+      0
+     ]
+    }
+   },
+   "kept": false,
+   "verdict": "dropped on the full build: first scored #1 (11/11 on the silhouette rules), but the hero build failed CL-P05 (block: the chin covers 2 px of the collar cross) and FG-P12 (the neck follows the chin: 4.1 deg); R2's t7 found the same. Re-scored with CL-P05 and FG-P12 added to the thumbnail score: 11/13 [M]"
+  },
+  {
+   "name": "t4_toe",
+   "idea": "the free heel lifted 3 px more and the knee bent further (the toe pointed): the cute idle beat",
+   "set": {
+    "head": {
+     "chin_dx": 15
+    },
+    "neck": {
+     "back": 6
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -8,
+       10
+      ],
+      "knee_hint": [
+       4,
+       41
+      ],
+      "toe": [
+       -5,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -15,
+      0
+     ]
+    }
+   },
+   "kept": false,
+   "verdict": "dropped (#3, 12/13): FG-P10, the free knee bends 41 deg (over 30): at x3 a coy knee-in, not the priestess [M; visible]"
+  },
+  {
+   "name": "t5_wide_hip",
+   "idea": "t1 + t2: the wider stance with the pushed hip",
+   "set": {
+    "head": {
+     "chin_dx": 15
+    },
+    "neck": {
+     "back": 6
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -17,
+       6
+      ],
+      "knee_hint": [
+       -5,
+       40
+      ],
+      "toe": [
+       -13,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -23,
+      0
+     ]
+    },
+    "pelvis": {
+     "dx": 15,
+     "tilt_deg": 10
+    },
+    "shoulders": {
+     "tilt_deg": -9
+    }
+   },
+   "kept": false,
+   "verdict": "dropped (#8, 11/13): carries both t1's straight knee and t2's overshoot [M]"
+  },
+  {
+   "name": "t7_wide_bent",
+   "idea": "t1's idea done again: the free foot 5 px out (feet about 29 px apart, the top of FG-P15's demure range), the heel lifted so the knee bends (a spread heel on the ground straightens the IK leg: t1 bent 2 deg), the glaive butt only 5 px out so the grip arm keeps its bend",
+   "set": {
+    "head": {
+     "chin_dx": 15
+    },
+    "neck": {
+     "back": 6
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -14,
+       8
+      ],
+      "knee_hint": [
+       -1,
+       41
+      ],
+      "toe": [
+       -11,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -20,
+      0
+     ]
+    }
+   },
+   "kept": true,
+   "verdict": "KEPT, HERO (#1, 13/13, gap 378 px2, width 97, feet 29): the near foot steps 5 px out with its heel lifted and knee bent (10-30 deg), the butt 5 px out; at x3 and 1x the legs stop reading as two columns and the pose steps toward the staff, inside DESIGN 1's 20-30 px demure stance. The first try (heel height 10) bent the knee 32 deg (FG-P10) [M; visible]"
+  },
+  {
+   "name": "t8_head_wide",
+   "idea": "t3 + t7: the cocked head with the wider bent stance",
+   "set": {
+    "head": {
+     "chin_dx": 17
+    },
+    "neck": {
+     "back": 7
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -14,
+       8
+      ],
+      "knee_hint": [
+       -1,
+       41
+      ],
+      "toe": [
+       -11,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -20,
+      0
+     ]
+    }
+   },
+   "kept": false,
+   "verdict": "first picked as the hero (11/11, the most attitude by eye), then dropped for t3's two fails on the full build (CL-P05 block, FG-P12); the stance half of it is t7 [M]"
+  },
+  {
+   "name": "t6_control",
+   "idea": "negative control: level shoulders and hips, both knees straight, glaive 6 deg (the round-4 mannequin); must score last",
+   "set": {
+    "head": {
+     "chin_dx": 15
+    },
+    "neck": {
+     "back": 6
+    },
+    "legs": {
+     "near": {
+      "heel": [
+       -9,
+       1
+      ],
+      "knee_hint": [
+       -9,
+       40
+      ],
+      "toe": [
+       -5,
+       0
+      ]
+     },
+     "far": {
+      "heel": [
+       13,
+       1
+      ],
+      "knee_hint": [
+       13,
+       40
+      ],
+      "toe": [
+       24,
+       0
+      ]
+     }
+    },
+    "glaive": {
+     "butt": [
+      -15,
+      0
+     ],
+     "angle_deg": 6,
+     "grip_along": 98
+    },
+    "shoulders": {
+     "tilt_deg": 0
+    },
+    "pelvis": {
+     "tilt_deg": 0
+    }
+   },
+   "kept": false,
+   "verdict": "the mannequin control scored last (6/13: FG-P08, FG-P09, FG-P10, FG-N04, GR-P09, GR-P10, GR-N02), as it must: the score still catches the round-4 stance [M]"
+  }
+ ],
+ "radii": {
+  "thigh": [
+   7.2,
+   4.3
+  ],
+  "calf": [
+   4.0,
+   2.4
+  ],
+  "upper_arm": [
+   3.3,
+   2.7
+  ],
+  "forearm": [
+   2.6,
+   2.1
+  ]
+ },
+ "sleeve_mouth": 27,
+ "tabard_half": 5.5,
+ "tabard_hem_h": 24,
+ "tabard_sway": -3,
+ "boot_h": 21,
+ "stock_h": 55,
+ "_decisions": [
+  "round R1 (2026-09-29): six thumbnails built with the final R1 part models and scored on 11 silhouette rules; t2_hiphand (#1) and t5_hip_haft24 (#2) kept; the hero is t2. The collar hand DESIGN 1 names fails FG-N04 once the bell sleeves are at DESIGN size (the drape closes the window and covers the chest window); that is listed for Dex in DESIGN 13 and logged in ART-RULES 10 (R1).",
+  "round R2: thumbnail t7_lean_soft kept as the hero (ART-RULES 10, R2).",
+  "round R3: see thumbnails below and ART-RULES 10, round R3."
+ ],
+ "fist_shift": 0.4,
+ "r2": {
+  "calf_offset": true,
+  "deltoid": true,
+  "hands": {
+   "near": "fist_haft_left",
+   "far": "hip_back"
+  }
+ },
+ "render": {
+  "selout": true,
+  "cleanup": true,
+  "r2_torso": true,
+  "r2_legs": true,
+  "r2_tabard": true,
+  "r2_hands": true,
+  "r2_hairtail": false,
+  "r3_tail": true
+ },
+ "_hero": "t7_wide_bent (thumbnail round R3; t8 was the first pick and failed CL-P05 and FG-P12 on the full build: ART-RULES 10, round R3)",
+ "_thumb_doc": "R3 round on attitude: each thumbnail changes one axis against the R2 hero pose (t0), and t6 is the mannequin control that must score last. Scored on FP.THUMB_RULES (11 silhouette rules) and judged at 2x and 1x beside refs 07, 08, 09. Every set carries the R2 body (head chin_dx 15, neck back 6, the R2 near leg, butt -15) so the round reproduces after t8 was folded into the base."
+}

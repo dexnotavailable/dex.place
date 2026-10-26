@@ -1,0 +1,20 @@
+{
+ "_doc": "F2 profile serene at 80 px: glyph names from lib_80.json; params tune the placement (face_f2.py). Written by face_f2_lib.py.",
+ "facing": "profile",
+ "expr": "serene",
+ "px": 80,
+ "eye_near": "profile_serene",
+ "brow_near": null,
+ "mouth": "profile",
+ "gaze": "target",
+ "nose": null,
+ "params": {
+  "edge_keep": 1,
+  "strand_max": 3,
+  "jaw": false,
+  "taper": false,
+  "lash_gap": 0,
+  "lash_clip": 1,
+  "near_dx": -1
+ }
+}

@@ -1,0 +1,13 @@
+{"_doc": "glaive-hands round 1: idle grip thumbnails (gh_probe.py). DESIGN 1: butt just outside the near foot, haft leaning away 15-35 deg, near hand at chest height, elbow slightly bent, disc and cross face the viewer.",
+ "base": "art/rosace/poses/idle_hero.json",
+ "variants": {
+  "i0_control": {},
+  "i1_lean20": {"weapon": {"butt": [-0.30, -0.10, 0.0], "dir": [-0.34, 0.04, 0.94], "edge": [-0.87, 0.5, 0]}},
+  "i2_lean24": {"weapon": {"butt": [-0.27, -0.12, 0.0], "dir": [-0.42, 0.02, 0.91], "edge": [-0.87, 0.5, 0]},
+                "hands": {"R": {"slide": 0.0}}},
+  "i3_lean24_low": {"weapon": {"butt": [-0.27, -0.12, 0.0], "dir": [-0.42, 0.02, 0.91], "edge": [-0.87, 0.5, 0]},
+                "hands": {"R": {"slide": -0.12}}},
+  "i4_lean28": {"weapon": {"butt": [-0.24, -0.14, 0.0], "dir": [-0.5, -0.02, 0.87], "edge": [-0.87, 0.5, 0]},
+                "hands": {"R": {"slide": -0.08}}},
+  "i5_lean20_flatfwd": {"weapon": {"butt": [-0.30, -0.10, 0.0], "dir": [-0.34, 0.04, 0.94], "edge": [0.87, -0.5, 0]}}
+ }}

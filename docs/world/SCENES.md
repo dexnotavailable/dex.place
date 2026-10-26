@@ -276,6 +276,34 @@ RTX 4090 (D3D11): 0.61 ms near, 1.05 ms far. Under SwiftShader 53 ms near, 112 m
 measured on a real laptop. The far view is the better megalophobia read (the figure is about a
 quarter of the frame height there, over a third in near).
 
+### arrival (refs w03 + w01): the dock, and Ringwater's backdrops (lane R-A)
+
+The ring-lake composition with the colossus walking the far strand behind the lake and through
+the light shaft once a pass (about 118 s), each figure mirrored about its own waterline so the
+pale body breaks up in the ripples. Since lane R-A (2026-09-29):
+
+- **The deck sits at 0.8 of the view** (`arrival/geo.ts` `DECK_AT`; it was 0.91): the lake
+  shows the reflected figure and pier under the dock, and the world's rooms keep the feet on
+  that row (WORLD-PLAN section 1).
+- **The rear-leg slice is fixed.** `colossus-plain/colossus.ts` `EXTENT.x1` was 300 design units;
+  the far rear knee reaches 337 at the back of its swing (plus bow, joint and lumps), so the
+  body-space clip and the Tracker's scissor cut it with a straight vertical line for about 35 s
+  of every pass. It is 380 now (this also fixes colossus-plain, which uses the same body).
+  Detector: `review/world/phase2/R-A/tools/edgecut.mjs` (68 of 116 sampled seconds had a cut of
+  10 to 61 rows before; after, only straight leg edges and cliff occlusion of 10 to 15 rows).
+- **`arrivalScene(opts)`** builds the world's variants from the same code (the default export
+  is the /scenes/ composition, `arrivalScene()`): `dock` ("scene", "world": no lantern or
+  figure, the older boardwalk 0.2 P lower with the red line and the cliff foot at the room's
+  right end; "pier": Pier's End; "none"), `bias` (a camera bias at depth 1: every layer's
+  content moves by bias / depth, glsl bodies are wrapped and `layerOff()` becomes `layerOffB()`
+  so per-row parallax and depth-pinned things agree; `arrival/bias.ts`), `rise` (the view stands
+  higher: everything in the lake meets the water lower in the frame), `without` (near layers to
+  drop), `evening` (the evening palette and fog: the sun low and amber, rose and violet haze,
+  darker water, a weaker shaft) and `extra` (the room's own near ground, drawn in the scene's
+  palette and mirrored in its lake).
+- The ring's glints are 4 a minute (were 6). The accents are random (Poisson), so a 60 s sample can
+  still cluster 3 starts in a second (the global gate's limit; the plan's target is 2).
+
 ### monolith-planet (ref w02): the monolith
 
 A pale moon fills most of the sky: per-pixel sphere shading, soft maria, sparse craters at three
@@ -423,3 +451,77 @@ at most 1). Cost on an RTX 4090 (D3D11): about 0.9 ms near, under 1.5 ms far. Un
 about 69 ms near and 154 ms far while the colossus is on screen, about 1.5x ring-lake; nearly
 all of it is the colossus shader. Not yet measured on a real laptop.
 
+
+### pilgrim-path and chapel (lane R-E; region E backdrops, 1280 x 720 world)
+
+Built for their rooms rather than as free prototypes: each is drawn from its room's layout
+(`PATH` in `pilgrim-path.ts`, `NAVE` in `chapel.ts`, `PORCH` and `BELFRY` in
+`chapel/outside.ts`), and the depth-1 layers are authored in room pixels so treads, niches,
+portals, sills and the belfry stair land exactly on the room's collision and props. Deeper
+layers are authored at a reference camera row and slide with their depth, sideways and (in the
+tall rooms) vertically. The default exports are /scenes/ previews at those framings; the world
+imports `pilgrimScene`, `chapelScene`, `porchScene` and `belfryScene`.
+
+- `pilgrim-path/dusk.ts` is the shared after-the-storm dusk: stepped sky with a warm horizon
+  glow, a low sun sitting in the far broken ring's hole (a tilted band with a lit inner rim, a
+  torn gap and drifting blocks), gold-lit cloud bands, the far range, the spire black on the
+  horizon with its storm tearing into rags, three colossi walking west along the horizon, the
+  violet valley with the lake holding the sun, valley mist, crags (deep under the path) or the
+  chapel's cliff, birds, and the shrine lamps as warm points (only the shrines lit in the save,
+  read from `dex.world.v1`).
+- `pilgrim-path`: the fallen ring segment (hull plates with inset panels, a lip course,
+  missing plates, a lit tread lip on every step, hanging ribs, a railing of posts, the terrace's
+  shrine wall, the fins that hold the stained glass, the curved rib with the bell's arm and its
+  brackets, the cliff by the chapel).
+- `chapel`: the nave (coursed limestone, clustered piers, a pointed arcade open to a side aisle
+  with glowing lancets and stepped shafts, two closed bays for the tapestries, the west portal in
+  three orders around the doors and the rose, the chancel wall with four niches and a blind
+  arcade frieze, the east arch to the bell stair), candle pools stepped and dithered, clerestory
+  shafts and motes. `chapel/outside.ts`: the porch (the west front, a portal, a lancet with a
+  sill, the eave and tiles, a column) and the bell tower (an open arcade, flight one, a flying
+  stair on an arch with an oculus, the balcony and its corbels, the belfry shaft and bell-cote,
+  and a balustrade layer forced into the front pass so it draws in front of the player).
+
+Cost (in the world, whole frame): 0.9 to 3.4 ms on d3d11; the dusk rooms are the most, E1 at
+about 3 ms. Captures: `review/world/phase2/R-E/`.
+
+### reed-shallows, causeway and hollow-mouth (lane R-B; region B backdrops, 1280 x 720 world)
+
+Built for their rooms from the colossus-plain pieces: each scene's player plane is drawn from the
+same geometry module its room builds collision from (`reed-shallows/geo.ts`, `causeway/geo.ts`,
+`hollow-mouth/geo.ts`), so stairs, boardwalk, road, crater, tor, platform and ledges land on the
+collision. The default exports are /scenes/ previews at the room's reference framing; the world
+imports `reedShallows(true)`, `causeway(true)` and `hollowMouth(true)`, whose rows follow the
+camera up the yard stair, up Stonetop and down the shaft.
+
+- `causeway/shared.ts` is the region's kit: the colossus-plain colossus reused unchanged
+  (`crossing`, and `bodyGlsl` with a body-space clip wider than `EXTENT.x1` so no knee is ever
+  sliced by a straight line), the walk feed (`WalkClock`: the backdrop's clock and its colossi,
+  read by the room's keeper so gameplay footfalls match the drawn ones), ring ripples on water
+  computed in GLSL from the same walk (a small ring at every planted foot, and once a pass the
+  big ring that races to the player plane), spray and drips where wading feet leave and enter
+  water, the far ring (west) and the spire with its stuck storm and red light (east), `camY()`
+  for vertical rooms, and a splitter for wide depth-1 art.
+- **reed-shallows** (w03 + w01): the arrival's lake late in the morning, sun breaking through,
+  the strongest reflections; the colossus wading at depth 8 in front of the far shore; reeds,
+  mooring posts and a buoy line (`reed-shallows/reeds.ts`, `water.ts`); the yard stair, the
+  boardwalk with its gap and the banks (`land.ts`).
+- **causeway** (w01): the stone road on its embankment across flooded sheet water
+  (`causeway/flats.ts`), the colossus at depth 9 and a ghost in the haze, rare sheet lightning
+  on the spire through the flash gate; the road with its breaks, the footprint crater (earth
+  terraces with the road's broken flags in them, its own palette row `earth`) and Stonetop, a tor
+  of bedded slabs in a paler stone (`tor`) over a darker core, painted with `terrain()`
+  (`causeway/road.ts`).
+- **hollow-mouth** (w04 from above): a pinhole vertical parallax (a feature at room row R and
+  depth d sits at layer row EYE + (R - EYE) / d); the soil crust, the shaft through the tilted
+  floors of the fallen structure, cool light from the rim and amber from the market below,
+  girders, cables, dust and embers; at the player plane the poured-concrete stairs and platform
+  (board marks, aggregate, stains), the culvert's arch, the west wall's broken slabs, the
+  street. The bottom (`hollow-mouth/street.ts`): the hollow's floor as a per-pixel pinhole plane
+  (depth = (street row - eye - camY) / (row - eye); sideways (x - W/2) * depth + W/2) with setts,
+  puddles and lamplight pools; stall rows at depths 3.1 and 2.05 whose lanterns feed the pools;
+  the fallen structure's arcade at 1.3 (torn off west into rubble); the east arch at 1.06 full of
+  the market's light, with an additive spill on the street.
+
+Cost (in the world, whole frame at 1280x720, d3d11): B1 4.5 to 5.6 ms, B2 4.9 to 6.6, B5 1.7 to
+3.8. Captures: `review/world/phase2/R-B/` (the B5 street fix: `fix-b5/`).

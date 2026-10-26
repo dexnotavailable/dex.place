@@ -1,0 +1,34 @@
+{
+ "name": "t4_haft25",
+ "idea": "glaive at 25 deg with the butt at the near toe (overlap) and a lower grip",
+ "set": {
+  "glaive": {
+   "angle_deg": 25,
+   "butt": [
+    -9,
+    0
+   ],
+   "grip_along": 86
+  }
+ },
+ "score": 9,
+ "gap_area": 236,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P09",
+  "GR-N02"
+ ],
+ "failed": [
+  "GR-P05: fist centre 3.2 px off the haft line; segments differ 0.0 deg; 0 haft px inside the fist",
+  "GR-P10: closest clear gap 0.0 px; overlap 0 px"
+ ],
+ "rank": 5,
+ "kept": false,
+ "_doc": "thumbnail t4_haft25 (glaive at 25 deg with the butt at the near toe (overlap) and a lower grip): 9/11 silhouette rules pass, gap area 236 px2. dropped: fails GR-P05: fist centre 3.2 px off the haft line; segments differ 0.0 deg; 0 haft px inside the fist; GR-P10: closest clear gap 0.0 px; overlap 0 px"
+}

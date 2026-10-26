@@ -1,0 +1,604 @@
+{
+ "name": "idle_hero_r2__t1_r1arm",
+ "spec": {
+  "_doc": "Gesture spec for the processional hero idle at 144 px, round R2 (tools/art-construct/figure_r2.py). Starts from idle_hero_r1 (weight on the far leg, hand on the far hip, glaive leaning away) and changes: the R2 painted head (Confident, 1 px roll), fuller thighs, calves and hips, painted hands, and a near arm that rests down-and-out on the staff instead of reaching out level (thumbnail round below). Units as the C1/R1 specs: h = px above the sole, dx = px from the body centre at the feet (+ = the facing side). Every number is [I] until the learning log (ART-RULES 10, round R2) records it.",
+  "name": "idle_hero_r2__t1_r1arm",
+  "H": 144,
+  "canvas": [
+   152,
+   206
+  ],
+  "sole_y": 198,
+  "cx": 90,
+  "intent": "idle",
+  "move": "idle",
+  "carry": "rest",
+  "facing": "right",
+  "weight_foot": "far",
+  "expression": "confident",
+  "gaze_target": "viewer",
+  "face": {
+   "yaw": "q34",
+   "gaze": [
+    -1,
+    0
+   ],
+   "pitch": 0
+  },
+  "head": {
+   "chin_dx": 15,
+   "chin_h": 118
+  },
+  "neck": {
+   "pit_dx": 13,
+   "pit_h": 111,
+   "width": 7,
+   "back": 4
+  },
+  "shoulders": {
+   "tilt_deg": -7,
+   "near_w": 16,
+   "far_w": 12
+  },
+  "ribcage": {
+   "h": 100,
+   "dx": 12,
+   "near_w": 11,
+   "far_w": 8
+  },
+  "waist": {
+   "h": 86,
+   "dx": 12,
+   "near_w": 8,
+   "far_w": 6
+  },
+  "pelvis": {
+   "dx": 13,
+   "h": 76,
+   "tilt_deg": 7,
+   "near_w": 11,
+   "far_w": 11,
+   "crotch_h": 72
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   },
+   "near": {
+    "heel": [
+     -9,
+     7
+    ],
+    "knee_hint": [
+     3,
+     40
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "arms": {
+   "near": {
+    "hand": "grip",
+    "elbow_hint": [
+     -18,
+     84
+    ]
+   },
+   "far": {
+    "pose": "hip",
+    "hand": [
+     25,
+     80
+    ],
+    "elbow_hint": [
+     40,
+     96
+    ],
+    "foreshorten": [
+     0.85,
+     0.9
+    ]
+   }
+  },
+  "lengths": {
+   "upper_arm": 24,
+   "forearm": 21,
+   "thigh": 36,
+   "calf": 35
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ],
+   "angle_deg": 17,
+   "length": 194,
+   "grip_along": 98
+  },
+  "hair": {
+   "tail_h": 62,
+   "width": 15,
+   "sway": -3,
+   "tail_dx": -2
+  },
+  "zones": {
+   "_doc": "polygons in dx/h (the checker converts). keep_out: nothing of the named kind may be inside. must_be: the named thing must be there.",
+   "keep_out": [
+    {
+     "name": "centre band (no weapon)",
+     "kind": "weapon",
+     "poly": "torso_centre_band"
+    },
+    {
+     "name": "between the eyes below the lash",
+     "kind": "hair",
+     "poly": "eye_gap"
+    }
+   ],
+   "must_be": [
+    {
+     "name": "collar_cross",
+     "expect": "gold_cross",
+     "poly": "cross_box"
+    },
+    {
+     "name": "fist at the grip",
+     "expect": "hand_near",
+     "poly": "grip_box"
+    },
+    {
+     "name": "dark between the legs",
+     "expect": "dark",
+     "poly": "between_legs"
+    }
+   ]
+  },
+  "_tilt_doc": "tilt_deg = angle of the near->far line; + = the far (screen-right) side higher. Weight on the far leg: far hip up (+), shoulders the other way (-).",
+  "thumbnails": [
+   {
+    "name": "t1_r1arm",
+    "idea": "control: the R1 near arm (glaive 17 deg, grip 98 px up the haft: the hand level with the shoulder and the arm at full reach, the flag-holder read) with the R2 masses and head",
+    "set": {
+     "neck": {
+      "pit_dx": 13,
+      "back": 4
+     },
+     "head": {
+      "chin_dx": 15
+     },
+     "ribcage": {
+      "dx": 12
+     },
+     "waist": {
+      "dx": 12
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        17,
+        1
+       ],
+       "knee_hint": [
+        24,
+        40
+       ],
+       "toe": [
+        28,
+        0
+       ]
+      }
+     }
+    },
+    "kept": true,
+    "verdict": "KEPT as #2 (the control, 11/11): the R1 arm, hand level with the shoulder at 44.7 px from it, the bell hanging off a level forearm (the flag-holder read by eye)"
+   },
+   {
+    "name": "t2_rest_low",
+    "idea": "the near arm rests down and out on the staff (grip 84 px up, glaive 16 deg, butt 2 px nearer): the arm becomes a diagonal from the shoulder, the bell hangs from a falling forearm",
+    "set": {
+     "neck": {
+      "pit_dx": 13,
+      "back": 4
+     },
+     "head": {
+      "chin_dx": 15
+     },
+     "ribcage": {
+      "dx": 12
+     },
+     "waist": {
+      "dx": 12
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        17,
+        1
+       ],
+       "knee_hint": [
+        24,
+        40
+       ],
+       "toe": [
+        28,
+        0
+       ]
+      }
+     },
+     "glaive": {
+      "angle_deg": 16,
+      "butt": [
+       -13,
+       0
+      ],
+      "grip_along": 84
+     }
+    },
+    "kept": false,
+    "verdict": "dropped (#4, 10/11): the lower grip reads relaxed but the haft passes 2 px from the near boot (GR-P10)"
+   },
+   {
+    "name": "t3_rest_mid",
+    "idea": "between R1 and t2: grip 92 px up at 18 deg, butt 4 px nearer",
+    "set": {
+     "neck": {
+      "pit_dx": 13,
+      "back": 4
+     },
+     "head": {
+      "chin_dx": 15
+     },
+     "ribcage": {
+      "dx": 12
+     },
+     "waist": {
+      "dx": 12
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        17,
+        1
+       ],
+       "knee_hint": [
+        24,
+        40
+       ],
+       "toe": [
+        28,
+        0
+       ]
+      }
+     },
+     "glaive": {
+      "angle_deg": 18,
+      "butt": [
+       -11,
+       0
+      ],
+      "grip_along": 92
+     }
+    },
+    "kept": false,
+    "verdict": "dropped (#5, 10/11): GR-P10, 1 px"
+   },
+   {
+    "name": "t4_lean",
+    "idea": "the upper body leans toward the staff (pit of the neck and head 3 px toward it) so the near shoulder comes to the grip and the elbow can bend; the weight heel moves under the new plumb line",
+    "set": {
+     "neck": {
+      "pit_dx": 10,
+      "back": 4
+     },
+     "head": {
+      "chin_dx": 12
+     },
+     "ribcage": {
+      "dx": 9
+     },
+     "waist": {
+      "dx": 10
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        12,
+        1
+       ],
+       "knee_hint": [
+        20,
+        40
+       ],
+       "toe": [
+        23,
+        0
+       ]
+      }
+     }
+    },
+    "kept": false,
+    "verdict": "dropped (#6, 10/11): the full 3 px lean moved the weight heel and tipped the weight leg to 6 deg (FG-P10); t7 is the same idea at two-thirds strength"
+   },
+   {
+    "name": "t5_rest_push",
+    "idea": "t3 plus one step more contrapposto (FG-N09): shoulders -9, hips +9, free heel lifted 2 px more",
+    "set": {
+     "neck": {
+      "pit_dx": 13,
+      "back": 4
+     },
+     "head": {
+      "chin_dx": 15
+     },
+     "ribcage": {
+      "dx": 12
+     },
+     "waist": {
+      "dx": 12
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        17,
+        1
+       ],
+       "knee_hint": [
+        24,
+        40
+       ],
+       "toe": [
+        28,
+        0
+       ]
+      },
+      "near": {
+       "heel": [
+        -9,
+        9
+       ],
+       "knee_hint": [
+        3,
+        41
+       ],
+       "toe": [
+        -5,
+        0
+       ]
+      }
+     },
+     "glaive": {
+      "angle_deg": 18,
+      "butt": [
+       -11,
+       0
+      ],
+      "grip_along": 92
+     },
+     "shoulders": {
+      "tilt_deg": -9
+     },
+     "pelvis": {
+      "tilt_deg": 9
+     }
+    },
+    "kept": false,
+    "verdict": "dropped (#7, 9/11): the extra tilt bent the free knee to 36 deg and read as a sway (the R1 t4 finding again)"
+   },
+   {
+    "name": "t6_control",
+    "idea": "negative control: level shoulders and hips, both knees straight, glaive 6 deg (the round-4 mannequin); must score last",
+    "set": {
+     "neck": {
+      "pit_dx": 13,
+      "back": 4
+     },
+     "head": {
+      "chin_dx": 15
+     },
+     "ribcage": {
+      "dx": 12
+     },
+     "waist": {
+      "dx": 12
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        13,
+        1
+       ],
+       "knee_hint": [
+        13,
+        40
+       ],
+       "toe": [
+        24,
+        0
+       ]
+      },
+      "near": {
+       "heel": [
+        -9,
+        1
+       ],
+       "knee_hint": [
+        -9,
+        40
+       ],
+       "toe": [
+        -5,
+        0
+       ]
+      }
+     },
+     "shoulders": {
+      "tilt_deg": 0
+     },
+     "pelvis": {
+      "tilt_deg": 0
+     },
+     "glaive": {
+      "angle_deg": 6,
+      "butt": [
+       -15,
+       0
+      ],
+      "grip_along": 98
+     }
+    },
+    "kept": false,
+    "verdict": "negative control, last as it must be (4/11): level axes, locked knees, a 6 deg staff"
+   },
+   {
+    "name": "t7_lean_soft",
+    "idea": "t4 with half the lean (pit and head 2 px toward the staff) and the weight heel kept under the far hip, so FG-P10 holds",
+    "set": {
+     "neck": {
+      "pit_dx": 11,
+      "back": 6
+     },
+     "head": {
+      "chin_dx": 15
+     },
+     "ribcage": {
+      "dx": 10
+     },
+     "waist": {
+      "dx": 11
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        15,
+        1
+       ],
+       "knee_hint": [
+        22,
+        40
+       ],
+       "toe": [
+        26,
+        0
+       ]
+      }
+     }
+    },
+    "kept": true,
+    "verdict": "KEPT, HERO (#1, 11/11, gap 361 px2): the chest and head lean 2 px toward the staff and the neck sets 2 px further back, so the near shoulder comes closer to the grip (reach 42.8 px, elbow 124 deg against R1's 134) and the head tilts off the neck (FG-P12); she leans on her staff instead of holding it out, and the plumb line still lands on the weight heel"
+   },
+   {
+    "name": "t8_lean_rest",
+    "idea": "t7 plus t2: the soft lean and the lower grip (glaive 16 deg, grip 84 px up, butt 1 px further out than t2 for GR-P10)",
+    "set": {
+     "neck": {
+      "pit_dx": 11,
+      "back": 6
+     },
+     "head": {
+      "chin_dx": 15
+     },
+     "ribcage": {
+      "dx": 10
+     },
+     "waist": {
+      "dx": 11
+     },
+     "legs": {
+      "far": {
+       "heel": [
+        15,
+        1
+       ],
+       "knee_hint": [
+        22,
+        40
+       ],
+       "toe": [
+        26,
+        0
+       ]
+      }
+     },
+     "glaive": {
+      "angle_deg": 16,
+      "butt": [
+       -14,
+       0
+      ],
+      "grip_along": 84
+     }
+    },
+    "kept": false,
+    "verdict": "dropped (#3, 10/11): the lean plus the low grip; the haft runs 3 px from the near boot (GR-P10, a tangent), and at 2x the arm hangs so low that the bell covers the near thigh"
+   }
+  ],
+  "radii": {
+   "thigh": [
+    7.2,
+    4.3
+   ],
+   "calf": [
+    4.0,
+    2.4
+   ],
+   "upper_arm": [
+    3.3,
+    2.7
+   ],
+   "forearm": [
+    2.6,
+    2.1
+   ]
+  },
+  "sleeve_mouth": 27,
+  "tabard_half": 5.5,
+  "tabard_hem_h": 24,
+  "tabard_sway": -3,
+  "boot_h": 21,
+  "stock_h": 55,
+  "_decisions": [
+   "round R1 (2026-09-29): six thumbnails built with the final R1 part models and scored on 11 silhouette rules; t2_hiphand (#1) and t5_hip_haft24 (#2) kept; the hero is t2. The collar hand DESIGN 1 names fails FG-N04 once the bell sleeves are at DESIGN size (the drape closes the window and covers the chest window); that is listed for Dex in DESIGN 13 and logged in ART-RULES 10 (R1)."
+  ],
+  "fist_shift": 0.4,
+  "r2": {
+   "calf_offset": true,
+   "deltoid": true,
+   "hands": {
+    "near": "fist_haft_left",
+    "far": "hip_back"
+   }
+  },
+  "render": {
+   "selout": true,
+   "cleanup": true,
+   "r2_torso": true,
+   "r2_legs": true,
+   "r2_tabard": true,
+   "r2_hands": true
+  },
+  "_hero": "t7_lean_soft (thumbnail round, ART-RULES 10 R2)",
+  "_thumb_doc": "every thumbnail set is written against the R1 body (r1_body) so the round reproduces after the hero (t7) was folded into the base; the base also carries neck.back 6 (the head-neck angle, FG-P12)"
+ },
+ "log": [
+  "gesture: joints from targets by IK; weight on the far foot",
+  "mannequin: rib cage and pelvis boxes on one spine; limbs as tapered cylinders",
+  "r1: dressed at DESIGN sizes (bell sleeves, hime back hair, veil), painted r1 head; one key light from the upper front (the facing side); outline and contact lines as C1",
+  "r2: R2 painted head (back hair under the chin left to the body layer); calf offset and deltoid masses; paint passes r2_veil, r2_torso, r2_gloss, r2_legs, r2_thighs, r2_hairtail, r2_tabard, r2_hands"
+ ],
+ "reference": null,
+ "_doc": "the spec this sprite was built from (tools/art-construct/figure_r2.py, round R2) and the log"
+}

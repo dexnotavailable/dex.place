@@ -1,0 +1,65 @@
+{
+ "name": "t2_rest_low",
+ "idea": "the near arm rests down and out on the staff (grip 84 px up, glaive 16 deg, butt 2 px nearer): the arm becomes a diagonal from the shoulder, the bell hangs from a falling forearm",
+ "set": {
+  "neck": {
+   "pit_dx": 13,
+   "back": 4
+  },
+  "head": {
+   "chin_dx": 15
+  },
+  "ribcage": {
+   "dx": 12
+  },
+  "waist": {
+   "dx": 12
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "angle_deg": 16,
+   "butt": [
+    -13,
+    0
+   ],
+   "grip_along": 84
+  }
+ },
+ "score": 10,
+ "gap_area": 343,
+ "width": 86,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-N02"
+ ],
+ "near_reach_px": 45.6,
+ "failed": [
+  "GR-P10: closest clear gap 2.0 px; overlap 0 px"
+ ],
+ "verdict": "dropped (#4, 10/11): the lower grip reads relaxed but the haft passes 2 px from the near boot (GR-P10)",
+ "kept": false,
+ "rank": 4
+}

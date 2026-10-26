@@ -1,0 +1,305 @@
+{
+ "name": "idle_hero__t6_control_upright",
+ "spec": {
+  "_doc": "Gesture spec for the processional hero idle at 144 px (DESIGN.md section 1, revision 3; ART-RULES.md sections 2-5). Units: 'h' = height in px above the sole, 'dx' = px from the body centre line at the feet (+ = screen-right, the side she faces). Angles in degrees. This is the artist's thumbnail in data: tools/art-construct/figure_construct.py builds the wireframe, mannequin, silhouette, block-in and pixels from it. The 3D render (--ref) is only a reference layer. Every number here is [I] until the learning log (ART-RULES section 10) confirms it.",
+  "name": "idle_hero",
+  "H": 144,
+  "canvas": [
+   152,
+   206
+  ],
+  "sole_y": 198,
+  "cx": 90,
+  "intent": "idle",
+  "move": "idle",
+  "carry": "rest",
+  "facing": "right",
+  "weight_foot": "far",
+  "expression": "confident",
+  "gaze_target": "viewer",
+  "face": {
+   "yaw": "q34",
+   "gaze": [
+    -1,
+    0
+   ],
+   "roll": -1,
+   "pitch": 0
+  },
+  "head": {
+   "chin_dx": 15,
+   "chin_h": 118
+  },
+  "neck": {
+   "pit_dx": 13,
+   "pit_h": 111,
+   "width": 7,
+   "back": 4
+  },
+  "shoulders": {
+   "tilt_deg": 0,
+   "near_w": 16,
+   "far_w": 12
+  },
+  "ribcage": {
+   "h": 100,
+   "dx": 12,
+   "near_w": 11,
+   "far_w": 8
+  },
+  "waist": {
+   "h": 86,
+   "dx": 12,
+   "near_w": 8,
+   "far_w": 6
+  },
+  "pelvis": {
+   "dx": 8,
+   "h": 76,
+   "tilt_deg": 0,
+   "near_w": 11,
+   "far_w": 10,
+   "crotch_h": 72
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   },
+   "near": {
+    "heel": [
+     -6,
+     1
+    ],
+    "knee_hint": [
+     -4,
+     40
+    ],
+    "toe": [
+     0,
+     0
+    ]
+   }
+  },
+  "arms": {
+   "near": {
+    "hand": "grip",
+    "elbow_hint": [
+     -18,
+     84
+    ]
+   },
+   "far": {
+    "hand": [
+     14,
+     103
+    ],
+    "elbow_hint": [
+     40,
+     96
+    ],
+    "foreshorten": [
+     0.62,
+     0.95
+    ]
+   }
+  },
+  "lengths": {
+   "upper_arm": 24,
+   "forearm": 21,
+   "thigh": 36,
+   "calf": 35
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ],
+   "angle_deg": 17,
+   "length": 194,
+   "grip_along": 98
+  },
+  "hair": {
+   "tail_h": 64,
+   "width": 7,
+   "tail_dx": -1
+  },
+  "zones": {
+   "_doc": "polygons in dx/h (the checker converts). keep_out: nothing of the named kind may be inside. must_be: the named thing must be there.",
+   "keep_out": [
+    {
+     "name": "centre band (no weapon)",
+     "kind": "weapon",
+     "poly": "torso_centre_band"
+    },
+    {
+     "name": "between the eyes below the lash",
+     "kind": "hair",
+     "poly": "eye_gap"
+    }
+   ],
+   "must_be": [
+    {
+     "name": "collar_cross",
+     "expect": "gold_cross",
+     "poly": "cross_box"
+    },
+    {
+     "name": "fist at the grip",
+     "expect": "hand_near",
+     "poly": "grip_box"
+    },
+    {
+     "name": "dark between the legs",
+     "expect": "dark",
+     "poly": "between_legs"
+    }
+   ]
+  },
+  "_tilt_doc": "tilt_deg = angle of the near->far line; + = the far (screen-right) side higher. Weight on the far leg: far hip up (+), shoulders the other way (-).",
+  "thumbnails": [
+   {
+    "name": "t1_base",
+    "idea": "the spec as written: weight far leg, free knee back, glaive 17 deg out, hand on the collar",
+    "set": {}
+   },
+   {
+    "name": "t2_wide",
+    "idea": "wider stance, hip thrust one more px",
+    "set": {
+     "legs": {
+      "far": {
+       "heel": [
+        17,
+        1
+       ],
+       "knee_hint": [
+        24,
+        40
+       ],
+       "toe": [
+        28,
+        0
+       ]
+      },
+      "near": {
+       "heel": [
+        -9,
+        7
+       ],
+       "knee_hint": [
+        3,
+        40
+       ],
+       "toe": [
+        -5,
+        0
+       ]
+      }
+     },
+     "pelvis": {
+      "dx": 13
+     }
+    }
+   },
+   {
+    "name": "t3_tilt",
+    "idea": "push the contrapposto a step (FG-N09): shoulders -10, hips +10",
+    "set": {
+     "shoulders": {
+      "tilt_deg": -10
+     },
+     "pelvis": {
+      "tilt_deg": 10
+     }
+    }
+   },
+   {
+    "name": "t4_haft25",
+    "idea": "glaive at 25 deg with the butt at the near toe (overlap) and a lower grip",
+    "set": {
+     "glaive": {
+      "angle_deg": 25,
+      "butt": [
+       -9,
+       0
+      ],
+      "grip_along": 86
+     }
+    }
+   },
+   {
+    "name": "t5_hiphand",
+    "idea": "free hand on the far hip instead of the collar (A/B for the second arm window)",
+    "set": {
+     "arms": {
+      "far": {
+       "hand": [
+        24,
+        82
+       ],
+       "elbow_hint": [
+        40,
+        96
+       ],
+       "foreshorten": [
+        0.8,
+        0.9
+       ]
+      }
+     }
+    }
+   },
+   {
+    "name": "t6_control_upright",
+    "idea": "control: level shoulders and hips, both knees straight (the mannequin the critics named); should score worst",
+    "set": {
+     "shoulders": {
+      "tilt_deg": 0
+     },
+     "pelvis": {
+      "tilt_deg": 0,
+      "dx": 8
+     },
+     "legs": {
+      "near": {
+       "heel": [
+        -6,
+        1
+       ],
+       "knee_hint": [
+        -4,
+        40
+       ],
+       "toe": [
+        0,
+        0
+       ]
+      }
+     }
+    }
+   }
+  ],
+  "_decisions": [
+   "round C1 (2026-09-29), first pass: t5_hiphand and t4_haft25 kept on 9 silhouette rules; building t4 in full showed the fist could not reach the lower grip (GR-P05 3.2 px off the haft), so GR-P05 and GR-P09 joined the thumbnail score.",
+   "round C1, second pass (11 rules): t5_hiphand and t2_wide kept (11/11; largest arm-gap areas). The hero adopts t2's wider stance and keeps the collar hand (DESIGN 1); t5 (hand on the far hip) stays the A/B alternative for the critics; t4 dropped (grip out of reach)."
+  ]
+ },
+ "log": [
+  "gesture: joints from targets by IK; weight on the far foot",
+  "mannequin: rib cage and pelvis boxes on one spine; limbs as tapered cylinders",
+  "dressed, shaded (one key light from the upper front, the facing side) and outlined"
+ ],
+ "reference": null,
+ "_doc": "the spec this sprite was built from and the construction log"
+}

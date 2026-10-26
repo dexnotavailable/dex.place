@@ -1,0 +1,15 @@
+{
+ "_doc": "Drive 9 whole-character round 5, ESCALATION 3 (recombine), mix X's finish: an overlay deep-merged over r5_finish.json. The first-impression critic's 'darken the overall key; keep gold and the blue orb as accents' and the materials critic's 'the white tabard is still the brightest large mass' as one value lever: the large light masses (white, veil, skin) take a steeper gamma, so their shadow side sits lower and only the lit plane stays light; the hair and stockings go one step darker. Gold, glass and steel are unchanged (the accents).",
+ "base": "r5_finish.json",
+ "materials": {
+  "white": {"gamma": 1.55},
+  "veil": {"gamma": 1.5},
+  "skin": {"gamma": 1.22},
+  "hair": {"gamma": 1.45},
+  "stocking": {"gamma": 1.4},
+  "lining": {"gamma": 1.2}
+ },
+ "why": {
+  "key": "First impression 15 (round 4): 'Blue/gold/white harmonious but mid-key saturated; refs are low-key with one accent. Darken overall key; keep gold and the blue orb as accents.' Materials 15: 'White tabard still the brightest large mass.' White gamma 1.3 -> 1.55, veil -> 1.5, skin 1.12 -> 1.22, hair 1.35 -> 1.45, stocking 1.3 -> 1.4, lining -> 1.2."
+ }
+}

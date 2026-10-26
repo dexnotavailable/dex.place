@@ -17,6 +17,7 @@ export interface WallParams {
 
 export const wall = defineRecipe<WallParams, null>({
   id: "wall",
+  breakage: "never",
   reason: "The room's back wall: it gives the space a scale (courses, columns) and something for windows and plaques to sit in.",
   defaults: { width: 1280, height: 7.4, columns: [0.07, 0.35, 0.65, 0.93], openings: [] },
   build(b, p) {

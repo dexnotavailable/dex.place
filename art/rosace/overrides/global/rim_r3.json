@@ -1,0 +1,111 @@
+{
+ "_doc": "Shading lane round 3 world-rim policy (rim.py inner_rim): as rim_r2 (inside the line, shadow side only, convex, broken runs, <= max_share of the ring), with the round-2 critique's tints (param 17: pale blue-lavender on hair, cream on skin, violet on the stockings, never #fff), a per-frame family (tint_family; $ROSACE_RIM_FAMILY, set per still by the preset's rim_family: the attack frames take the warm gold light, DESIGN 9's warm column), and at the 80 px world size only the hair crown (small_px).",
+ "style": "inner",
+ "thr": 0.45,
+ "head_thr": 0.8,
+ "head_run": 3,
+ "run_min": 2,
+ "run_max": 5,
+ "max_share": 0.03,
+ "min_step": 1.3,
+ "convex_max": 52,
+ "tint": {
+  "hair": "I0",
+  "hairtip": "A3",
+  "white": "W2",
+  "veil": "W2",
+  "beige": "B1",
+  "skin": "S1",
+  "stocking": "I1",
+  "boot": "I1",
+  "indigo": "I1",
+  "lining": "I2",
+  "thong": "I3",
+  "gold": "G0",
+  "haft": "I2",
+  "steel": "T2",
+  "steeldark": "T3"
+ },
+ "shadow_codes": {
+  "hair": [
+   "I3",
+   "I4"
+  ],
+  "hairtip": [
+   "I3",
+   "A2"
+  ],
+  "white": [
+   "W2",
+   "W3",
+   "W4"
+  ],
+  "veil": [
+   "W2",
+   "W3",
+   "W4"
+  ],
+  "skin": [
+   "S3",
+   "S4"
+  ],
+  "stocking": [
+   "K2",
+   "K3",
+   "K1"
+  ],
+  "boot": [
+   "K2",
+   "K3"
+  ],
+  "gold": [
+   "G2",
+   "G3",
+   "G4"
+  ],
+  "lining": [
+   "I3",
+   "I4"
+  ],
+  "indigo": [
+   "I3",
+   "I4"
+  ],
+  "haft": [
+   "OL",
+   "I4",
+   "I3"
+  ],
+  "steel": [
+   "T3",
+   "T4"
+  ],
+  "steeldark": [
+   "T4"
+  ],
+  "thong": [
+   "OL",
+   "I4"
+  ],
+  "beige": [
+   "B2",
+   "W3"
+  ]
+ },
+ "full_as_world": true,
+ "tint_family": {
+  "warm": {
+   "hair": "G2",
+   "hairtip": "G1",
+   "white": "G0",
+   "veil": "G0",
+   "skin": "G0",
+   "stocking": "G2",
+   "boot": "G2",
+   "indigo": "G2",
+   "lining": "G2",
+   "gold": "G0"
+  }
+ },
+ "small_px": 100
+}

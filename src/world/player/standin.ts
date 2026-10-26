@@ -12,8 +12,8 @@
 import { pack, trim, type PackedAtlas, type PackedImage } from "../../lab/art/atlas-builder.ts";
 import { PixBuf, type Material, type Palette, type ShapeOpts } from "../../lab/art/pixbuf.ts";
 import type { ClipSource } from "../../lab/art/standin-bake.ts";
-import { drawFigure, KEY_LIGHT, PAL } from "../../lab/art/standin-figure.ts";
-import { resolvePose } from "../../lab/art/standin-poses.ts";
+import { drawFigure, KEY_LIGHT, PAL, type Pose } from "../../lab/art/standin-figure.ts";
+import { blendPoses, resolvePose } from "../../lab/art/standin-poses.ts";
 import { SPRITE_CONTRACT, validatePackage, type Clip, type SpritePackage } from "../../lab/contracts.ts";
 
 /**
@@ -68,6 +68,56 @@ class ScaledPixBuf extends PixBuf {
   }
 }
 
+/**
+ * Poses only the world needs, drawn by the lab's figure code (authored at 96 px, feet at y 0):
+ * sitting on a bench. The kit's seat top is 0.28 H (27 px here); she sits on it with her
+ * thighs along the seat, her boots on the floor in front, the spear planted upright beside her
+ * knees in the far hand and the near hand in her lap, looking out. Two breaths, like the idle.
+ */
+const sit0: Pose = {
+  hip: [-4, -30],
+  lean: -3,
+  chest: 6,
+  head: 8,
+  footN: [16, -3],
+  footF: [20, -3],
+  toeN: -6,
+  toeF: -4,
+  wpn: [13, -50, -87],
+  slide: 50,
+  handN: [9, -30],
+  hair: 4,
+  cloth: 34,
+  clothLift: 0.1,
+  expr: "open",
+};
+const WORLD_POSES: Record<string, Pose> = {
+  sit0,
+  sit1: { ...sit0, hip: [-4, -29.6], chest: 7, head: 9, wpn: [13, -49.6, -87], handN: [9, -29.6], hair: 2, cloth: 33 },
+};
+
+/** A world pose, a lab pose, or an in-between "a~b:t" of either. */
+function poseFor(key: string): Pose {
+  const m = /^(\w+)~(\w+):([\d.]+)$/.exec(key);
+  if (m && (WORLD_POSES[m[1]!] || WORLD_POSES[m[2]!])) return blendPoses(poseFor(m[1]!), poseFor(m[2]!), Number(m[3]));
+  return WORLD_POSES[key] ?? resolvePose(key);
+}
+
+/** The clips the world adds to the lab's (the stand-in only; a pipeline export brings its own or none). */
+export const WORLD_CLIPS: ClipSource["clips"] = [
+  {
+    id: "sit",
+    loop: true,
+    tags: ["world"],
+    frames: [
+      { pose: "sit0", duration: 34 },
+      { pose: "sit0~sit1:0.5", duration: 10 },
+      { pose: "sit1", duration: 34 },
+      { pose: "sit1~sit0:0.5", duration: 10 },
+    ],
+  },
+];
+
 export interface ScaledBake {
   pkg: SpritePackage;
   atlas: PackedAtlas;
@@ -83,7 +133,7 @@ function renderPose(key: string, k: number): { image: PackedImage; pivot: [numbe
   const ox = Math.round(150 * k);
   const oy = Math.round(200 * k);
   const buf = new ScaledPixBuf(bw, bh, ox, oy, PAL, k);
-  const { anchors, warnings } = drawFigure(buf, resolvePose(key));
+  const { anchors, warnings } = drawFigure(buf, poseFor(key));
   const { albedo, normal } = buf.finish(KEY_LIGHT);
   const t = trim(bw, bh, albedo, normal, 0);
   if (!t) throw new Error(`pose ${key} drew nothing at ${k}x`);

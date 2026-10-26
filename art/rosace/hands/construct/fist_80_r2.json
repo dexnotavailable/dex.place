@@ -1,0 +1,49 @@
+{
+ "_doc": "Constructed fist, 80 px, ROUND 2 (round 1: fist_80.json). Critique round 1: 'at 80 the grip hand drops to 2-3 skin pixels, so it does not read at all; force a 3x3 minimum skin fist with a dark outline instead of trusting the downscale'. A 3 x 3 skin block (r lit ridge S1, t thumb S1/S2, b S2, B/k/d S3 shade) inside an OL ring (O = OL always), the wrist 'w' one cell out; same frame and labels as fist_144_r2.json.",
+ "haft_cols": [
+  2,
+  2
+ ],
+ "origin": [
+  2,
+  2
+ ],
+ "views": {
+  "back": {
+   "rows": [
+    ".OOO..",
+    "OrttO.",
+    "OrbBw.",
+    "OkdBO.",
+    ".OOO.."
+   ]
+  },
+  "fingers": {
+   "rows": [
+    ".OOO..",
+    "OttTO.",
+    "OfnBw.",
+    "OkdBO.",
+    ".OOO.."
+   ]
+  },
+  "back_along": {
+   "rows": [
+    ".OOO..",
+    "OrttO.",
+    "OrbBO.",
+    "OkdwO.",
+    "..ww.."
+   ]
+  },
+  "fingers_along": {
+   "rows": [
+    ".OOO..",
+    "OttTO.",
+    "OfnBO.",
+    "OkdwO.",
+    "..ww.."
+   ]
+  }
+ }
+}

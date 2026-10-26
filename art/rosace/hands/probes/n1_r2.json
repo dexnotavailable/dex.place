@@ -1,0 +1,156 @@
+{
+ "_doc": "glaive-hands round 2: N1 with the rear hand choked near the butt (a 0.12-0.20 m stub, 9-15 px at 144) so the butt no longer trails back through the pelvis and thigh (GR-N05), the rear fist raised in front of the lower belly (GR-P04), the front fist 0.36-0.38 m (26-28 px) up the haft (GR-P01).",
+ "base": "art/rosace/hands/poses/n1_contact.json",
+ "variants": {
+  "a_r22": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.1564,
+     -0.4912,
+     0.8476
+    ],
+    "dir": [
+     0.1174,
+     -0.9197,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.7841
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4141
+    }
+   }
+  },
+  "b_r22hi": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.1364,
+     -0.5312,
+     0.9076
+    ],
+    "dir": [
+     0.1174,
+     -0.9197,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.7841
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4141
+    }
+   }
+  },
+  "c_r18": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.1569,
+     -0.4879,
+     0.8567
+    ],
+    "dir": [
+     0.1204,
+     -0.9434,
+     0.309
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.7841
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4141
+    }
+   }
+  },
+  "d_r22stub": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.1435,
+     -0.4161,
+     0.8051
+    ],
+    "dir": [
+     0.1174,
+     -0.9197,
+     0.3746
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.7241
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.3541
+    }
+   }
+  },
+  "e_r26": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.1559,
+     -0.5152,
+     0.8586
+    ],
+    "dir": [
+     0.1138,
+     -0.8916,
+     0.4384
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.7841
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.4141
+    }
+   }
+  }
+ }
+}

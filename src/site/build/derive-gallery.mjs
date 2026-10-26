@@ -23,7 +23,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** Candidate widths. A size is skipped when it is within 10% of the source width (the source itself is the top candidate). */
-export const WIDTHS = [160, 384, 512, 640, 960, 1280];
+export const WIDTHS = [160, 384, 512, 560, 640, 960, 1280];
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const manifestFile = path.join(root, "content", "gallery", "manifest.json");

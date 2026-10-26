@@ -1,9 +1,13 @@
-"""Build Rosace (the dex.place player character) from the CC0 base + scripts -> rosace.blend.
+"""Build the RETIRED v1 Rosace base (HairSample_Female.vrm, CC0) + scripts -> a scratch file.
+
+Since the Adopt step (2026-09-29) rosace.blend is built by build_rosace_v2.py (SiroinoSotai body
++ MMD head); the shipped v1 file is kept as build/rosace_v1.blend. This script stays for
+comparison rebuilds and never writes either of those two files.
 
 Scripts are the source of truth; the .blend is regenerable build output.
 Run headless through the isolated wrapper (never a user's open Blender):
   tools/pixel-pipeline/blender.sh --python tools/pixel-pipeline/build_rosace.py -- \
-      [--out D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend] [--only body,hair,...]
+      [--out D:/Dex/Projects/dex-place-art/rosace/build/scratch/rosace_v1_rebuild.blend] [--only body,hair,...]
 
 Inputs: HairSample_Female.vrm (CC0, pinned in third_party.json), art/rosace/palette.json.
 Steps: body (import, strip, restyle, face normals) -> materials -> hair -> outfit -> glaive
@@ -20,7 +24,8 @@ import bpy  # noqa: E402
 from rosace import body, common, materials  # noqa: E402
 
 argv = common.args_after_dashes(sys.argv)
-OUT = common.arg(argv, "--out", os.path.join(common.BUILD, "rosace.blend"))
+OUT = common.arg(argv, "--out", os.path.join(common.BUILD, "scratch", "rosace_v1_rebuild.blend"))
+assert os.path.basename(OUT) not in ("rosace.blend", "rosace_v1.blend"), "v1 never writes the canonical files"
 ONLY = common.arg(argv, "--only", "body,hair,outfit,glaive,rig,ao").split(",")
 T0 = time.time()
 
