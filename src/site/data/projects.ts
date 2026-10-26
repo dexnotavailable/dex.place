@@ -80,7 +80,7 @@ export const projects: readonly Project[] = [
     hero: "Yuki",
     art: {
       w: 160, h: 240, layers: 0, standin: false, code: "yuki", credit: "Pixel art drawn in code",
-      alt: "Yuki, YUKI's face, in pixel art: a girl with white hair, blue eyes and a red hairpin, in a white cloak with a fur collar, snow falling around her.",
+      alt: "Yuki, YUKI's face, in pixel art: a girl with long white hair, blue eyes and a crimson snowflake clip, in an indigo sailor collar with a red bow, snow falling around her.",
     },
     page: "/yuki/",
     size: "lead",
