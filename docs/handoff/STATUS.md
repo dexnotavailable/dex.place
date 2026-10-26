@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T01:29:16.069Z (26/10/2026, 08:29:16 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T02:29:57.445Z (26/10/2026, 09:29:57 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,12 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-_No workflow activity in the last 72 hours._
+### wf_9c8aa1d9-320 — last activity 3 min ago
+2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
+
+- **build:w11-suite** (running)
+- **build:w12-site** (running)
+
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
 
