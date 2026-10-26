@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T18:48:45.299Z (27/10/2026, 01:48:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T19:58:44.909Z (27/10/2026, 02:58:44 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,15 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_d62c443d-630 — last activity 452 min ago
+### wf_201c626b-e06 — last activity 9 min ago
+4 agents: 4 done, 0 running or stopped mid-way, 0 failed.
+
+- **merge:w6a-picker** (done): The picker lane (p2/w6a-picker) is merged into codex/phase1-finish-20261023 as 78dc72e. The three leftovers each have their own commit after it, plus one extra fix I found while checking the swap. The root typecheck passes and the tests are green. Nothing was pushed. **The merge** - **Conflicts:** four files had them: ModelControls, demoData, fakeEngine and ModelSources. I kept both sides each time: - The main line's
+- **check:w6a-picker** (done): verdict ship
+- **merge:w7b-firstrun** (done): I merged p2/w7b-firstrun into codex/phase1-finish-20261023 (merge commit 09e7167) and added two follow-up commits. The root typecheck passes and every test passes. Nothing was pushed or published. **Conflicts:** 22 files, all resolved by keeping both sides: - Catalogue: voices and runtimes sit side by side (protocol, schema, the check, the catalogue copy). - Downloads: main's installer registration runs alongside the
+- **check:w7b-firstrun** (done): verdict fix
+
+### wf_d62c443d-630 — last activity 42 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **draw:r1** (done): 
@@ -20,12 +28,12 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **judge2:r1** (done): 
 - **draw:r2** (running)
 
-### wf_6e3339e3-3ac — last activity 785 min ago
+### wf_6e3339e3-3ac — last activity 855 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **draw:r1** (running)
 
-### wf_9c8aa1d9-320 — last activity 786 min ago
+### wf_9c8aa1d9-320 — last activity 856 min ago
 12 agents: 12 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:w11-suite** (done): The release check suite is built and committed on p2/w11-suite as d283fe1. `npm run release-check` starts the engine bundle the installer ships, on Electron as Node like the app. It uses a fresh scratch profile (port 4785x, `YUKI_NO_KEYRING=1`, inherited `YUKI_*` variables stripped, relay off) and talks to the engine over the WebSocket the way the app does. Scenarios pass or fail on content, never on "no error" alone
