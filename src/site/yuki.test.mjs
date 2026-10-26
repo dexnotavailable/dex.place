@@ -8,7 +8,7 @@ import { blinkVars, eyesLayer, OPEN_EYES, STRONG_BLUSH, YUKI_EYES, YUKI_MOUTHS, 
 import { BACK, BLUSH, BODY, EXPRESSIONS, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, PALETTE, PROPS, YUKI_FACES_SOURCE } from "./yuki-faces.ts";
 import { bandPath, discPath, GROW, ORB, ringCells, snowLayer, yukiArt, yukiStage } from "./render/yukiart.ts";
 import { smartScreen, YUKI_SAYS, yukiPage } from "./render/yuki.ts";
-import { releaseAsset, yukiEntry } from "./data/downloads.ts";
+import { releaseAsset, YUKI_RELEASE, yukiEntry } from "./data/downloads.ts";
 import { readLinkStatus, YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, yukiFacts } from "./data/yuki.ts";
 import { projects } from "./data/projects.ts";
 import { routes } from "./render/routes.ts";
@@ -580,10 +580,10 @@ test("v0.2's extras, only as far as it ships them (Dex 10-26): dex inference as 
 });
 
 test("the tiers wait for the release that has the first run that picks them; what it needs is always there", () => {
-  // (switched on at release, with YUKI_RELEASE: see data/downloads.ts)
-  assert.equal(YUKI_TIERS_LIVE, false);
+  // (switched on at release, with YUKI_RELEASE: the release fill in data/downloads.ts; never before it)
+  if (YUKI_TIERS_LIVE) assert.ok(YUKI_RELEASE, "the tiers only with a release");
   for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
-    assert.doesNotMatch(html, /yks--tiers|yktier/);
+    assert.equal(/yks--tiers|yktier/.test(html), YUKI_TIERS_LIVE, "the tiers as data/yuki.ts YUKI_TIERS_LIVE says");
     assert.ok(html.includes(YUKI_NEEDS), "what the installer needs");
     // the first run as v0.2 has it, in its install step; nothing it doesn't do
     assert.match(html, /offers the setup that fits it/);
