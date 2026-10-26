@@ -52,9 +52,10 @@ made with code (no image generation).
   `/docs/installing-dexclient/` point at the YUKI docs, `content/docs/yuki.md` and `installing-yuki.md`; the retired
   projects' other docs stay, their groups last and tagged "Retired"). `data/yuki.ts`: what it is (dex inference as v0.2
   has it: optional, a chat source on PCs the community hosts, hosting from yours, invite-only for now), the hand and
-  the deck, **off** until the release the page lists has them (`YUKI_HAND_LIVE`, Dex 10-26: only as far as v0.2 really
-  ships them), the app's S to D hardware tiers (YUKI's `hardware.ts` `TIER_RULES`), **off** until a release
-  has the first run that picks them (`YUKI_TIERS_LIVE`), and `YUKI_LINK`, the optional status
+  the deck (`YUKI_HAND_LIVE`, on: v0.2 has them; Dex 10-26: only as far as v0.2 really ships them), the free radar,
+  a brain that fits (YUKI's catalogue, down to a small brain for small NVIDIA cards), all in one list (`yukiFacts`,
+  which the projects list reads too), the app's S to D hardware tiers (YUKI's `hardware.ts` `TIER_RULES` with
+  `brains.ts`'s words), **off** until switched on with the release (`YUKI_TIERS_LIVE`), and `YUKI_LINK`, the optional status
   ping to YUKI's engine on the visitor's PC, **off** (no markup, no request) until the engine answers dex.place.
 - **Pixel Yuki** (`yuki-sprite.ts`) is the YUKI app's own mascot (Dex 10-26: the site's Yuki stays the app's). Her
   pixels and timings are synced as data into `yuki-faces.ts` by `node tools/yuki-faces/sync.mjs <YUKI checkout> [ref]`

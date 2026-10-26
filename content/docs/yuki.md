@@ -23,6 +23,9 @@ YUKI has one setup file. Its first public release isn't out yet. When it is, [Do
 |---|---|
 | Any task on your PC | Files, the shell, the browser and your logins, desktop apps, games, and other AI models. |
 | Models are tools | Her brain can call an image, video or language model with its own settings, take what it makes, and keep working. |
+| A hand of models | Every model YUKI can reach is a card in your deck. The cards in your hand are the ones Yuki and her helpers use. |
+| A free radar | YUKI keeps a list of free AI sources and spots new free models, with one tip a day at most. Paste a key and its models join your deck, free ones first. |
+| A brain that fits | First run offers the best brain in YUKI's catalogue that fits your PC, down to a small one for a 6 GB NVIDIA card with 16 GB of RAM. Where none fits, the brain runs on a free cloud model. |
 | Yuki never goes busy | You talk to Yuki. She hands the work to her helper agents and keeps talking with you while they run. |
 | dex inference | Optional: sign in with a dex account to chat on models that run on PCs the community hosts, or to host from yours. Invite-only for now, friends first. |
 
@@ -34,7 +37,7 @@ YUKI runs on your PC, and your chats stay there unless you pick a cloud model. A
 
 | What | Where |
 |---|---|
-| The YUKI app | `%LOCALAPPDATA%\Programs\YUKI`, or the folder you pick when you install |
+| The YUKI app | `%LOCALAPPDATA%\Programs\YUKI` |
 | Your chats, memory and settings | `%LOCALAPPDATA%\YUKI` |
 | A note of where that folder is | `%APPDATA%\YUKI` |
 

@@ -104,7 +104,7 @@ test("not released, the section keeps its shape (Dex 10-26: a short band ran its
   }
 });
 
-test("the steps: each browser's own words for keeping the file, and a first open that promises only what YUKI does today", () => {
+test("the steps: each browser's own words for keeping the file, and a first open that says what v0.2's first run does", () => {
   const steps = yukiEntry(SAMPLE).steps;
   const ways = steps[0].ways;
   assert.deepEqual(ways.map((w) => w.who), ["Chrome", "Edge", "Firefox"]);
@@ -112,10 +112,14 @@ test("the steps: each browser's own words for keeping the file, and a first open
   assert.match(ways[0].how, /Suspicious download blocked.*Download suspicious file/);
   assert.match(ways[1].how, /Keep, Show more, Keep anyway/);
   assert.match(ways[2].how, /Allow download/);
-  // the tier-picked setup and Hugging Face downloads are the W7 first run, after v0.2 (PHASE2-SCOPE "Order")
+  // the first open is v0.2's W7 first run (YUKI firstrun/FirstRun.tsx): the hatch, the PC looked over, the setup that
+  // fits it offered, nothing downloaded before the user picks one and accepts its licences; nothing it doesn't do
   const meet = steps[3];
   assert.equal(meet.title, "Meet Yuki");
-  assert.doesNotMatch(meet.text, /picks|setup that fits|Hugging Face|licen[cs]e|download/i);
+  assert.match(meet.text, /hatches/);
+  assert.match(meet.text, /offers the setup that fits it/);
+  assert.match(meet.text, /Nothing downloads until you pick one and accept its licences\./);
+  assert.doesNotMatch(meet.text, /Hugging Face|engines already|automatic/i);
   const html = downloadsPage(released);
   const guide = html.slice(html.indexOf('<section class="dlg"'));
   assert.equal(guide.match(/<ul class="ways step__ways">/g).length, 1, "the browsers under step one");

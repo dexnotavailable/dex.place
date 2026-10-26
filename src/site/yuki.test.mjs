@@ -9,7 +9,8 @@ import { BACK, BLUSH, BODY, EXPRESSIONS, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, 
 import { bandPath, discPath, GROW, ORB, ringCells, snowLayer, yukiArt, yukiStage } from "./render/yukiart.ts";
 import { smartScreen, YUKI_SAYS, yukiPage } from "./render/yuki.ts";
 import { releaseAsset, yukiEntry } from "./data/downloads.ts";
-import { readLinkStatus, YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE } from "./data/yuki.ts";
+import { readLinkStatus, YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, yukiFacts } from "./data/yuki.ts";
+import { projects } from "./data/projects.ts";
 import { routes } from "./render/routes.ts";
 
 const SAMPLE = { version: "0.2.0", file: "YUKI-Setup-0.2.0.exe", bytes: 312_456_789, sha256: "ab".repeat(32) };
@@ -518,13 +519,17 @@ test("/yuki/ on a tablet: the stacked stage is tall enough for her ring and her 
   assert.match(css, /\.ykh__stage \{\n  --cols: 72;\n  --rows: 50;/);
 });
 
-test("what it is and the tiers come from YUKI's docs and code (data/yuki.ts): five facts, the app's five tiers S to D", () => {
-  assert.equal(YUKI_FACTS.length, 5);
-  // the app's own tiers (YUKI packages/engine/src/catalogue/hardware.ts TIER_RULES): S to D, D the free cloud brain
+test("what it is and the tiers come from YUKI's docs and code (data/yuki.ts): seven facts, the app's five tiers S to D", () => {
+  assert.equal(YUKI_FACTS.length, 7);
+  // the app's own tiers (YUKI packages/engine/src/catalogue/hardware.ts TIER_RULES): S to D; below A a small brain
+  // where the RAM lets it (p2/small-brain's brains.ts), else the free cloud brain
   assert.deepEqual(YUKI_TIERS.map((t) => t.rank), ["S", "A", "B", "C", "D"]);
   for (const t of YUKI_TIERS) assert.ok(t.name && t.pc && t.gets, t.rank);
   for (const t of YUKI_TIERS.slice(0, 4)) assert.match(t.pc, /^An NVIDIA card with \d+ GB/, `${t.rank}: only NVIDIA counts for now`);
-  for (const t of YUKI_TIERS.slice(2)) assert.match(t.gets, /The brain runs on a free cloud model\.$/, `${t.rank}: the brain in the cloud`);
+  for (const t of YUKI_TIERS.slice(2)) {
+    assert.match(t.gets, /small brain/, `${t.rank}: a small brain where it fits`);
+    assert.match(t.gets, /If not, the brain runs on a free cloud model\.$/, `${t.rank}: else the brain in the cloud`);
+  }
   for (const t of YUKI_TIERS) assert.doesNotMatch(t.name, /\bGB\b/, `${t.rank}: a name, not a spec`);
   assert.match(YUKI_TIERS_NOTE, /only NVIDIA/);
   const html = yukiPage(yukiEntry(null), { tiers: true });
@@ -533,7 +538,7 @@ test("what it is and the tiers come from YUKI's docs and code (data/yuki.ts): fi
   for (const f of YUKI_FACTS) assert.ok(html.includes(f.title.replaceAll("'", "&#39;")) || html.includes(f.title), f.title);
 });
 
-test("v0.2's extras, only as far as it ships them (Dex 10-26): dex inference as it is, the hand and the deck only once a release has them", () => {
+test("v0.2's extras, only as far as it ships them (Dex 10-26): dex inference as it is, the hand and the deck, the free radar, a brain that fits", () => {
   // dex inference: optional, a chat source on PCs the community hosts (no pictures through it in v0.2), hosting from
   // yours, invite-only for now
   const dex = YUKI_FACTS.find((f) => f.title === "dex inference");
@@ -542,34 +547,49 @@ test("v0.2's extras, only as far as it ships them (Dex 10-26): dex inference as 
   assert.match(dex.text, /PCs the community hosts/);
   assert.match(dex.text, /Invite-only for now/);
   assert.doesNotMatch(dex.text, /picture|image|video|subscri|\$|free/i, "no more than v0.2's dex inference does, no price");
-  // the hand and the deck (W6, still being built on 10-26): off until the release it lists has them
-  assert.equal(YUKI_HAND_LIVE, false);
+  // the hand and the deck (W6, on the YUKI main line since 10-27, merge 78dc72e): after "Models are tools", the radar
+  // (which fills the deck) right after it
+  assert.equal(YUKI_HAND_LIVE, true);
   assert.ok(!YUKI_FACTS.includes(YUKI_HAND));
   const facts = (html) => [...html.matchAll(/<h3 class="ykfact__t">([^<]*)<\/h3>/g)].map((m) => m[1]);
-  for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
-    assert.deepEqual(facts(html), YUKI_FACTS.map((f) => f.title.replaceAll("'", "&#39;")));
-    assert.doesNotMatch(html, /\bdeck\b|in your hand/);
-  }
-  // turned on, it sits after "Models are tools": six facts, two even rows on a wide screen
-  const on = facts(yukiPage(yukiEntry(SAMPLE), { hand: true }));
-  assert.equal(on.length, 6);
-  assert.equal(on[2], YUKI_HAND.title);
+  const titles = yukiFacts().map((f) => f.title.replaceAll("'", "&#39;"));
+  assert.deepEqual(titles.slice(0, 5), ["Any task on your PC", "Models are tools", YUKI_HAND.title, "A free radar", "A brain that fits"]);
+  for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) assert.deepEqual(facts(html), titles);
   assert.match(YUKI_HAND.text, /deck/);
   assert.match(YUKI_HAND.text, /hand/);
+  // the projects list says the same as the page
+  assert.deepEqual(projects.find((p) => p.id === "yuki").facts.map((f) => f.text), yukiFacts().map((f) => f.text));
+  // with the hand off (a release without it), no word of it
+  assert.doesNotMatch(facts(yukiPage(yukiEntry(SAMPLE), { hand: false })).join(" "), new RegExp(YUKI_HAND.title));
+  // the free radar as v0.2's engine has it (routing/radar.ts): free sources and new free models, one offer a day at
+  // most, a key's cards free first; no promise of free use itself
+  const radar = YUKI_FACTS.find((f) => f.title === "A free radar");
+  assert.match(radar.text, /one tip a day at most/);
+  assert.match(radar.text, /free ones first/);
+  assert.doesNotMatch(radar.text, /unlimited|always free|no key/i);
+  // a brain that fits (p2/small-brain, brains.ts adviseBrain): the catalogue's best fit, a small one down to a 6 GB
+  // NVIDIA card with 16 GB of RAM, else the free cloud brain
+  const brain = YUKI_FACTS.find((f) => f.title === "A brain that fits");
+  assert.match(brain.text, /catalogue/);
+  assert.match(brain.text, /6 GB NVIDIA card with 16 GB of RAM/);
+  assert.match(brain.text, /Where none fits, the brain runs on a free cloud model\.$/);
+  assert.equal(yukiFacts().length, 8, "three even rows' worth: 3, 3 and a shared 2");
   // the facts' grid shares a short last row (no lone tile)
   const css = read("./styles/yuki.css");
   assert.match(css, /\.ykfact:nth-child\(3n \+ 1\):nth-last-child\(2\), \.ykfact:nth-child\(3n \+ 2\):last-child \{ grid-column: span 3; \}/);
 });
 
-test("the tiers stay off the page until a release has the first run that picks them; what it needs is always there", () => {
-  // (PHASE2-SCOPE "Order": the W7 first run comes in wave 2, after the first release)
+test("the tiers wait for the release that has the first run that picks them; what it needs is always there", () => {
+  // (switched on at release, with YUKI_RELEASE: see data/downloads.ts)
   assert.equal(YUKI_TIERS_LIVE, false);
   for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
-    assert.doesNotMatch(html, /yks--tiers|yktier|sets up for its tier/);
+    assert.doesNotMatch(html, /yks--tiers|yktier/);
     assert.ok(html.includes(YUKI_NEEDS), "what the installer needs");
-    // nothing about a first run YUKI doesn't have yet
-    assert.doesNotMatch(html, /picks the setup|setup that fits|licen[cs]e shows|Hugging Face/);
+    // the first run as v0.2 has it, in its install step; nothing it doesn't do
+    assert.match(html, /offers the setup that fits it/);
+    assert.doesNotMatch(html, /Hugging Face|licen[cs]e shows/);
   }
+  assert.match(YUKI_TIERS_NOTE, /offers the setup that fits it/);
   assert.match(yukiPage(yukiEntry(null), { tiers: true }), /<section class="yks yks--tiers"/);
   // the browsers' own words under step one, on her page too
   const html = yukiPage(yukiEntry(SAMPLE));

@@ -4,7 +4,7 @@
 // Downloads. Styles: styles/yuki.css; motion: motion/yuki.ts (own chunk).
 //
 // Top to bottom: the stage (her orb hatches and pixel Yuki says hi; the name, the line, the one key), what it is (as far
-// as the release it lists has it: the hand and the deck wait for data/yuki.ts YUKI_HAND_LIVE), which
+// as the release it lists has it: the hand and the deck with data/yuki.ts YUKI_HAND_LIVE), which
 // PC gets which setup (only once a release has the first run that picks it: data/yuki.ts YUKI_TIERS_LIVE), then the
 // install guide with the Windows prompt drawn out step by step and the file's checksum.
 // Complete without JavaScript: the key downloads the file and the guide is simply there below it. With it, the click
@@ -12,7 +12,7 @@
 // Not released yet (data/downloads.ts YUKI_RELEASE null): she is asleep, there is no file link, the guide still reads.
 
 import { downloads, formatBytes, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
-import { YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE } from "../data/yuki.ts";
+import { YUKI_HAND_LIVE, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, yukiFacts } from "../data/yuki.ts";
 import { yukiSprite } from "../yuki-sprite.ts";
 import { fileName, verifyBlock, waysList } from "./downloads.ts";
 import { button, chip, icon, tile } from "./glyphs.ts";
@@ -77,7 +77,7 @@ function hero(f: DownloadFile | null): string {
 // ------------------------------------------------------------------ what it is
 
 function what(hand: boolean): string {
-  const facts = hand ? [...YUKI_FACTS.slice(0, 2), YUKI_HAND, ...YUKI_FACTS.slice(2)] : YUKI_FACTS;
+  const facts = yukiFacts(hand);
   return (
     `<section class="yks yks--what" aria-labelledby="yk-what">` +
     `<h2 class="yks__h" id="yk-what">${tile("star", "cyan", "s")}<span>What she does</span></h2>` +

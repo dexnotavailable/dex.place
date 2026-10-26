@@ -89,11 +89,10 @@ export function releaseFile(r: YukiRelease | null): DownloadFile | null {
 
 /**
  * YUKI's entry for a release (the site's own uses YUKI_RELEASE; tests pass others). Steps and caveat: YUKI's
- * electron-builder.yml (per-user NSIS, no admin prompt, opens when done, unsigned); the browsers' words from the tested
- * content/docs/installing-dexclient.md (an unsigned setup gets the same warnings); step 4 from what YUKI's first open
- * does today (packages/engine/src/models/setup.ts, adopt mode: it reads the PC and finds the engines already on it).
- * The tier-picked setup and Hugging Face downloads with each licence first are the W7 first run, after v0.2: say
- * them here only once a release has them.
+ * electron-builder.yml (a one-click per-user NSIS installer: no wizard, no admin prompt, opens YUKI when done;
+ * unsigned); the browsers' words from the tested content/docs/installing-dexclient.md (an unsigned setup gets the same
+ * warnings); step 4 from the W7 first run on the YUKI main line (desktop renderer firstrun/FirstRun.tsx: the hatch, the
+ * stat sheet, the setup that fits, nothing downloaded before the user picks a setup and accepts its licences).
  */
 export function yukiEntry(r: YukiRelease | null): DownloadEntry {
   const installer = ["Installs for your Windows user, no admin prompt.", "Unsigned, so Windows asks once."];
@@ -114,7 +113,7 @@ export function yukiEntry(r: YukiRelease | null): DownloadEntry {
       },
       { icon: "window", title: "Run it", text: "Windows shows “Windows protected your PC”. Click More info, then Run anyway." },
       { icon: "check", title: "Install", text: "It installs for your Windows user only, with no admin prompt, and opens YUKI when it's done." },
-      { icon: "blob", title: "Meet Yuki", text: "She opens and looks over your PC first: its graphics card, its memory and the AI engines already on it." },
+      { icon: "blob", title: "Meet Yuki", text: "She hatches from her orb, looks over your PC's graphics card and memory, and offers the setup that fits it. Nothing downloads until you pick one and accept its licences." },
     ],
     caveat: "If Smart App Control is on (Windows Security, App & browser control), Windows won't run an unsigned installer.",
     guide: "/yuki/",

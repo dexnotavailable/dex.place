@@ -54,11 +54,11 @@ If there's no **Run anyway** button, your PC's settings don't allow unsigned app
 
 ## Install
 
-YUKI installs just for your Windows user, so it doesn't ask for admin.
+YUKI installs just for your Windows user, so it doesn't ask for admin, and there's nothing to click through.
 
-1. Pick the folder it installs into, or keep the one it suggests.
-2. Wait while it copies the app. It adds a Start menu and a desktop shortcut.
-3. YUKI opens when it's done. Yuki looks over your PC first: its graphics card, its memory and the AI engines already on it.
+1. It copies the app into `%LOCALAPPDATA%\Programs\YUKI` and adds a Start menu and a desktop shortcut.
+2. YUKI opens when it's done. Yuki hatches from her orb and looks over your PC: its graphics card and its memory.
+3. She offers the setup that fits your PC. Nothing downloads until you pick one and accept its licences.
 
 ## Uninstalling
 

@@ -13,7 +13,7 @@
 // (render/yukiart.ts).
 
 import type { IconName } from "../pixels.ts";
-import { YUKI_FACTS, YUKI_LINE } from "./yuki.ts";
+import { YUKI_LINE, yukiFacts } from "./yuki.ts";
 
 export type Tone = "yellow" | "mint" | "magenta" | "cyan" | "ink" | "paper";
 
@@ -74,7 +74,7 @@ export const projects: readonly Project[] = [
     name: "YUKI",
     line: YUKI_LINE,
     platform: "Windows",
-    facts: YUKI_FACTS.map((f) => ({ icon: f.icon, text: f.text })),
+    facts: yukiFacts().map((f) => ({ icon: f.icon, text: f.text })),
     docs: { href: "/yuki/#install", label: "Install guide" },
     tone: "cyan",
     hero: "Yuki",
