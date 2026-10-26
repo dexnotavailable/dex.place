@@ -10,6 +10,18 @@
 // tag, so it always serves the file whose size and SHA-256 the page lists (a "latest" link to a versioned file name
 // breaks on the next release, and one to a fixed name would serve a newer file than the listed hash). A copy installed
 // from an older release updates itself, so a late refill costs nobody the newest version.
+//
+// At a release, in one commit (YUKI's packages/desktop/scripts/publish.ts tags it v<version> and uploads
+// YUKI-Setup-<version>.exe, its .blockmap and latest.yml; no .sha256 file, so `sidecar` and `tag` stay unset):
+//   1. YUKI_RELEASE = { version: "0.2.0", file: "YUKI-Setup-0.2.0.exe", bytes: <exact size>, sha256: "<64 lowercase
+//      hex>" }, read from the published asset: `gh release view v0.2.0 --repo dexnotavailable/yuki-releases --json
+//      assets` gives its name, size and digest ("sha256:..."); publish.ts also writes the SHA-256 into
+//      release/submit-to-microsoft-<version>.txt. Check the link: releaseAsset() must answer (a 302 to GitHub's file).
+//   2. data/yuki.ts YUKI_TIERS_LIVE = true, once YUKI_TIERS and YUKI_FACTS read true against that build's
+//      engine/src/catalogue/hardware.ts and brains.ts (the brain that fits is p2/small-brain's).
+//   3. content/docs/yuki.md and installing-yuki.md: drop the lines that say the first release isn't out yet
+//      (build/downloads.test.mjs fails while they remain).
+//   4. npm test, npm run build, then look at /yuki/, /downloads/ and the home page at 1440 and 390 wide.
 
 import type { IconName } from "../pixels.ts";
 
@@ -113,7 +125,7 @@ export function yukiEntry(r: YukiRelease | null): DownloadEntry {
       },
       { icon: "window", title: "Run it", text: "Windows shows “Windows protected your PC”. Click More info, then Run anyway." },
       { icon: "check", title: "Install", text: "It installs for your Windows user only, with no admin prompt, and opens YUKI when it's done." },
-      { icon: "blob", title: "Meet Yuki", text: "She hatches from her orb, looks over your PC's graphics card and memory, and offers the setup that fits it. Nothing downloads until you pick one and accept its licences." },
+      { icon: "blob", title: "Meet Yuki", text: "She hatches, looks over your PC and offers the setup that fits it. Nothing downloads before you accept its licences." },
     ],
     caveat: "If Smart App Control is on (Windows Security, App & browser control), Windows won't run an unsigned installer.",
     guide: "/yuki/",

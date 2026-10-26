@@ -35,6 +35,12 @@ test("data: YUKI is the one entry, its file from the release it names in the rel
     assert.match(YUKI_RELEASE.sha256, /^[0-9a-f]{64}$/);
     assert.ok(Number.isInteger(YUKI_RELEASE.bytes) && YUKI_RELEASE.bytes > 0);
   }
+  // the YUKI docs say there is no release only while there is none (the release fill in data/downloads.ts, step 3)
+  for (const doc of ["yuki.md", "installing-yuki.md"]) {
+    const text = fs.readFileSync(new URL(`../../../content/docs/${doc}`, import.meta.url), "utf8");
+    const says = /isn't out yet|Until the first release is out/.test(text);
+    assert.equal(says, YUKI_RELEASE === null, `${doc}: ${YUKI_RELEASE ? "still says the release isn't out" : "says what isn't out yet"}`);
+  }
   const f = released[0].file;
   assert.equal(f.href, releaseAsset(SAMPLE));
   assert.equal(f.platform, "Windows");
@@ -113,12 +119,12 @@ test("the steps: each browser's own words for keeping the file, and a first open
   assert.match(ways[1].how, /Keep, Show more, Keep anyway/);
   assert.match(ways[2].how, /Allow download/);
   // the first open is v0.2's W7 first run (YUKI firstrun/FirstRun.tsx): the hatch, the PC looked over, the setup that
-  // fits it offered, nothing downloaded before the user picks one and accepts its licences; nothing it doesn't do
+  // fits it offered, nothing downloaded before the user accepts its licences; nothing it doesn't do
   const meet = steps[3];
   assert.equal(meet.title, "Meet Yuki");
   assert.match(meet.text, /hatches/);
   assert.match(meet.text, /offers the setup that fits it/);
-  assert.match(meet.text, /Nothing downloads until you pick one and accept its licences\./);
+  assert.match(meet.text, /Nothing downloads before you accept its licences\./);
   assert.doesNotMatch(meet.text, /Hugging Face|engines already|automatic/i);
   const html = downloadsPage(released);
   const guide = html.slice(html.indexOf('<section class="dlg"'));
