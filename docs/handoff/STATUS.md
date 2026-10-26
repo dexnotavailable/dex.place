@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T04:49:19.797Z (26/10/2026, 11:49:19 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T06:04:20.273Z (26/10/2026, 13:04:20 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,8 +12,13 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9c8aa1d9-320 — last activity 19 min ago
-10 agents: 9 done, 1 running or stopped mid-way, 0 failed.
+### wf_6e3339e3-3ac — last activity 21 min ago
+1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
+
+- **draw:r1** (running)
+
+### wf_9c8aa1d9-320 — last activity 22 min ago
+12 agents: 12 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:w11-suite** (done): The release check suite is built and committed on p2/w11-suite as d283fe1. `npm run release-check` starts the engine bundle the installer ships, on Electron as Node like the app. It uses a fresh scratch profile (port 4785x, `YUKI_NO_KEYRING=1`, inherited `YUKI_*` variables stripped, relay off) and talks to the engine over the WebSocket the way the app does. Scenarios pass or fail on content, never on "no error" alone
 - **build:w12-site** (done): I finished lane W12 on branch claude/yuki-page. Nothing is pushed or merged, and the PC checkout and the live server were not touched. On dex.place, YUKI is now the big project and the dex.place world sits as a smaller strip below it. In Downloads, YUKI replaces dexCode and dexClient, and a small "Retired" line says so in both places. YUKI's page at /yuki/ covers what it is, a hardware-tier stat sheet (S/A/B/C), and 
@@ -24,7 +29,9 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **fix:w12-site:r1** (done): I fixed all 13 findings: every high and medium one, and the low ones that were cheap. Items 4, 6 and 10 are merge and release steps that stay outside this lane; they are written out in the integrator notes. Changes: - The drawn Windows prompt's second cursor now taps "Run anyway" at every width. It used to land on "Don't run". - Clicking Yuki makes her hop, and each new line pops her speech bubble again. The one-time
 - **critic1:w12-site:r2** (done): verdict fix
 - **critic2:w12-site:r2** (done): verdict fix
-- **fix:w12-site:r2** (running)
+- **fix:w12-site:r2** (done): I fixed all nine findings that belong to this lane and committed them as bc13a971 on claude/yuki-page in D:\Dex\Projects\dex.place-wt\yuki-page. The page now only describes what v0.2 will actually do. Step 4 says YUKI opens and looks over your PC: its graphics card, its memory and the AI engines already on it. It no longer says she picks the setup or shows licences before Hugging Face downloads. The tier table now co
+- **critic1:w12-site:r3** (done): verdict fix
+- **critic2:w12-site:r3** (done): verdict fix
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
