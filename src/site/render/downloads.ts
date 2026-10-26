@@ -51,7 +51,8 @@ function yukiFileArt(f: DownloadFile | null): string {
   const ext = f ? fileName(f).split(".").pop()?.toUpperCase() ?? "" : "";
   return (
     `<div class="dlf__art dlf__art--yuki" aria-hidden="true">` +
-    yukiArt({ className: "dlf__yuki", seed: "yuki-dl", cols: 48, rows: 64, eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "calm" }) +
+    // (a wide stage: a tall column on a desktop crops its sides, a phone's short strip keeps her whole)
+    yukiArt({ className: "dlf__yuki", seed: "yuki-dl", cols: 96, rows: 64, eyes: f ? "open" : "sleepy", mouth: f ? "smile" : "calm" }) +
     (f ? `<span class="dlf__tag">${icon("download", 2)}<span>${esc(ext)}</span></span>` : `<span class="dlf__zz"><i>z</i><i>z</i><i>Z</i></span>`) +
     `</div>`
   );

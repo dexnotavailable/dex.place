@@ -71,6 +71,8 @@ export interface StageOptions {
   at?: { x?: number; lift?: number };
   /** Which part to draw: all of it, only the night behind her, or only her (two stages stacked, something between). */
   layer?: "all" | "back" | "her";
+  /** How the stage sits in a box of another shape: on its bottom edge (default) or around its middle (a card). */
+  align?: "bottom" | "middle";
 }
 
 /**
@@ -130,7 +132,7 @@ export function yukiStage(o: StageOptions): string {
     `</svg></g>`;
   return (
     `<svg class="ykstage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cols} ${rows}" shape-rendering="crispEdges" ` +
-    `preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false" style="--cols:${cols};--rows:${rows}">${layer === "her" ? "" : s}${her}</svg>`
+    `preserveAspectRatio="xMid${o.align === "middle" ? "YMid" : "YMax"} slice" aria-hidden="true" focusable="false" style="--cols:${cols};--rows:${rows}">${layer === "her" ? "" : s}${her}</svg>`
   );
 }
 
@@ -157,7 +159,8 @@ export interface YukiArtOptions {
   mouth?: YukiMouth;
   /** The giant numeral between the night and her (a card, DESIGN-1019 5.3). */
   numeral?: string;
-  /** A card's foot scrim and pointer glare (render/cardart.ts CardArtExtras.card). */
+  /** A card's foot scrim and pointer glare (render/cardart.ts CardArtExtras.card). A card also holds her up in the
+   *  middle of a taller night, her bust inside her orb as in the app's portrait, and its words below her. */
   card?: boolean;
 }
 
@@ -167,9 +170,12 @@ export interface YukiArtOptions {
  * picture all hold it the same way.
  */
 export function yukiArt(o: YukiArtOptions = {}): string {
-  const cols = o.cols ?? 48, rows = o.rows ?? 60;
+  const cols = o.cols ?? 48, rows = o.rows ?? (o.card ? 72 : 60);
   const a11y = o.label ? `role="img" aria-label="${esc(o.label)}"` : `aria-hidden="true"`;
-  const stage = { cols, rows, seed: o.seed ?? "yuki", yuki: { eyes: o.eyes ?? "open", mouth: o.mouth ?? "calm" } };
+  const stage: StageOptions = {
+    cols, rows, seed: o.seed ?? "yuki", yuki: { eyes: o.eyes ?? "open", mouth: o.mouth ?? "calm" },
+    ...(o.card ? { align: "middle" as const, at: { lift: -24 } } : {}),
+  };
   // with a numeral: two stages, the night, the numeral, then her (as a rig card puts it between its back parts and
   // the figure)
   const art = o.numeral !== undefined
@@ -177,7 +183,7 @@ export function yukiArt(o: YukiArtOptions = {}): string {
       `<div class="ykart__stage ykart__stage--her">${yukiStage({ ...stage, layer: "her" })}</div>`
     : `<div class="ykart__stage">${yukiStage(stage)}</div>`;
   return (
-    `<div class="${cx("cart cart--code ykart", o.className)}" ${a11y} style="--cols:${cols};--rows:${rows}">` +
+    `<div class="${cx("cart cart--code ykart", o.card && "ykart--mid", o.className)}" ${a11y} style="--cols:${cols};--rows:${rows}">` +
     art +
     snowFx(o.seed ?? "yuki") +
     (o.card ? `<span class="cart__scrim"></span><span class="cart__glare"></span>` : "") +
