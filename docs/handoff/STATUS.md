@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T15:38:45.383Z (26/10/2026, 22:38:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-26T16:38:48.403Z (26/10/2026, 23:38:48 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_d62c443d-630 — last activity 262 min ago
+### wf_d62c443d-630 — last activity 322 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **draw:r1** (done): 
@@ -20,12 +20,12 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **judge2:r1** (done): 
 - **draw:r2** (running)
 
-### wf_6e3339e3-3ac — last activity 595 min ago
+### wf_6e3339e3-3ac — last activity 655 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **draw:r1** (running)
 
-### wf_9c8aa1d9-320 — last activity 596 min ago
+### wf_9c8aa1d9-320 — last activity 656 min ago
 12 agents: 12 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:w11-suite** (done): The release check suite is built and committed on p2/w11-suite as d283fe1. `npm run release-check` starts the engine bundle the installer ships, on Electron as Node like the app. It uses a fresh scratch profile (port 4785x, `YUKI_NO_KEYRING=1`, inherited `YUKI_*` variables stripped, relay off) and talks to the engine over the WebSocket the way the app does. Scenarios pass or fail on content, never on "no error" alone
