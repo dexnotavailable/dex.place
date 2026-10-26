@@ -5,7 +5,8 @@
 // - Tap or click her on the page's stage: she hops, smiles and says something small.
 // - The Download click (the default action runs: the file comes from GitHub, the page stays): the page becomes the
 //   install guide (data-stage="guide"), she cheers, one status line says what to do, and the page goes to the steps.
-// - Stages, the drawn Windows prompt and the snow rest off screen (.is-off).
+// - The hero (her stage and the snow in front of it), her art in the Downloads block (the block itself is tall: its art
+//   leaves the screen first), the drawn Windows prompt and her face in the steps' and facts' tiles rest off screen.
 // - The live link (data/yuki.ts YUKI_LINK) only when it is switched on and in the page: after the click it asks YUKI's
 //   engine on this PC how its first run is going.
 // Reduced motion: no hop, no talking mouth, no smooth scroll; her face still changes (a state, not a motion).
@@ -181,7 +182,7 @@ function startLink(page: HTMLElement, stage: Stage | null): void {
 
 export function initYuki(reduced: boolean, fine: boolean): void {
   if (fine && !reduced) initGlances();
-  restOffScreen(document.querySelectorAll("[data-yuki-stage], .dlf[data-yuki], [data-ss]"));
+  restOffScreen(document.querySelectorAll(".ykh, .dlf__art--yuki, [data-ss], .yktile"));
   const page = document.querySelector<HTMLElement>("[data-yuki-page]");
   if (!page) return;
   const stageEl = page.querySelector<HTMLElement>("[data-yuki-stage]");

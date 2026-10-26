@@ -2,12 +2,14 @@
 //
 // Since 2026-10-26 (Dex, YUKI docs/build/PHASE2-SCOPE.md W12) the one product is YUKI: it replaces dexCode, and
 // dexClient (the installer app) is retired. YUKI's installer is not in the host's downloads folder: GitHub Releases
-// serves it, from the public releases repo, through its "latest release" address, so the visitor clicks once on
-// dex.place and the file comes from GitHub.
+// serves it, from the public releases repo, so the visitor clicks once on dex.place and the file comes from GitHub.
 //
 // To publish a release: fill YUKI_RELEASE below with the release's installer (its asset name, the version, the exact
 // size in bytes and the SHA-256, read from the release asset itself). Until then it is null, and every page says
-// plainly that there is no public download yet.
+// plainly that there is no public download yet. Refill it with every stable release: the link names the release's own
+// tag, so it always serves the file whose size and SHA-256 the page lists (a "latest" link to a versioned file name
+// breaks on the next release, and one to a fixed name would serve a newer file than the listed hash). A copy installed
+// from an older release updates itself, so a late refill costs nobody the newest version.
 
 import type { IconName } from "../pixels.ts";
 
@@ -26,12 +28,15 @@ export interface YukiRelease {
   readonly sha256: string;
   /** The checksum's own asset on the release (`<file>.sha256`), when the release publishes one. */
   readonly sidecar?: boolean;
+  /** The release's tag, when it isn't `v<version>` (YUKI's scripts/publish.ts tags `v${version}`). */
+  readonly tag?: string;
 }
 
 export const YUKI_RELEASE: YukiRelease | null = null;
 
-/** GitHub's address for an asset of the latest release (it redirects to the file; the page stays on dex.place). */
-export const latestAsset = (file: string): string => `${RELEASES_REPO}/releases/latest/download/${encodeURIComponent(file)}`;
+/** GitHub's address for the release's installer (it redirects to the file; the page stays on dex.place). */
+export const releaseAsset = (r: Pick<YukiRelease, "version" | "file" | "tag">): string =>
+  `${RELEASES_REPO}/releases/download/${encodeURIComponent(r.tag ?? `v${r.version}`)}/${encodeURIComponent(r.file)}`;
 
 export interface DownloadFile {
   /** Where the file is: a site path, or a release asset's address. */
@@ -68,18 +73,24 @@ export interface InstallStep {
   readonly title: string;
   readonly text: string;
   readonly icon: IconName;
+  /** Where it differs by browser: one short line each, shown under the text. */
+  readonly ways?: readonly { readonly who: string; readonly how: string }[];
 }
 
 /** The release as a download, or null. */
 export function releaseFile(r: YukiRelease | null): DownloadFile | null {
   if (!r) return null;
-  const href = latestAsset(r.file);
+  const href = releaseAsset(r);
   return { href, version: r.version, bytes: r.bytes, sha256: r.sha256, platform: "Windows", ...(r.sidecar ? { sidecar: `${href}.sha256` } : {}) };
 }
 
 /**
  * YUKI's entry for a release (the site's own uses YUKI_RELEASE; tests pass others). Steps and caveat: YUKI's
- * electron-builder.yml (per-user NSIS, no admin prompt, opens when done, unsigned) and the W7 brief.
+ * electron-builder.yml (per-user NSIS, no admin prompt, opens when done, unsigned); the browsers' words from the tested
+ * content/docs/installing-dexclient.md (an unsigned setup gets the same warnings); step 4 from what YUKI's first open
+ * does today (packages/engine/src/models/setup.ts, adopt mode: it reads the PC and finds the engines already on it).
+ * The tier-picked setup and Hugging Face downloads with each licence first are the W7 first run, after v0.2: say
+ * them here only once a release has them.
  */
 export function yukiEntry(r: YukiRelease | null): DownloadEntry {
   return {
@@ -90,10 +101,17 @@ export function yukiEntry(r: YukiRelease | null): DownloadEntry {
       ? ["Installs for your Windows user, no admin prompt.", "Unsigned, so Windows asks once."]
       : ["No public download yet."],
     steps: [
-      { icon: "download", title: "Download", text: "Your browser may ask before keeping it, because the file isn't signed. Choose Keep." },
+      {
+        icon: "download", title: "Download", text: "Your browser may hold it back at first, because the file isn't signed.",
+        ways: [
+          { who: "Chrome", how: "Click “Suspicious download blocked”, then Download suspicious file." },
+          { who: "Edge", how: "Click … on the file, then Keep, Show more, Keep anyway." },
+          { who: "Firefox", how: "Open the downloads list and choose Allow download." },
+        ],
+      },
       { icon: "window", title: "Run it", text: "Windows shows “Windows protected your PC”. Click More info, then Run anyway." },
       { icon: "check", title: "Install", text: "It installs for your Windows user only, with no admin prompt, and opens YUKI when it's done." },
-      { icon: "blob", title: "Meet Yuki", text: "She reads your PC and picks the setup that fits it. Models download from Hugging Face; each one's licence shows first." },
+      { icon: "blob", title: "Meet Yuki", text: "She opens and looks over your PC first: its graphics card, its memory and the AI engines already on it." },
     ],
     caveat: "If Smart App Control is on (Windows Security, App & browser control), Windows won't run an unsigned installer.",
     guide: "/yuki/",

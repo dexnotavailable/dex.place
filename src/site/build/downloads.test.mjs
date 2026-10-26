@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { downloads, formatBytes, latestAsset, RELEASES_REPO, RETIRED, YUKI_RELEASE, yukiEntry } from "../data/downloads.ts";
+import { downloads, formatBytes, releaseAsset, RELEASES_REPO, RETIRED, YUKI_RELEASE, yukiEntry } from "../data/downloads.ts";
 import { downloadsPage, downloadsSection } from "../render/downloads.ts";
 
 // The host's downloads folder (ops/README.md). Only checked where it exists.
@@ -19,10 +19,14 @@ const SAMPLE = { version: "0.2.0", file: "YUKI-Setup-0.2.0.exe", bytes: 312_456_
 const released = [yukiEntry(SAMPLE)];
 const unreleased = [yukiEntry(null)];
 
-test("data: YUKI is the one entry, its file from the releases repo's latest release, filled in one place", () => {
+test("data: YUKI is the one entry, its file from the release it names in the releases repo, filled in one place", () => {
   assert.deepEqual(downloads.map((d) => d.id), ["yuki"]);
   assert.equal(RELEASES_REPO, "https://github.com/dexnotavailable/yuki-releases");
-  assert.equal(latestAsset("YUKI-Setup-0.2.0.exe"), "https://github.com/dexnotavailable/yuki-releases/releases/latest/download/YUKI-Setup-0.2.0.exe");
+  // the release's own tag (YUKI scripts/publish.ts: v<version>), so the next release never breaks the link and the file
+  // is always the one whose size and SHA-256 the page lists
+  assert.equal(releaseAsset(SAMPLE), "https://github.com/dexnotavailable/yuki-releases/releases/download/v0.2.0/YUKI-Setup-0.2.0.exe");
+  assert.equal(releaseAsset({ ...SAMPLE, tag: "yuki-0.2.0" }), "https://github.com/dexnotavailable/yuki-releases/releases/download/yuki-0.2.0/YUKI-Setup-0.2.0.exe");
+  assert.doesNotMatch(releaseAsset(SAMPLE), /\/latest\//);
   // the site's entry follows YUKI_RELEASE: no file until it is filled
   assert.equal(downloads[0].file === null, YUKI_RELEASE === null);
   if (YUKI_RELEASE) {
@@ -32,7 +36,7 @@ test("data: YUKI is the one entry, its file from the releases repo's latest rele
     assert.ok(Number.isInteger(YUKI_RELEASE.bytes) && YUKI_RELEASE.bytes > 0);
   }
   const f = released[0].file;
-  assert.equal(f.href, latestAsset(SAMPLE.file));
+  assert.equal(f.href, releaseAsset(SAMPLE));
   assert.equal(f.platform, "Windows");
   assert.equal(f.sidecar, undefined, "no checksum file unless the release publishes one");
   assert.equal(yukiEntry({ ...SAMPLE, sidecar: true }).file.sidecar, `${f.href}.sha256`);
@@ -74,6 +78,38 @@ test("page, not released: says so plainly, links nothing that looks like a binar
   }
 });
 
+test("the steps: each browser's own words for keeping the file, and a first open that promises only what YUKI does today", () => {
+  const steps = yukiEntry(SAMPLE).steps;
+  const ways = steps[0].ways;
+  assert.deepEqual(ways.map((w) => w.who), ["Chrome", "Edge", "Firefox"]);
+  // (the tested words of content/docs/installing-dexclient.md: an unsigned setup gets the same warnings)
+  assert.match(ways[0].how, /Suspicious download blocked.*Download suspicious file/);
+  assert.match(ways[1].how, /Keep, Show more, Keep anyway/);
+  assert.match(ways[2].how, /Allow download/);
+  // the tier-picked setup and Hugging Face downloads are the W7 first run, after v0.2 (PHASE2-SCOPE "Order")
+  const meet = steps[3];
+  assert.equal(meet.title, "Meet Yuki");
+  assert.doesNotMatch(meet.text, /picks|setup that fits|Hugging Face|licen[cs]e|download/i);
+  const html = downloadsPage(released);
+  const guide = html.slice(html.indexOf('<section class="dlg"'));
+  assert.equal(guide.match(/<ul class="ways step__ways">/g).length, 1, "the browsers under step one");
+  // the home band's four narrow cards leave them to the full guide, which its link opens
+  const home = downloadsSection(released);
+  assert.doesNotMatch(home, /class="ways/);
+  assert.ok(home.includes('href="/yuki/#install"'));
+  assert.match(guide, /<li><b class="ways__who">Chrome<\/b><span>/);
+});
+
+test("the Downloads guide's Meet Yuki step shows her face, not the site's generic mascot", () => {
+  for (const html of [downloadsPage(released), downloadsSection(released)]) {
+    const guide = html.slice(html.indexOf('<section class="dlg"'));
+    const step = guide.split('<li class="step"').find((x) => x.includes(">Meet Yuki<"));
+    assert.ok(step, "the Meet Yuki step");
+    assert.match(step, /<span class="tile tile--cyan tile--m yktile" aria-hidden="true"><svg class="yk/);
+    assert.equal(guide.match(/yktile/g).length, 1, "only the step that names her");
+  }
+});
+
 test("retired: one small line where dexCode and dexClient were, keeping their old addresses", () => {
   for (const html of [downloadsPage(unreleased), downloadsPage(released), downloadsSection(released)]) {
     const line = html.match(/<p class="retired retired--downloads">[\s\S]*?<\/p>/);
@@ -82,6 +118,10 @@ test("retired: one small line where dexCode and dexClient were, keeping their ol
     assert.match(line[0], /dexCode and dexClient: <a class="link" href="\/yuki\/">YUKI<\/a> replaces both\./);
     assert.equal(html.match(/class="retired /g).length, 1, "said once");
   }
+  // the anchors stay out of the line's flow (a flex gap opened before the tag): absolute, inside a positioned line
+  const css = fs.readFileSync(new URL("../styles/yuki.css", import.meta.url), "utf8");
+  assert.match(css, /\n\.retired__at \{ position: absolute; top: 0; left: 0;/);
+  assert.match(css, /\n\.retired--downloads \{ position: relative;/);
 });
 
 test("home section: the same blocks one heading level down, linking the full page", () => {

@@ -7,8 +7,8 @@ import { readFileSync } from "node:fs";
 import { blinkVars, YUKI_AHOGE, YUKI_BASE, YUKI_EYES, YUKI_MOUTHS, YUKI_PALETTE, validateLayer, yukiSprite } from "./yuki-sprite.ts";
 import { ringCells, yukiArt, yukiStage } from "./render/yukiart.ts";
 import { smartScreen, YUKI_SAYS, yukiPage } from "./render/yuki.ts";
-import { latestAsset, yukiEntry } from "./data/downloads.ts";
-import { readLinkStatus, YUKI_FACTS, YUKI_LINK, YUKI_TIERS } from "./data/yuki.ts";
+import { releaseAsset, yukiEntry } from "./data/downloads.ts";
+import { readLinkStatus, YUKI_FACTS, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE } from "./data/yuki.ts";
 import { routes } from "./render/routes.ts";
 
 const SAMPLE = { version: "0.2.0", file: "YUKI-Setup-0.2.0.exe", bytes: 312_456_789, sha256: "ab".repeat(32) };
@@ -138,7 +138,7 @@ test("/yuki/, not released: she sleeps, no file link, the guide still reads in f
 
 test("/yuki/, released: one key straight to the release asset, then the guide with the Windows prompt and the checksum", () => {
   const html = yukiPage(yukiEntry(SAMPLE));
-  const href = latestAsset(SAMPLE.file);
+  const href = releaseAsset(SAMPLE);
   assert.match(html, /data-release="ready"/);
   const keys = html.match(new RegExp(`<a class="btn btn--mint btn--l btn--dl ykh__dl" href="${href.replaceAll(".", "\\.")}" download aria-label="Download YUKI 0\\.2\\.0 for Windows, [^"]+">`, "g")) ?? [];
   assert.equal(keys.length, 1, "one download key");
@@ -226,13 +226,35 @@ test("/yuki/ on a tablet: the stacked stage is tall enough for her ring and her 
   assert.match(css, /\.ykh__stage \{\n  --cols: 72;\n  --rows: 50;/);
 });
 
-test("what it is and the tiers come from YUKI's docs (data/yuki.ts): four facts, four tiers S to C", () => {
+test("what it is and the tiers come from YUKI's docs and code (data/yuki.ts): four facts, the app's five tiers S to D", () => {
   assert.equal(YUKI_FACTS.length, 4);
-  assert.deepEqual(YUKI_TIERS.map((t) => t.rank), ["S", "A", "B", "C"]);
+  // the app's own tiers (YUKI packages/engine/src/catalogue/hardware.ts TIER_RULES): S to D, D the free cloud brain
+  assert.deepEqual(YUKI_TIERS.map((t) => t.rank), ["S", "A", "B", "C", "D"]);
   for (const t of YUKI_TIERS) assert.ok(t.name && t.pc && t.gets, t.rank);
-  const html = yukiPage(yukiEntry(null));
+  for (const t of YUKI_TIERS.slice(0, 4)) assert.match(t.pc, /^An NVIDIA card with \d+ GB/, `${t.rank}: only NVIDIA counts for now`);
+  for (const t of YUKI_TIERS.slice(2)) assert.match(t.gets, /The brain runs on a free cloud model\.$/, `${t.rank}: the brain in the cloud`);
+  for (const t of YUKI_TIERS) assert.doesNotMatch(t.name, /\bGB\b/, `${t.rank}: a name, not a spec`);
+  assert.match(YUKI_TIERS_NOTE, /only NVIDIA/);
+  const html = yukiPage(yukiEntry(null), { tiers: true });
   for (const t of YUKI_TIERS) assert.ok(html.includes(`<span class="sr">${t.rank} tier: </span>`), `${t.rank}: its rank read out`);
+  assert.ok(html.includes(YUKI_TIERS_NOTE));
   for (const f of YUKI_FACTS) assert.ok(html.includes(f.title.replaceAll("'", "&#39;")) || html.includes(f.title), f.title);
+});
+
+test("the tiers stay off the page until a release has the first run that picks them; what it needs is always there", () => {
+  // (PHASE2-SCOPE "Order": the W7 first run comes in wave 2, after the first release)
+  assert.equal(YUKI_TIERS_LIVE, false);
+  for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
+    assert.doesNotMatch(html, /yks--tiers|yktier|sets up for its tier/);
+    assert.ok(html.includes(YUKI_NEEDS), "what the installer needs");
+    // nothing about a first run YUKI doesn't have yet
+    assert.doesNotMatch(html, /picks the setup|setup that fits|licen[cs]e shows|Hugging Face/);
+  }
+  assert.match(yukiPage(yukiEntry(null), { tiers: true }), /<section class="yks yks--tiers"/);
+  // the browsers' own words under step one, on her page too
+  const html = yukiPage(yukiEntry(SAMPLE));
+  assert.equal(html.match(/<ul class="ways ykstep__ways">/g).length, 1);
+  for (const who of ["Chrome", "Edge", "Firefox"]) assert.ok(html.includes(`<b class="ways__who">${who}</b>`), who);
 });
 
 // ------------------------------------------------------------------ the live link
@@ -264,7 +286,12 @@ test("motion: the click never stops the download, the chunk loads only where she
   const css = read("./styles/yuki.css");
   const outside = css.replace(/@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n\}\n/g, "");
   assert.doesNotMatch(outside, /animation:/, "every loop and entrance waits for motion to be allowed");
-  assert.match(css, /:is\(\.pban__in, \[data-yuki-stage\], \.dlf, \.ss\)\.is-off :is\(\.yk \*, \.ykstage \*, \.ykfx i, \.ss \*\) \{ animation-play-state: paused; \}/);
+  assert.match(css, /:is\(\.pban__in, \.ykh, \.dlf__art--yuki, \.ss, \.yktile\)\.is-off :is\(\.yk \*, \.ykstage \*, \.ykfx i, \.ss \*\) \{ animation-play-state: paused; \}/);
+  // the whole hero rests off screen, so the snow in front of her stage does too (it sits beside the stage, not in it);
+  // on Downloads her art, not its tall block (the art leaves the screen while the block's foot is still on it)
+  assert.match(ts, /restOffScreen\(document\.querySelectorAll\("\.ykh, \.dlf__art--yuki, \[data-ss\], \.yktile"\)\)/);
+  const hero = yukiPage(yukiEntry(SAMPLE));
+  assert.match(hero.slice(hero.indexOf('<header class="ykh"'), hero.indexOf("</header>")), /class="ykfx ykh__snow"/);
   // idles step on whole pixels
   for (const name of ["yk-open", "yk-shut", "yk-bob", "yk-shard", "yk-ah0"]) assert.match(css, new RegExp(`${name} [^;]*steps\\(`), name);
   assert.doesNotMatch(css, /border-radius|backdrop-filter/);

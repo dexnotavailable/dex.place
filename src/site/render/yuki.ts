@@ -4,20 +4,19 @@
 // Downloads. Styles: styles/yuki.css; motion: motion/yuki.ts (own chunk).
 //
 // Top to bottom: the stage (her orb hatches and pixel Yuki says hi; the name, the line, the one key), what it is, which
-// PC gets which setup, then the install guide with the Windows prompt drawn out step by step and the file's checksum.
+// PC gets which setup (only once a release has the first run that picks it: data/yuki.ts YUKI_TIERS_LIVE), then the
+// install guide with the Windows prompt drawn out step by step and the file's checksum.
 // Complete without JavaScript: the key downloads the file and the guide is simply there below it. With it, the click
 // turns the page into the guide (data-stage="guide": she cheers, the page goes to the steps, step one ticks).
 // Not released yet (data/downloads.ts YUKI_RELEASE null): she is asleep, there is no file link, the guide still reads.
 
 import { downloads, formatBytes, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
-import { YUKI_FACTS, YUKI_LINE, YUKI_LINK, YUKI_TIERS, YUKI_TIERS_NOTE } from "../data/yuki.ts";
+import { YUKI_FACTS, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE } from "../data/yuki.ts";
 import { yukiSprite } from "../yuki-sprite.ts";
-import { fileName, verifyBlock } from "./downloads.ts";
+import { fileName, verifyBlock, waysList } from "./downloads.ts";
 import { button, chip, icon, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
-import type { IconName } from "../pixels.ts";
-import type { Tone } from "../data/projects.ts";
-import { snowFx, yukiStage } from "./yukiart.ts";
+import { snowFx, yukiStage, yukiTileOr as tileOr } from "./yukiart.ts";
 
 /** YUKI's download entry (always there; its file only once released). */
 export const yukiDownload = (): DownloadEntry => downloads.find((d) => d.id === "yuki") as DownloadEntry;
@@ -30,13 +29,6 @@ export const YUKI_SAYS = {
 } as const;
 
 // ------------------------------------------------------------------ the stage
-
-/** A tile with her face in it, where the steps and facts would show the site's generic mascot ("blob"). `seed`: her
- *  blink's clock, so she blinks out of step with the hero above. */
-function yukiTile(size: "s" | "m", seed: string): string {
-  return `<span class="tile tile--cyan tile--${size} yktile" aria-hidden="true">${yukiSprite({ scale: 1, mouth: "smile", seed })}</span>`;
-}
-const tileOr = (ic: IconName, tone: Tone, size: "s" | "m", seed: string): string => (ic === "blob" ? yukiTile(size, seed) : tile(ic, tone, size));
 
 function hero(f: DownloadFile | null): string {
   const crumbs =
@@ -157,12 +149,14 @@ function install(d: DownloadEntry, f: DownloadFile | null): string {
     `<section class="yks yks--install" id="install" aria-labelledby="yk-install" tabindex="-1">` +
     `<h2 class="yks__h" id="yk-install">${tile("check", "mint", "s")}<span>Install YUKI</span>` +
     `<span class="sub__aside">${pad2(steps.length)} steps</span></h2>` +
+    `<p class="yks__note yks__note--needs">${icon("window", 2)}<span>${esc(YUKI_NEEDS)}</span></p>` +
     `<ol class="yksteps">` +
     steps.map((s, i) =>
       `<li class="ykstep" data-step="${i + 1}">` +
       `<span class="ykstep__no" aria-hidden="true">${pad2(i + 1)}<i class="ykstep__tick">${icon("check", 2)}</i></span>` +
       `<div class="ykstep__body"><h3 class="ykstep__t">${tileOr(s.icon, i % 2 ? "yellow" : "mint", "s", `step-${i}`)}<span>${esc(s.title)}</span></h3>` +
       `<p class="ykstep__p">${esc(s.text)}</p>` +
+      waysList(s, "ykstep__ways") +
       (i === 1 ? smartScreen(f ? fileName(f) : null) : "") +
       `</div></li>`,
     ).join("") +
@@ -178,8 +172,8 @@ function install(d: DownloadEntry, f: DownloadFile | null): string {
   );
 }
 
-/** The whole page. `d`: YUKI's download entry (a test passes one for a release). */
-export function yukiPage(d: DownloadEntry = yukiDownload()): string {
+/** The whole page. `d`: YUKI's download entry (a test passes one for a release); `o.tiers`: the tiers section. */
+export function yukiPage(d: DownloadEntry = yukiDownload(), o: { tiers?: boolean } = {}): string {
   const f = d.file;
   return (
     `<div class="${cx("page page--yuki", !f && "page--yuki-none")}" data-yuki-page data-stage="start" data-release="${f ? "ready" : "none"}"` +
@@ -187,7 +181,7 @@ export function yukiPage(d: DownloadEntry = yukiDownload()): string {
     `<div class="wrap">` +
     hero(f) +
     what() +
-    tiers() +
+    ((o.tiers ?? YUKI_TIERS_LIVE) ? tiers() : "") +
     install(d, f) +
     `</div></div>`
   );

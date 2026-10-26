@@ -1,9 +1,11 @@
 // YUKI's page (/yuki/): what it is, which PC gets which setup, and the optional live link. Every line comes from
-// YUKI's own docs (the private repo dexnotavailable/yuki; wording shortened, never extended):
+// YUKI's own docs and code (the private repo dexnotavailable/yuki; wording shortened, never extended):
 //   what it is   README.md (first paragraph, "Principles"), docs/DECISIONS.md 2026-10-22 "Tiers and the swarm"
-//   tiers        docs/DECISIONS.md 2026-10-22 "Strata's reach", "Engines per machine", "Tiers and the swarm" (in plain
-//                words for visitors: the engines' names, Strata, llama.cpp and Vulkan, stay in the docs)
-//   first run    docs/build/PHASE2-SCOPE.md W7 (reads the PC, picks the setup; models from Hugging Face, licence first)
+//   tiers        packages/engine/src/catalogue/hardware.ts TIER_RULES and its reasons (W7, branch p2/w7-releases,
+//                10-26), in plain words for visitors; the engines' names stay in the docs. They are the W7 first run's,
+//                which comes after the first release (PHASE2-SCOPE "Order" 3 and 4), so they stay off the page until a
+//                release has that first run (YUKI_TIERS_LIVE).
+//   needs        packages/desktop/electron-builder.yml (an x64 NSIS installer; Electron runs on Windows 10 and 11)
 // The release itself (version, file, size, SHA-256) is data/downloads.ts YUKI_RELEASE: one place to fill.
 
 import type { IconName } from "../pixels.ts";
@@ -23,42 +25,57 @@ export const YUKI_FACTS: readonly YukiFact[] = [
   { icon: "heart", title: "Your machine, your data", text: "It runs on your own PC and keeps your chats there. Models run as they ship: YUKI adds no filters of its own." },
 ];
 
-/** A class of PC and the setup YUKI picks for it. `rank` is the badge on its card (the first run's stat sheet). */
+/** A class of PC and the setup YUKI's first run picks for it. `rank` is the badge on its card (the app's stat sheet). */
 export interface YukiTier {
-  readonly rank: "S" | "A" | "B" | "C";
+  readonly rank: "S" | "A" | "B" | "C" | "D";
   readonly name: string;
   /** The machine, in plain words. */
   readonly pc: string;
   /** What YUKI runs there. */
   readonly gets: string;
-  readonly tone: "cyan" | "mint" | "yellow" | "magenta";
+  readonly tone: "cyan" | "mint" | "yellow" | "magenta" | "paper";
 }
 
+/** The app's own tiers (hardware.ts TIER_RULES: the best NVIDIA card's memory, then RAM; only NVIDIA counts for now). */
 export const YUKI_TIERS: readonly YukiTier[] = [
   {
     rank: "S", name: "Big rig", tone: "magenta",
-    pc: "A 24 GB NVIDIA or AMD card and 64 GB of RAM or more.",
-    gets: "The biggest brain YUKI runs, and the longest memory the machine can hold. Images and video take turns on the card.",
+    pc: "An NVIDIA card with 24 GB of graphics memory, and 64 GB of RAM.",
+    gets: "Everything runs here: the big brain, pictures, video and music.",
   },
   {
-    rank: "A", name: "Gaming PC", tone: "cyan",
-    pc: "An NVIDIA or AMD card with 12 GB or more, and 32 GB of RAM.",
-    gets: "A full local brain on YUKI's fastest engine. One model plays every role.",
+    rank: "A", name: "Big card", tone: "cyan",
+    pc: "An NVIDIA card with 20 GB or more, and 32 GB of RAM.",
+    gets: "A smaller brain, pictures and video, all on this PC.",
   },
   {
-    rank: "B", name: "16 GB of RAM", tone: "mint",
-    pc: "Say an RTX 3060 12 GB with 16 GB of RAM: many people's PC.",
-    gets: "A smaller brain that still runs well. A setup YUKI is built for, not a cut-down mode.",
+    rank: "B", name: "Gaming PC", tone: "mint",
+    pc: "An NVIDIA card with 12 GB or more, like an RTX 3060 12 GB.",
+    gets: "Pictures are made here. The brain runs on a free cloud model.",
   },
   {
-    rank: "C", name: "Laptops and small machines", tone: "yellow",
-    pc: "Intel or AMD integrated graphics, smaller cards, or no graphics card.",
-    gets: "A small brain that runs on the graphics chip or the processor. Heavy image and video work isn't for this machine.",
+    rank: "C", name: "Smaller card", tone: "yellow",
+    pc: "An NVIDIA card with 8 GB or more.",
+    gets: "Pictures are made here, a little slower. The brain runs on a free cloud model.",
+  },
+  {
+    rank: "D", name: "Any other PC", tone: "paper",
+    pc: "AMD or Intel graphics, a smaller card, or none.",
+    gets: "The brain runs on a free cloud model.",
   },
 ];
 
 /** Under the tiers. */
-export const YUKI_TIERS_NOTE = "YUKI reads your PC on its first run and picks the setup itself. Windows 10 or 11, 64-bit.";
+export const YUKI_TIERS_NOTE = "YUKI checks your PC on its first run and sets up for its tier. For now only NVIDIA cards run models on the PC itself.";
+
+/**
+ * The tiers are on the page only once a release has the first run that picks them (PHASE2-SCOPE W7 "first run", wave
+ * 2, after v0.2). Turn on with that release, after checking YUKI_TIERS and the note against its hardware.ts.
+ */
+export const YUKI_TIERS_LIVE = false;
+
+/** What the installer needs, on the page whatever the tiers say. */
+export const YUKI_NEEDS = "For Windows 10 or 11, 64-bit.";
 
 /**
  * The live link (Dex 10-26: "optional live link where YUKI answers a status ping from the dex.place origin only"):

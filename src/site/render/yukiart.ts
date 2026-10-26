@@ -4,10 +4,14 @@
 // stage unit, and a stage unit is a whole number of screen pixels (styles/yuki.css --u), so it stays crisp at any size.
 //
 // One stage feeds every place YUKI shows: its banner's hero window and back layer (render/pbanner.ts), its card in
-// "Other projects" (render/cardart.ts), its block on Downloads and the big stage on /yuki/ (render/yuki.ts).
+// "Other projects" (render/cardart.ts), its block on Downloads and the big stage on /yuki/ (render/yuki.ts). Her face
+// in a tile stands in for the site's generic mascot wherever a step or fact of hers would show it (yukiTileOr).
 // Decorative everywhere except where a caller gives it a label. Reduced motion: all still (styles/yuki.css).
 
 import { blinkVars, YUKI_PALETTE, yukiSprite, type YukiEyes, type YukiMouth } from "../yuki-sprite.ts";
+import type { Tone } from "../data/projects.ts";
+import type { IconName } from "../pixels.ts";
+import { tile } from "./glyphs.ts";
 import { cx, esc, rng } from "./html.ts";
 
 /** Night, top to bottom: hard bands (a pixel sky has steps, not a gradient). */
@@ -199,3 +203,12 @@ export function yukiBack(): string {
 
 /** Her palette's light blue, for CSS that wants it from here. */
 export const YUKI_ICE = YUKI_PALETTE.j;
+
+/** A tile with her face in it. `seed`: her blink's clock, so tiles side by side blink out of step. */
+export function yukiTile(size: "s" | "m", seed: string): string {
+  return `<span class="tile tile--cyan tile--${size} yktile" aria-hidden="true">${yukiSprite({ scale: 1, mouth: "smile", seed })}</span>`;
+}
+
+/** A step's or fact's tile: her face where it would show the site's generic mascot ("blob"), else the icon's tile. */
+export const yukiTileOr = (ic: IconName, tone: Tone, size: "s" | "m", seed: string): string =>
+  ic === "blob" ? yukiTile(size, seed) : tile(ic, tone, size);

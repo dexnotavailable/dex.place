@@ -10,11 +10,11 @@
 // Releases); dexCode and dexClient are retired, said once in a small line where
 // their entries were, which keeps their old #dexcode / #dexclient addresses.
 
-import { downloads, formatBytes, RETIRED, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
+import { downloads, formatBytes, RETIRED, type DownloadEntry, type DownloadFile, type InstallStep } from "../data/downloads.ts";
 import { projects } from "../data/projects.ts";
 import { button, copyButton, hanko, icon, pageHead, sectionHead, sticker, tile } from "./glyphs.ts";
 import { esc, pad2 } from "./html.ts";
-import { yukiArt } from "./yukiart.ts";
+import { yukiArt, yukiTileOr } from "./yukiart.ts";
 
 type Level = 2 | 3;
 
@@ -135,6 +135,12 @@ function pending(d: DownloadEntry, i: number, level: Level): string {
   );
 }
 
+/** A step's per-browser lines (data/downloads.ts InstallStep.ways), or nothing. */
+export function waysList(s: InstallStep, className: string): string {
+  if (!s.ways?.length) return "";
+  return `<ul class="ways ${className}">${s.ways.map((w) => `<li><b class="ways__who">${esc(w.who)}</b><span>${esc(w.how)}</span></li>`).join("")}</ul>`;
+}
+
 /** SHA-256 in 8 groups of 8 (spans, no spaces, so selecting it copies the plain hash). */
 export function hashGroups(sha: string): string {
   const groups = sha.match(/.{1,8}/g) ?? [sha];
@@ -158,7 +164,9 @@ export function verifyBlock(d: DownloadEntry, f: DownloadFile, level: Level): st
   );
 }
 
-function guide(d: DownloadEntry, f: DownloadFile, level: Level): string {
+/** The install guide. `ways`: each browser's own words under a step (the home band's four narrow cards leave them to
+ *  the full guide its link opens). */
+function guide(d: DownloadEntry, f: DownloadFile, level: Level, ways: boolean): string {
   const steps = d.steps ?? [];
   const h = `h${level}`;
   const h2 = `h${level + 1}`;
@@ -173,9 +181,11 @@ function guide(d: DownloadEntry, f: DownloadFile, level: Level): string {
             (s, i) =>
               `<li class="step" data-reveal="pop" style="--i:${i}">` +
               `<span class="step__no" aria-hidden="true">${pad2(i + 1)}</span>` +
-              tile(s.icon, i % 2 ? "yellow" : "mint", "m") +
+              yukiTileOr(s.icon, i % 2 ? "yellow" : "mint", "m", `${d.id}-step-${i}`) +
               `<${h2} class="step__title">${esc(s.title)}</${h2}>` +
-              `<p class="step__text">${esc(s.text)}</p></li>`,
+              `<p class="step__text">${esc(s.text)}</p>` +
+              (ways ? waysList(s, "step__ways") : "") +
+              `</li>`,
           )
           .join("") +
         `</ol>`
@@ -205,13 +215,13 @@ export function retiredNote(where: "downloads" | "projects"): string {
 }
 
 /** Every download block, then the install guide; item headings at `level`. `list`: the site's own unless a test
- *  passes another (a release that isn't out yet). */
-export function downloadsBody(level: Level, list: readonly DownloadEntry[] = downloads): string {
+ *  passes another (a release that isn't out yet); `ways`: each browser's own words under the guide's steps. */
+export function downloadsBody(level: Level, list: readonly DownloadEntry[] = downloads, ways = true): string {
   const files = list.filter((d) => d.file !== null);
   const blocks = list.map((d, i) => (d.file ? published(d, d.file, level) : pending(d, i, level))).join("");
   return (
     `<div class="dl-list">${blocks}${retiredNote("downloads")}</div>` +
-    files.filter((d) => d.steps).map((d) => guide(d, d.file as DownloadFile, level)).join("")
+    files.filter((d) => d.steps).map((d) => guide(d, d.file as DownloadFile, level, ways)).join("")
   );
 }
 
@@ -220,7 +230,7 @@ export function downloadsSection(list: readonly DownloadEntry[] = downloads): st
     `<section class="sec sec--downloads" id="downloads" aria-labelledby="downloads-title">` +
     `<div class="wrap">` +
     sectionHead({ id: "downloads-title", kicker: "downloads", title: "Downloads", tone: "mint", icon: "download", aside: filesCount(list), more: { href: "/downloads/", label: "Downloads page" } }) +
-    downloadsBody(3, list) +
+    downloadsBody(3, list, false) +
     `</div></section>`
   );
 }

@@ -84,8 +84,9 @@
 /* the banner's back layer: her night instead of Dex's plate */
 .ykback { position: absolute; inset: 0; display: block; overflow: hidden; container-type: size; background: #161a45; }
 
-/* whatever plays, rests while its banner or stage is off screen (motion/pbanner.ts, motion/yuki.ts) */
-:is(.pban__in, [data-yuki-stage], .dlf, .ss).is-off :is(.yk *, .ykstage *, .ykfx i, .ss *) { animation-play-state: paused; }
+/* whatever plays, rests while its banner, hero, Downloads art, drawn prompt or tile is off screen (motion/pbanner.ts,
+   motion/yuki.ts) */
+:is(.pban__in, .ykh, .dlf__art--yuki, .ss, .yktile).is-off :is(.yk *, .ykstage *, .ykfx i, .ss *) { animation-play-state: paused; }
 
 /* ================================================================== YUKI on Downloads (render/downloads.ts) */
 .dlf__art--yuki { position: relative; min-height: 300px; overflow: hidden; border-right: var(--bw) solid var(--ink); background: #22306e; }
@@ -144,9 +145,10 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.retired__at { scroll-margin-top: calc(var(--hdr-h) + 120px); }
+/* (the old addresses' anchors stay out of the line's flow, so no gap opens before the tag) */
+.retired__at { position: absolute; top: 0; left: 0; scroll-margin-top: calc(var(--hdr-h) + 120px); }
 .retired--projects { position: relative; z-index: 4; margin-top: var(--s-5); }
-.retired--downloads { padding: 2px 0; }
+.retired--downloads { position: relative; padding: 2px 0; }
 .retired--page { margin: var(--s-6) 0 var(--s-4); font-size: 1.25rem; }
 
 /* ================================================================== /yuki/ */
@@ -311,6 +313,7 @@
 .yks__h .sub__aside { margin-left: auto; font: 400 1rem / 1 var(--f-label); letter-spacing: 0.08em; color: var(--muted); }
 .yks__note { display: flex; gap: 10px; align-items: flex-start; margin: var(--s-4) 0 0; color: var(--fg-2); }
 .yks__note .px { flex: none; margin-top: 4px; color: var(--azure); }
+.yks__note--needs { margin: calc(var(--s-2) - var(--s-5)) 0 var(--s-5); }
 
 /* ---- what she does: four tiles */
 .ykfacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
@@ -319,7 +322,7 @@
 .ykfact__p { margin: 0; color: var(--fg-2); }
 
 /* ---- the tiers: a stat sheet, one card a class of PC, its rank on a tone plate */
-.yktiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; counter-reset: none; }
+.yktiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; counter-reset: none; }
 .yktier {
   --t: var(--cyan);
   --t-d: var(--azure);
@@ -335,6 +338,7 @@
 .yktier--magenta { --t: var(--magenta); --t-d: var(--scarlet); }
 .yktier--mint { --t: var(--mint); --t-d: var(--mint-d); }
 .yktier--yellow { --t: var(--gold); --t-d: var(--yellow-d); }
+.yktier--paper { --t: var(--line-2); --t-d: var(--muted); }
 .yktier__rank {
   width: 64px;
   height: 64px;
@@ -371,6 +375,17 @@
 .ykstep__body { display: grid; gap: 8px; min-width: 0; }
 .ykstep__t { display: flex; align-items: center; gap: 10px; margin: 0; font: 400 1.375rem / 1.2 var(--f-px); }
 .ykstep__p { margin: 0; color: var(--fg-2); }
+
+/* ---- a step's per-browser lines (render/downloads.ts waysList): on /yuki/ and in the Downloads guide */
+/* (one column of names for every line: each line is a subgrid of the list) */
+.ways { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0; padding: 0; list-style: none; color: var(--fg-2); }
+.ways li { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: baseline; }
+.ways__who { font: 400 1rem / 1.4 var(--f-label); color: var(--fg); }
+.step__ways { grid-template-columns: minmax(0, 1fr); gap: 8px; font-size: var(--fs-16); }
+.step__ways li { row-gap: 0; }
+/* (phones: the step's tile spans its title and text, and the lines stay in the text's column) */
+@media (max-width: 640px) { .step__ways { grid-column: 2; } }
+@container dlpage (max-width: 520px) { .step__ways { grid-column: 2; } }
 @media (max-width: 559px) {
   .ykstep { grid-template-columns: 1fr; }
   .ykstep__no { width: 44px; height: 44px; }

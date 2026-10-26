@@ -41,9 +41,11 @@ made with code (no image generation).
 
 - **Data, one place each:** `data/downloads.ts` `YUKI_RELEASE` (version, asset name, bytes, SHA-256; `null` until the
   first release, and every page then says "No public download yet"), the download link is the releases repo's
-  `releases/latest/download/<asset>`; `RETIRED` (dexCode, dexClient) only feeds the one small "Retired" line where their
+  `releases/download/v<version>/<asset>` (the release the page lists, so its size and SHA-256 always match the file and
+  the next release never breaks it; refill it with every stable release); `RETIRED` (dexCode, dexClient) only feeds the one small "Retired" line where their
   entries were, which keeps `/downloads/#dexcode` and `#dexclient` landing; their old `/projects/<id>/` pages say where
-  they went (noindex). `data/yuki.ts`: what it is, the S/A/B/C hardware tiers, and `YUKI_LINK`, the optional status
+  they went (noindex). `data/yuki.ts`: what it is, the app's S to D hardware tiers (YUKI's `hardware.ts` `TIER_RULES`), **off** until a release
+  has the first run that picks them (`YUKI_TIERS_LIVE`), and `YUKI_LINK`, the optional status
   ping to YUKI's engine on the visitor's PC, **off** (no markup, no request) until the engine answers dex.place.
 - **Pixel Yuki** (`yuki-sprite.ts`): a 32 x 32 chibi bust as grids, drawn to Dex's pixel-face rules in the orb's
   colours. Layers: base, eyes (open, blink, happy, sleepy), mouth (calm, smile, talk), ahoge (two frames); a data
@@ -59,10 +61,12 @@ made with code (no image generation).
   sizes it). A card's or banner's caption is "HERO // NAME", just the name when they're the same word (YUKI); the small
   docs key is named from the project's `docs.label` (YUKI's: its install guide).
 - **`/yuki/`** (`render/yuki.ts`, `motion/yuki.ts`): the hero (her orb hatches once on load, she pops, says one line;
-  click her and she hops), what she does, the tiers as a stat sheet, the install guide with the Windows SmartScreen
+  click her and she hops), what she does, the tiers as a stat sheet (once live), the install guide (what it needs, each
+  browser's words for keeping the file) with the Windows SmartScreen
   prompt drawn out (a pixel cursor taps More info, then Run anyway), the checksum. The Download click keeps its default
   (the file), then the page becomes the guide (`data-stage="guide"`). Everything rests off screen and holds still under
-  reduced motion; without JS the key downloads and the guide is just there.
+  reduced motion (the whole hero is watched, so the snow beside her stage rests too); without JS the key downloads and
+  the guide is just there. Her face stands in for the generic mascot in any step or fact tile of hers, Downloads too.
   - The hop (`.is-hop`) and a new line's pop (`.is-new`) sit on the hatch's selectors plus their class, so they beat
     its one-time rules; the hop keeps the pop in its animation list (matched by name, it never replays), and a new line
     pops under its own keyframes' name (the hatch's name again would never replay).
