@@ -24,10 +24,11 @@ YUKI has one setup file. Its first public release isn't out yet. When it is, [Do
 | Any task on your PC | Files, the shell, the browser and your logins, desktop apps, games, and other AI models. |
 | Models are tools | Her brain can call an image, video or language model with its own settings, take what it makes, and keep working. |
 | Yuki never goes busy | You talk to Yuki. She hands the work to her helper agents and keeps talking with you while they run. |
+| dex inference | Optional: sign in with a dex account to chat on models that run on PCs the community hosts, or to host from yours. Invite-only for now, friends first. |
 
 ## Where your chats go
 
-YUKI runs on your PC, and your chats stay there unless you pick a cloud model. A cloud model, free or used with your own API key, runs on its maker's servers, so what you send it goes to them.
+YUKI runs on your PC, and your chats stay there unless you pick a cloud model. A cloud model, free or used with your own API key, runs on its maker's servers, so what you send it goes to them. dex inference sends it through dex.place to the PC hosting the model. Its usage policy applies there only, never to YUKI on your own PC.
 
 ## Where things go
 

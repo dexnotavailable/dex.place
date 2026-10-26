@@ -117,11 +117,11 @@ function pending(d: DownloadEntry, i: number, level: Level): string {
       `</div></div>` +
       `<p class="dlf__line">${esc(lineOf(d.id))}</p>` +
       `<div class="dlf__cta">${button({ href: d.guide, label: `Meet ${projects.find((p) => p.id === d.id)?.hero ?? d.name}`, icon: "arrow", size: "l" })}` +
-      `<span class="dlf__file"><code>${esc(d.name)} for Windows</code><span>Not out yet</span></span></div>` +
+      `<span class="dlf__file">${later(`${esc(d.name)} for Windows`, sampleName(d), "code")}<span>${later("Not out yet", "000.0 MB · from GitHub")}</span></span></div>` +
       `<dl class="spec">` +
       `<div><dt>Version</dt><dd>Not out yet</dd></div>` +
       `<div><dt>Platform</dt><dd>Windows</dd></div>` +
-      `<div><dt>SHA-256</dt><dd>With the release</dd></div>` +
+      `<div class="spec__sha spec__sha--later"><dt>SHA-256</dt><dd><span class="spec__link">${later("With the release", "00000000…000000", "code")}${icon("arrow-down", 2)}</span></dd></div>` +
       `</dl>` +
       (d.installer?.length ? `<ul class="dl-notes">${d.installer.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : "") +
       `<p class="dlf__guide"><a class="link" href="${esc(d.guide)}#install">The install guide, step by step</a></p>` +
@@ -226,16 +226,32 @@ export function retiredNote(where: "downloads" | "projects"): string {
   );
 }
 
+/**
+ * Before a release: a value that isn't out yet, in the room its released value will take. `text` shows; `room` (a value
+ * of the released shape, e.g. a file name with a version) is only CSS generated content, laid out unseen under the
+ * words (styles/yuki.css .later), so the box is the size it will be at every width and no stand-in is ever page text.
+ * The home band then keeps its height (its hanging banners ride its scroll; a shorter band ran them fast). `tag`: the
+ * element, a <code> where the released value is code.
+ */
+function later(text: string, room: string, tag: "span" | "code" = "span"): string {
+  return `<${tag} class="later" data-room="${esc(room)}"><span class="later__text">${text}</span></${tag}>`;
+}
+
+/** A setup file's name of the released shape (YUKI-Setup-0.0.0.exe), for the room it takes. */
+const sampleName = (d: DownloadEntry): string => `${d.name}-Setup-0.0.0.exe`;
+
 /** "Check the file" before the release: laid out as it will be, the checksum's place saying it comes with the release
- *  (the block keeps its height), the PowerShell line already there. */
+ *  (the block keeps its height: the hash's and its copy key's room are held), the PowerShell line already there. */
 function verifyLater(d: DownloadEntry, level: Level): string {
   const h2 = `h${level + 1}`;
   const cmd = `Get-FileHash .\\${d.name}-Setup-*.exe -Algorithm SHA256`;
   return (
     `<div class="verify verify--later" id="${d.id}-verify" data-reveal>` +
     `<${h2} class="verify__title">${tile("qr", "paper", "s")}<span>Check the file</span></${h2}>` +
-    `<p class="verify__line">The SHA-256 of ${esc(d.name)}'s installer shows here with its first release:</p>` +
-    `<div class="verify__row"><code class="hash hash--later">Not out yet</code></div>` +
+    `<p class="verify__line">The SHA-256 of ${later(`${esc(d.name)}'s installer`, sampleName(d), "code")} is:</p>` +
+    // (the hash's eight groups of eight, and its copy key, as room only)
+    `<div class="verify__row"><code class="hash hash--later">${"<i></i>".repeat(8)}<span class="later__text">Not out yet</span></code>` +
+    `<span class="later__key" aria-hidden="true" inert>${copyButton("", "SHA-256")}</span></div>` +
     `<p class="verify__line">To compare, run this in PowerShell in the folder with the file. It prints the same code in capitals.</p>` +
     `<div class="verify__row"><code class="cmd"><span aria-hidden="true">&gt; </span>${esc(cmd)}</code>${copyButton(cmd, "PowerShell command")}</div>` +
     `</div>`

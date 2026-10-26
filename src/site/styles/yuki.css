@@ -9,13 +9,17 @@
    (data-look, motion/yuki.ts: a fine pointer beside her) shows the open eyes looking that way. Pressed (her stage), the
    head sinks a pixel over still shoulders. Units inside the SVG are her pixels.
    Motion, the app's own (YUKI ui/mascotFrames.ts, styles/base.css; yuki-faces.ts TIMING, a test keeps these in step):
-   two sprite frames of 650 ms (the ahoge sways), the back hair and head bob a pixel over still shoulders on a clock twice
-   as long, a blink (half, shut, half: 40 / 80 / 40 ms) on each Yuki's own seeded clock (--blink, --blink-at, 4.1-6.3 s:
-   yuki-sprite.ts blinkVars, so two in view blink out of step), a look aside now and then on another (--look, --look-at:
-   13-19 s, held about a second) unless a pointer is steering her eyes, and a hop (.is-hop; or hovering her banner or
-   card): a crouch, up a pixel at a time, down, a squash a pixel deep on landing, her ahoge trailing (frame B at the top). */
-.yk { display: block; overflow: visible; image-rendering: pixelated; }
-.yk .yk__e, .yk .yk__m, .yk .yk__bl--strong, .yk .yk__zz, .yk .yk__fb, .yk .yk__look--l, .yk .yk__look--r { display: none; }
+   awake, the app's "waiting" clock, three sprite frames of 433 ms swaying the ahoge out and back once a turn (A, B, A);
+   asleep, its "queued" clock, two of 650 ms (A, B: the zz rises on B). Either way the back hair and the head bob a pixel
+   over still shoulders as a turn starts, on a clock two turns long. A blink (half, shut, half: 40 / 90 / 70 ms) on each
+   Yuki's own seeded clock (--blink, --blink-at, 4.1-6.3 s: yuki-sprite.ts blinkVars, so two in view blink out of step), a
+   look aside now and then on another (--look, --look-at: 13-19 s, held about a second) unless a pointer is steering her
+   eyes, and a hop (.is-hop; or hovering her banner or card): a crouch, up a pixel at a time, down, her ahoge trailing
+   (frame B at the top), then the app's landing squash, a pixel deep, her long hair splayed a pixel and open eyes turned
+   to the happy ^ ^ arch (yuki-faces.ts LAND). */
+.yk { display: block; overflow: visible; image-rendering: pixelated; --yk-fa: yk-fa; --yk-fb: yk-fb; }
+.yk[data-eyes="sleepy"] { --yk-fa: yk-sa; --yk-fb: yk-sb; }
+.yk .yk__e, .yk .yk__m, .yk .yk__bl--strong, .yk .yk__zz, .yk .yk__fb, .yk .yk__look--l, .yk .yk__look--r, .yk .yk__land, .yk .yk__land-eyes { display: none; }
 .yk[data-eyes="open"] .yk__e--open, .yk[data-eyes="half"] .yk__e--half, .yk[data-eyes="closed"] .yk__e--closed,
 .yk[data-eyes="happy"] .yk__e--happy, .yk[data-eyes="sleepy"] .yk__e--sleepy, .yk[data-eyes="wide"] .yk__e--wide,
 .yk[data-eyes="squeeze"] .yk__e--squeeze { display: inline; }
@@ -28,8 +32,8 @@
 .yk.is-press .yk__bob { translate: 0 1px; }
 .yk.is-pop .yk__bob { translate: 0 -1px; }
 @media (prefers-reduced-motion: no-preference) {
-  .yk .yk__fa { animation: yk-fa 1.3s steps(1, end) infinite; }
-  .yk .yk__fb { display: inline; visibility: hidden; animation: yk-fb 1.3s steps(1, end) infinite; }
+  .yk .yk__fa { animation: var(--yk-fa) 1.3s steps(1, end) infinite; }
+  .yk .yk__fb { display: inline; visibility: hidden; animation: var(--yk-fb) 1.3s steps(1, end) infinite; }
   .yk .yk__bob { animation: yk-bob 2.6s steps(1, end) infinite; }
   .yk[data-eyes="open"] .yk__e--open { animation: yk-blink-open var(--blink, 5.2s) steps(1, end) var(--blink-at, 0s) infinite; }
   .yk[data-eyes="open"] .yk__e--half { display: inline; visibility: hidden; animation: yk-blink-half var(--blink, 5.2s) steps(1, end) var(--blink-at, 0s) infinite; }
@@ -38,23 +42,35 @@
   .yk:not([data-look]) .yk__look--l { display: inline; visibility: hidden; animation: yk-look-l var(--look, 16s) steps(1, end) var(--look-at, 0s) infinite; }
   .yk:not([data-look]) .yk__look--r { display: inline; visibility: hidden; animation: yk-look-r var(--look, 16s) steps(1, end) var(--look-at, 0s) infinite; }
   .yk.is-hop .yk__hop { animation: yk-hop 500ms steps(1, end); }
-  .yk.is-hop .yk__fa { animation: yk-fa 1.3s steps(1, end) infinite, yk-hop-a 500ms steps(1, end); }
-  .yk.is-hop .yk__fb { animation: yk-fb 1.3s steps(1, end) infinite, yk-hop-b 500ms steps(1, end); }
+  .yk.is-hop .yk__fa { animation: var(--yk-fa) 1.3s steps(1, end) infinite, yk-hop-a 500ms steps(1, end); }
+  .yk.is-hop .yk__fb { animation: var(--yk-fb) 1.3s steps(1, end) infinite, yk-hop-b 500ms steps(1, end); }
+  .yk.is-hop .yk__bk { animation: yk-land-off 500ms steps(1, end); }
+  .yk.is-hop .yk__land { display: inline; visibility: hidden; animation: yk-land-on 500ms steps(1, end); }
+  .yk.is-hop:is([data-eyes="open"], [data-eyes="wide"]) .yk__eyes { animation: yk-land-off 500ms steps(1, end); }
+  .yk.is-hop:is([data-eyes="open"], [data-eyes="wide"]) .yk__land-eyes { display: inline; visibility: hidden; animation: yk-land-on 500ms steps(1, end); }
   .yk:is(.is-press, .is-pop) .yk__bob { animation: none; }
   /* her banner and her card answer the pointer as her button does in the app: she hops once */
   @media (hover: hover) {
     :is(.pban, .pcard):hover .yk .yk__hop { animation: yk-hover 500ms steps(1, end); }
-    :is(.pban, .pcard):hover .yk .yk__fa { animation: yk-fa 1.3s steps(1, end) infinite, yk-hover-a 500ms steps(1, end); }
-    :is(.pban, .pcard):hover .yk .yk__fb { animation: yk-fb 1.3s steps(1, end) infinite, yk-hover-b 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__fa { animation: var(--yk-fa) 1.3s steps(1, end) infinite, yk-hover-a 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__fb { animation: var(--yk-fb) 1.3s steps(1, end) infinite, yk-hover-b 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__bk { animation: yk-hover-land-off 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk .yk__land { display: inline; visibility: hidden; animation: yk-hover-land-on 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk:is([data-eyes="open"], [data-eyes="wide"]) .yk__eyes { animation: yk-hover-land-off 500ms steps(1, end); }
+    :is(.pban, .pcard):hover .yk:is([data-eyes="open"], [data-eyes="wide"]) .yk__land-eyes { display: inline; visibility: hidden; animation: yk-hover-land-on 500ms steps(1, end); }
   }
 }
-@keyframes yk-fa { 0% { visibility: visible; } 50% { visibility: hidden; } }
-@keyframes yk-fb { 0% { visibility: hidden; } 50% { visibility: visible; } }
+/* the sprite frames: awake A, B, A (433 ms each), asleep A, B (650 ms each) */
+@keyframes yk-fa { 0% { visibility: visible; } 33.333% { visibility: hidden; } 66.667% { visibility: visible; } }
+@keyframes yk-fb { 0% { visibility: hidden; } 33.333% { visibility: visible; } 66.667% { visibility: hidden; } }
+@keyframes yk-sa { 0% { visibility: visible; } 50% { visibility: hidden; } }
+@keyframes yk-sb { 0% { visibility: hidden; } 50% { visibility: visible; } }
 @keyframes yk-bob { 0% { translate: 0 0; } 50% { translate: 0 1px; } }
-/* (the blink sits at the end of each clock: at 5.2 s, 96.9-97.7% is 42 ms, 97.7-99.2% is 78 ms, 99.2-100% is 42 ms) */
-@keyframes yk-blink-open { 0% { opacity: 1; } 96.9% { opacity: 0; } }
-@keyframes yk-blink-half { 0% { visibility: hidden; } 96.9% { visibility: visible; } 97.7% { visibility: hidden; } 99.2% { visibility: visible; } }
-@keyframes yk-blink-shut { 0% { visibility: hidden; } 97.7% { visibility: visible; } 99.2% { visibility: hidden; } }
+/* (the blink sits at the end of each clock, closing fast and opening slower: at 5.2 s, 96.154-96.923% is 40 ms half,
+   96.923-98.654% is 90 ms shut, 98.654-100% is 70 ms half) */
+@keyframes yk-blink-open { 0% { opacity: 1; } 96.154% { opacity: 0; } }
+@keyframes yk-blink-half { 0% { visibility: hidden; } 96.154% { visibility: visible; } 96.923% { visibility: hidden; } 98.654% { visibility: visible; } }
+@keyframes yk-blink-shut { 0% { visibility: hidden; } 96.923% { visibility: visible; } 98.654% { visibility: hidden; } }
 /* (a look aside: left at 34-40%, about 0.9 s at 16 s; right at 78-84%) */
 @keyframes yk-look-0 { 0% { visibility: visible; } 34% { visibility: hidden; } 40% { visibility: visible; } 78% { visibility: hidden; } 84% { visibility: visible; } }
 @keyframes yk-look-l { 0% { visibility: hidden; } 34% { visibility: visible; } 40% { visibility: hidden; } }
@@ -62,10 +78,15 @@
 @keyframes yk-hop { 0% { translate: 0 1px; } 12% { translate: 0 -1px; } 22% { translate: 0 -2px; } 42% { translate: 0 -1px; } 54% { translate: 0 0; } 62% { translate: 0 1px; } 72% { translate: 0 0; } }
 @keyframes yk-hop-a { 0% { visibility: visible; } 22% { visibility: hidden; } 62% { visibility: visible; } }
 @keyframes yk-hop-b { 0% { visibility: hidden; } 22% { visibility: visible; } 62% { visibility: hidden; } }
+/* (the landing squash, 62-72% of a hop: the splayed hair and the landing eyes on, the usual ones off; the ahoge on A) */
+@keyframes yk-land-on { 0% { visibility: hidden; } 62% { visibility: visible; } 72% { visibility: hidden; } }
+@keyframes yk-land-off { 0% { opacity: 1; } 62% { opacity: 0; } 72% { opacity: 1; } }
 /* (the hover's own names, so a hover after a tap hops again, as the app's m-hover) */
 @keyframes yk-hover { 0% { translate: 0 1px; } 12% { translate: 0 -1px; } 22% { translate: 0 -2px; } 42% { translate: 0 -1px; } 54% { translate: 0 0; } 62% { translate: 0 1px; } 72% { translate: 0 0; } }
 @keyframes yk-hover-a { 0% { visibility: visible; } 22% { visibility: hidden; } 62% { visibility: visible; } }
 @keyframes yk-hover-b { 0% { visibility: hidden; } 22% { visibility: visible; } 62% { visibility: hidden; } }
+@keyframes yk-hover-land-on { 0% { visibility: hidden; } 62% { visibility: visible; } 72% { visibility: hidden; } }
+@keyframes yk-hover-land-off { 0% { opacity: 1; } 62% { opacity: 0; } 72% { opacity: 1; } }
 
 /* ================================================================== the stage
    svg.ykstage: one unit a cell. Where round() is known, a cell is a whole number of screen pixels and the stage covers
@@ -85,7 +106,11 @@
 @supports (width: round(up, 1.5px, 1px)) {
   /* a card holds the stage around its middle (her up, the words below) */
   .ykart--mid .ykstage { top: 50%; bottom: auto; translate: -50% -50%; }
+  /* her banner's hero window is slanted on its left, so she stands whole cells right of its middle, in what shows (her
+     face and her clip clear of the slant on a phone's narrow window) */
+  .pban__hero .ykstage { translate: calc(-50% + var(--ykx, 2) * var(--u)) 0; }
 }
+@container pban (max-width: 559px) { .pban__hero .ykart { --ykx: 4; } }
 .ykstage__her { transform-origin: var(--hx) var(--hy); }
 .ykstage__ring { transform-origin: var(--hx) var(--hy); }
 @media (prefers-reduced-motion: no-preference) {
@@ -149,6 +174,20 @@
 /* before the release (render/downloads.ts): the block and its checksum keep their shape, the values say what isn't out */
 .dlf[data-yuki="none"] .spec dd { color: var(--muted); font-weight: 400; }
 .hash--later { border-style: dashed; color: var(--muted); }
+/* a value not out yet holds the room its released value takes (render/downloads.ts later()): the room is generated
+   content laid out as the value will be, unseen; the words sit over its first line in the surrounding text's font */
+.later, .hash--later { position: relative; }
+.later::before { content: attr(data-room); visibility: hidden; }
+.later__text { position: absolute; left: 0; top: 0; white-space: nowrap; }
+.verify__line code.later .later__text, .spec__sha--later .later__text { font: inherit; font-family: var(--f-body); font-weight: 400; }
+.verify__line code.later .later__text { color: var(--fg-2); }
+.hash--later > i { font-style: normal; }
+.hash--later > i::before { content: "00000000"; visibility: hidden; }
+.hash--later > .later__text { left: 14px; top: 10px; }
+.later__key { flex: none; visibility: hidden; }
+.spec__sha--later { box-shadow: none; }
+.spec__sha--later .px { visibility: hidden; }
+.spec__sha--later .later__text { top: 50%; translate: 0 -50%; }
 .dlg__more { margin: 12px 0 0; }
 @media (max-width: 699px) {
   /* phones keep her: a short strip on top of the block instead of the drawn file */
@@ -180,6 +219,10 @@
 .retired--projects { position: relative; z-index: 4; margin-top: var(--s-5); }
 .retired--downloads { position: relative; padding: 2px 0; }
 .retired--page { margin: var(--s-6) 0 var(--s-4); font-size: 1.25rem; }
+/* a retired project's docs (data/docs.ts): last, the tag before its page count, its tile quieter */
+.dgroup--retired .dgroup__count { display: inline-flex; align-items: center; gap: 8px; }
+.dgroup--retired .dgroup__count .retired__tag { font-size: inherit; }
+.dgroup--retired .dgroup__head .tile { filter: grayscale(0.6); }
 
 /* ================================================================== /yuki/ */
 .page--yuki { padding-bottom: var(--s-8); }
@@ -343,7 +386,19 @@
 .yks__note--needs { margin: calc(var(--s-2) - var(--s-5)) 0 var(--s-5); }
 
 /* ---- what she does: four tiles */
-.ykfacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+/* one column on a phone, two on a tablet, three wide; a short last row shares the width (two halves, or one whole), so
+   five or six facts never leave a lone tile hanging */
+.ykfacts { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) {
+  .ykfacts { grid-template-columns: repeat(2, 1fr); }
+  .ykfact:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@media (min-width: 1000px) {
+  .ykfacts { grid-template-columns: repeat(6, 1fr); }
+  .ykfact, .ykfact:last-child:nth-child(odd) { grid-column: span 2; }
+  .ykfact:nth-child(3n + 1):nth-last-child(2), .ykfact:nth-child(3n + 2):last-child { grid-column: span 3; }
+  .ykfact:nth-child(3n + 1):last-child { grid-column: 1 / -1; }
+}
 .ykfact { display: grid; align-content: start; gap: 10px; padding: 18px; background: var(--panel); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
 .ykfact__t { margin: 4px 0 0; font: 400 1.375rem / 1.2 var(--f-px); }
 .ykfact__p { margin: 0; color: var(--fg-2); }

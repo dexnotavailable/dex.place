@@ -72,10 +72,11 @@ test("page, not released: says so plainly, links nothing that looks like a binar
     const block = html.slice(html.indexOf('id="yuki"'), html.indexOf("</article>", html.indexOf('id="yuki"')));
     assert.match(block, /<p class="dl-state"><span class="dl-state__dot" aria-hidden="true"><\/span>No public download yet<\/p>/);
     assert.match(block, /href="\/yuki\/"/);
-    // the specs say what isn't out, never a made-up version, size or hash
+    // the specs say what isn't out, never a made-up version, size or hash: a stand-in of the released shape is only the
+    // room the value will take (a data-room attribute the stylesheet lays out unseen), never page text
     assert.match(block, /<dt>Version<\/dt><dd>Not out yet<\/dd>/);
-    assert.match(block, /<dt>SHA-256<\/dt><dd>With the release<\/dd>/);
-    assert.doesNotMatch(block, /\d+(\.\d+)? (MB|GB)|v?\d+\.\d+\.\d+/);
+    assert.match(block, /<dt>SHA-256<\/dt><dd><span class="spec__link"><code class="later" data-room="[^"]+"><span class="later__text">With the release<\/span><\/code>/);
+    assert.doesNotMatch(block.replace(/ data-room="[^"]*"/g, ""), /\d+(\.\d+)? (MB|GB)|\bv?\d+\.\d+\.\d+\b|[0-9a-f]{8}/);
     assert.doesNotMatch(html, /href="[^"]+\.(exe|msi|zip|dmg)"/);
     assert.doesNotMatch(html, /yuki-releases/);
   }
@@ -94,7 +95,8 @@ test("not released, the section keeps its shape (Dex 10-26: a short band ran its
     // check the file: its place kept, the hash's place saying it comes with the release, the PowerShell line there
     const v = none.slice(none.indexOf('class="verify'));
     assert.match(v, /^class="verify verify--later" id="yuki-verify"/);
-    assert.match(v, /<code class="hash hash--later">Not out yet<\/code>/);
+    assert.match(v, /<code class="hash hash--later">(<i><\/i>){8}<span class="later__text">Not out yet<\/span><\/code><span class="later__key" aria-hidden="true" inert>/);
+    assert.doesNotMatch(v.slice(0, v.indexOf("</section>")).replace(/ data-room="[^"]*"/g, ""), /[0-9a-f]{8}|\d+\.\d+\.\d+/, "no stand-in hash or version in the page");
     assert.ok(v.includes("Get-FileHash .\\YUKI-Setup-*.exe -Algorithm SHA256"));
     assert.equal((none.match(/class="verify__(line|row)"/g) ?? []).length, (rel.match(/class="verify__(line|row)"/g) ?? []).length, "as many lines");
   }

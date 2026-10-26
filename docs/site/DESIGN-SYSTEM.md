@@ -41,13 +41,19 @@ made with code (no image generation).
 
 - **Data, one place each:** `data/downloads.ts` `YUKI_RELEASE` (version, asset name, bytes, SHA-256; `null` until the
   first release, and every page then says "No public download yet"; the Downloads block and its install guide keep
-  their released shape meanwhile, each value saying what isn't out, so the home band keeps its height and its hanging
-  banners their pace), the download link is the releases repo's
+  their released shape meanwhile, each value saying what isn't out in the room its released value will take (`later()`
+  in render/downloads.ts: the released shape is only CSS generated content, laid out unseen under the words, never page
+  text), so the home band is the same height either way from 360 to 1920 px wide and its hanging banners keep their
+  pace), the download link is the releases repo's
   `releases/download/v<version>/<asset>` (the release the page lists, so its size and SHA-256 always match the file and
   the next release never breaks it; refill it with every stable release); `RETIRED` (dexCode, dexClient) only feeds the one small "Retired" line where their
   entries were, which keeps `/downloads/#dexcode` and `#dexclient` landing; their old `/projects/<id>/` pages say where
   they went (noindex), as do their old docs' addresses (`data/docs.ts` `RETIRED_DOCS`: `/docs/dexcode/` and
-  `/docs/installing-dexclient/` point at the YUKI docs, `content/docs/yuki.md` and `installing-yuki.md`). `data/yuki.ts`: what it is, the app's S to D hardware tiers (YUKI's `hardware.ts` `TIER_RULES`), **off** until a release
+  `/docs/installing-dexclient/` point at the YUKI docs, `content/docs/yuki.md` and `installing-yuki.md`; the retired
+  projects' other docs stay, their groups last and tagged "Retired"). `data/yuki.ts`: what it is (dex inference as v0.2
+  has it: optional, a chat source on PCs the community hosts, hosting from yours, invite-only for now), the hand and
+  the deck, **off** until the release the page lists has them (`YUKI_HAND_LIVE`, Dex 10-26: only as far as v0.2 really
+  ships them), the app's S to D hardware tiers (YUKI's `hardware.ts` `TIER_RULES`), **off** until a release
   has the first run that picks them (`YUKI_TIERS_LIVE`), and `YUKI_LINK`, the optional status
   ping to YUKI's engine on the visitor's PC, **off** (no markup, no request) until the engine answers dex.place.
 - **Pixel Yuki** (`yuki-sprite.ts`) is the YUKI app's own mascot (Dex 10-26: the site's Yuki stays the app's). Her
@@ -58,15 +64,21 @@ made with code (no image generation).
   shoulders, the eyes (open with its left and right glances, half, closed, happy, sleepy, wide, squeeze), blush (soft,
   strong with happy, wide and squeeze) and mouth (small, smile, open) sit on the head, the ahoge sways on two frames,
   the app's zz floats by her asleep. `data-eyes` / `data-mouth` pick the face, `data-look` a glance. Idle, the app's
-  clock: frames 650 ms, the bob twice that, a blink (half, shut, half: 40 / 80 / 40 ms) on each Yuki's own seeded clock
-  (4.1-6.3 s) and a look aside on another (13-19 s; `blinkVars`: a stage sets them for the Yuki in it, a lone sprite
-  takes them from its `seed`), all `steps()`. A hop is whole pixels (the app's `HOP_STEPS`, her ahoge trailing):
-  a tap on her stage, or hovering her banner or card. Pressed on her stage, her eyes squeeze shut and her head sinks
-  a pixel; let go, it pops a pixel up for 60 ms. A new face arrives behind a blink (shut 90 ms, half 50 ms).
+  clocks: awake its "waiting" one (three frames of 433 ms, the ahoge out on the middle one: A, B, A), asleep its
+  "queued" one (two of 650 ms, the zz rising on B), the bob two turns long either way; a blink (half, shut, half:
+  40 / 90 / 70 ms at the default clock) on each Yuki's own seeded clock (4.1-6.3 s) and a look aside on another
+  (13-19 s; `blinkVars`: a stage sets them for the Yuki in it, a lone sprite takes them from its `seed`), all
+  `steps()`. A hop is whole pixels (the app's `HOP_STEPS`, her ahoge trailing) and lands on the app's squash frame
+  (`LAND`: her long hair splayed a pixel, open eyes turned to the app's happy ^ ^, 62-72% of the hop): a tap on her stage, or hovering her
+  banner or card. Pressed on her stage, her eyes squeeze shut and her head sinks a pixel; let go, it pops a pixel up
+  for 60 ms. A new face arrives behind a blink (shut 90 ms, half 50 ms).
 - **Her stage** (`render/yukiart.ts`): night in hard bands, stars, her orb's pixel ring (`ORB`, 20 cells round her
-  head, so her hair, ahoge and zz sit inside it), ice shards, big flakes, then her; a cell is a whole number of screen pixels (`round()` in `styles/yuki.css`), so it stays crisp at any size. It
-  stands in for the rig art on YUKI's banner (hero window, and her night in place of Dex's plate), its card, its
-  Downloads block and the `/yuki/` hero.
+  head, so her hair, ahoge and zz sit inside it) and its glow (three discs stepped in whole cells, `discPath`, never a
+  smooth circle whose edge would step in screen pixels), ice shards, big flakes, then her; a cell is a whole number of
+  screen pixels (`round()` in `styles/yuki.css`), so it stays crisp at any size. It stands in for the rig art on YUKI's
+  banner (hero window, and her night in place of Dex's plate; in the window, slanted on its left, she stands 2 whole
+  cells right of its middle, 4 on a phone, so her face and clip clear the slant), its card, its Downloads block and the
+  `/yuki/` hero.
 - **Banners:** `pban--lead` (taller, a bigger name at every width: 44 px on a phone, 56 on a tablet, 64 wide) and
   `pban--minor` (shorter, its name 32 px, 82% wide toward the world: bands.css and landing.css place it, pbanner.css
   sizes it). A card's or banner's caption is "HERO // NAME", just the name when they're the same word (YUKI); the small

@@ -3,7 +3,8 @@
 // (SmartScreen "More info -> Run anyway"); optional live link where YUKI answers a status ping"). It belongs to
 // Downloads. Styles: styles/yuki.css; motion: motion/yuki.ts (own chunk).
 //
-// Top to bottom: the stage (her orb hatches and pixel Yuki says hi; the name, the line, the one key), what it is, which
+// Top to bottom: the stage (her orb hatches and pixel Yuki says hi; the name, the line, the one key), what it is (as far
+// as the release it lists has it: the hand and the deck wait for data/yuki.ts YUKI_HAND_LIVE), which
 // PC gets which setup (only once a release has the first run that picks it: data/yuki.ts YUKI_TIERS_LIVE), then the
 // install guide with the Windows prompt drawn out step by step and the file's checksum.
 // Complete without JavaScript: the key downloads the file and the guide is simply there below it. With it, the click
@@ -11,7 +12,7 @@
 // Not released yet (data/downloads.ts YUKI_RELEASE null): she is asleep, there is no file link, the guide still reads.
 
 import { downloads, formatBytes, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
-import { YUKI_FACTS, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE } from "../data/yuki.ts";
+import { YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE } from "../data/yuki.ts";
 import { yukiSprite } from "../yuki-sprite.ts";
 import { fileName, verifyBlock, waysList } from "./downloads.ts";
 import { button, chip, icon, tile } from "./glyphs.ts";
@@ -73,12 +74,13 @@ function hero(f: DownloadFile | null): string {
 
 // ------------------------------------------------------------------ what it is
 
-function what(): string {
+function what(hand: boolean): string {
+  const facts = hand ? [...YUKI_FACTS.slice(0, 2), YUKI_HAND, ...YUKI_FACTS.slice(2)] : YUKI_FACTS;
   return (
     `<section class="yks yks--what" aria-labelledby="yk-what">` +
     `<h2 class="yks__h" id="yk-what">${tile("star", "cyan", "s")}<span>What she does</span></h2>` +
     `<ul class="ykfacts">` +
-    YUKI_FACTS.map((x, i) =>
+    facts.map((x, i) =>
       `<li class="ykfact" data-reveal="pop" style="--i:${i}">${tileOr(x.icon, i === 0 ? "cyan" : "paper", "m", `fact-${i}`)}` +
       `<h3 class="ykfact__t">${esc(x.title)}</h3><p class="ykfact__p">${esc(x.text)}</p></li>`,
     ).join("") +
@@ -172,15 +174,16 @@ function install(d: DownloadEntry, f: DownloadFile | null): string {
   );
 }
 
-/** The whole page. `d`: YUKI's download entry (a test passes one for a release); `o.tiers`: the tiers section. */
-export function yukiPage(d: DownloadEntry = yukiDownload(), o: { tiers?: boolean } = {}): string {
+/** The whole page. `d`: YUKI's download entry (a test passes one for a release); `o.tiers`: the tiers section; `o.hand`:
+ *  the hand and the deck among what she does (data/yuki.ts YUKI_HAND_LIVE). */
+export function yukiPage(d: DownloadEntry = yukiDownload(), o: { tiers?: boolean; hand?: boolean } = {}): string {
   const f = d.file;
   return (
     `<div class="${cx("page page--yuki", !f && "page--yuki-none")}" data-yuki-page data-stage="start" data-release="${f ? "ready" : "none"}"` +
     ` data-say-guide="${esc(YUKI_SAYS.guide)}">` +
     `<div class="wrap">` +
     hero(f) +
-    what() +
+    what(o.hand ?? YUKI_HAND_LIVE) +
     ((o.tiers ?? YUKI_TIERS_LIVE) ? tiers() : "") +
     install(d, f) +
     `</div></div>`

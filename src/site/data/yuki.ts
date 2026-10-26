@@ -18,12 +18,29 @@ export interface YukiFact {
   readonly text: string;
 }
 
+/**
+ * The hand and the deck (YUKI PHASE2-SCOPE W6 "The hand", Dex 10-26; lanes p2/w6a-picker and p2/w4b-agents, still being
+ * built on 10-26): on the page only once the release it lists has them. Turn on with that release, after checking the
+ * words against it (Dex 10-26: mention them only as far as v0.2 really ships them).
+ */
+export const YUKI_HAND_LIVE = false;
+
+/** The hand and the deck, among what she does (after "Models are tools") once YUKI_HAND_LIVE. */
+export const YUKI_HAND: YukiFact = {
+  icon: "cards", title: "A hand of models",
+  text: "Every model YUKI can reach is a card in your deck. The cards in your hand are the ones Yuki and her helpers use.",
+};
+
 export const YUKI_FACTS: readonly YukiFact[] = [
   { icon: "window", title: "Any task on your PC", text: "Files, the shell, the browser and your logins, desktop apps, games, and other AI models. Even the roundabout jobs." },
   { icon: "sparkle", title: "Models are tools", text: "Her brain can call an image, video or language model with its own settings, take what it makes, and keep working." },
   { icon: "blob", title: "Yuki never goes busy", text: "You talk to Yuki. She hands the work to her helper agents and keeps talking with you while they run." },
   // (Dex 10-26: routing can send a chat to a free or API cloud model, so the chats stay on the PC unless you pick one)
   { icon: "heart", title: "Your machine, your data", text: "It runs on your own PC, and your chats stay there unless you pick a cloud model. Models run as they ship: YUKI adds no filters of its own." },
+  // dex inference as v0.2 has it (YUKI engine/src/dex, routing catalog "dex": a chat model source, text only, no tools or
+  // pictures; hosting is a switch, each host approved by Dex; the pool opens invite-only to friends first, PHASE2-SCOPE
+  // "Order" 5). Its usage policy applies there only, never on the user's own PC.
+  { icon: "hosts", title: "dex inference", text: "Optional: sign in with a dex account to chat on models that run on PCs the community hosts, or to host from yours. Invite-only for now, friends first." },
 ];
 
 /** A class of PC and the setup YUKI's first run picks for it. `rank` is the badge on its card (the app's stat sheet). */

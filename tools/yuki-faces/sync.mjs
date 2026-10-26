@@ -46,11 +46,14 @@ const same = (a, b) => a.every((row, y) => row === b[y]);
 /** What `g` adds over `base` in rows [y0, y1). */
 const diff = (g, base, y0 = 0, y1 = N) => g.map((row, y) => (y < y0 || y >= y1 ? ".".repeat(N) : [...row].map((c, x) => (c !== base[y][x] ? c : ".")).join("")));
 
-const bare = F.bareHead();
+const head = (expr, opts = {}) => F.composeParts(lk, expr, opts).head;
+// the head before its face, as composeParts draws it: the bare head with the app's selective outline (where its
+// outline lies against hair behind it, it takes the back hair's tone), read off a composed face. `h`: that face.
+const outlined = (h) => F.bareHead().map((row, y) => [...row].map((c, x) => (c === "O" && h[y][x] !== "O" && h[y][x] !== "." ? h[y][x] : c)).join(""));
+const bare = outlined(head("neutral"));
 const front = lk.front ? [lk.front[0], lk.front[1]] : [blank(), blank()];
 const gear = lk.gear ?? blank();
 const base = (f) => stack(bare, front[f], gear);
-const head = (expr, opts = {}) => F.composeParts(lk, expr, opts).head;
 const eyeRows = [0, F.BLUSH_Y];
 const mouthRows = [F.MOUTH_Y, N];
 
@@ -63,6 +66,8 @@ const blush = {
   soft: diff(head("neutral"), base(0), F.BLUSH_Y, F.BLUSH_Y + 1),
   strong: diff(head("happy"), base(0), F.BLUSH_Y, F.BLUSH_Y + 1),
 };
+// (the app's sad face welling a tear on the cheek in place of a blush pixel: checked below, not shown on the site)
+const blushOf = (e) => (e.tear ? diff(head(Object.keys(F.EXPRESSIONS).find((k) => F.EXPRESSIONS[k] === e)), base(0), F.BLUSH_Y, F.BLUSH_Y + 1) : blush[e.blush ? "strong" : "soft"]);
 const mouthOf = { small: "neutral", smile: "happy", open: "surprised", flat: "focused", frown: "sad" };
 const mouths = Object.fromEntries(Object.entries(mouthOf).map(([m, expr]) => [m, diff(head(expr), base(0), ...mouthRows)]));
 const props = Object.fromEntries(["zz", "zz-up", "sparkle", "sparkle-alt"].map((p) => [p, F.propGrid(p)]));
@@ -79,11 +84,18 @@ for (const expr of Object.keys(F.EXPRESSIONS)) {
       const eyeLayer = g ? eyes[g < 0 ? "open-l" : "open-r"] : eyes[e.eyes];
       const mouth = Object.entries(mouthOf).find(([, x]) => F.EXPRESSIONS[x].mouth === e.mouth)?.[0];
       const want = F.composeParts(lk, expr, { frame, glance: g }).head;
-      const got = stack(bare, eyeLayer, blush[e.blush ? "strong" : "soft"], mouth ? mouths[mouth] : blank(), front[frame], gear);
+      const got = stack(bare, eyeLayer, blushOf(e), mouth ? mouths[mouth] : blank(), front[frame], gear);
       if (!same(got, want)) { failures.push(`${expr} frame ${frame} glance ${g}`); if (process.env.DEBUG) got.forEach((r, y) => r !== want[y] && console.error(y, r, want[y])); }
     }
   }
 }
+// a hop's landing squash (the app's HOP_SWAY "land"): her long hair splayed a pixel outward, frame A in front, open
+// eyes turned to the app's LAND_EYES (shut before it had them); the head's outline follows the splayed hair, so its few
+// changed pixels are a layer too
+const landEyes = M.LAND_EYES ?? "closed";
+const landParts = F.composeParts(lk, "neutral", { frame: 0, splay: true, eyes: landEyes });
+const landHead = diff(outlined(landParts.head), bare);
+if (!eyes[landEyes] || !same(stack(bare, landHead, eyes[landEyes], blush.soft, mouths.small, front[0], gear), landParts.head)) failures.push("the landing frame");
 if (!same(parts0.back, F.composeParts(lk, "happy", { frame: 0 }).back) || !same(parts0.body, parts1.body)) failures.push("back or body changes with the face");
 if (failures.length) {
   console.error(`the layers don't add up to the app's faces: ${failures.join("; ")}`);
@@ -91,7 +103,7 @@ if (failures.length) {
 }
 
 // the palette: only letters her layers use
-const all = [parts0.back, parts1.back, parts0.body, bare, ...front, gear, ...Object.values(eyes), ...Object.values(blush), ...Object.values(mouths), ...Object.values(props)];
+const all = [parts0.back, parts1.back, landParts.back, landHead, parts0.body, bare, ...front, gear, ...Object.values(eyes), ...Object.values(blush), ...Object.values(mouths), ...Object.values(props)];
 const used = new Set(all.flatMap((g) => g.join("").split("")).filter((c) => c !== "."));
 const palette = Object.fromEntries([...used].sort().map((c) => [c, lk.pal[c]]));
 for (const [c, hex] of Object.entries(palette)) if (!/^#[0-9a-f]{6}$/i.test(hex ?? "")) throw new Error(`no colour for "${c}"`);
@@ -139,7 +151,10 @@ export const BACK: readonly [Layer, Layer] = ${pair(parts0.back, parts1.back)};
 export const BODY: Layer = ${layerTs(parts0.body)};
 /** The head without a face: skin, the front hair. */
 export const HEAD: Layer = ${layerTs(bare)};
-/** Over the face: the ahoge and the snowflake clip, two sprite frames (the ahoge sways). */
+/** A hop's landing squash (the app's HOP_SWAY "land"): her long hair splayed a pixel outward (in place of BACK), the
+ *  few outline pixels of the head that follow it (over HEAD), and what her open eyes turn to (the app's LAND_EYES). */
+export const LAND: { readonly back: Layer; readonly head: Layer; readonly eyes: ${js(landEyes)} } = ${lines(["{", `  back: ${layerTs(landParts.back, "  ")},`, `  head: ${layerTs(landHead, "  ")},`, `  eyes: ${js(landEyes)},`, "}"])};
+/** Over the face: the ahoge and her clip, two sprite frames (the ahoge sways). */
 export const FRONT: readonly [Layer, Layer] = ${pair(front[0], front[1])};
 /** The eyes by shape; "open-l" and "open-r" are the open eyes glancing left and right. */
 export const EYES = ${record(eyes)} as const satisfies Record<string, Layer>;
@@ -153,10 +168,14 @@ export const PROPS = ${record(props)} as const satisfies Record<string, Layer>;
 /** The app's expressions: which eyes, mouth and blush each shows. */
 export const EXPRESSIONS = ${JSON.stringify(Object.fromEntries(Object.entries(F.EXPRESSIONS).map(([k, e]) => [k, { eyes: e.eyes, mouth: Object.entries(mouthOf).find(([, x]) => F.EXPRESSIONS[x].mouth === e.mouth)?.[0] ?? null, blush: e.blush ? "strong" : "soft" }])), null, 2)} as const;
 
-/** The app's mascot timings (ms), from ui/mascotFrames.ts. */
+/** The app's mascot timings (ms), from ui/mascotFrames.ts: awake the "waiting" status's clock, asleep the "queued" one's
+ *  (\`sway\`: which sprite frame each beat shows, A 0 or B 1). */
 export const TIMING = ${JSON.stringify({
+  // awake she keeps the app's "waiting" clock (its frames sway the ahoge A, B, A), asleep its "queued" one (A, B)
   frameMs: M.FRAME_MS?.waiting,
   bobMs: M.BOB_MS?.waiting,
+  sway: M.STATUS_FRAMES.waiting.map((f, i) => M.swayOf(f, i)),
+  asleep: { frameMs: M.FRAME_MS?.queued, bobMs: M.BOB_MS?.queued, sway: M.STATUS_FRAMES.queued.map((f, i) => M.swayOf(f, i)) },
   ...pick({ blinkSteps: M.BLINK_STEPS, swapSteps: M.SWAP_STEPS, glance: M.GLANCE, hopSteps: M.HOP_STEPS, hopSway: M.HOP_SWAY, hopMs: M.HOP_MS, press: M.PRESS }, ["blinkSteps", "swapSteps", "glance", "hopSteps", "hopSway", "hopMs", "press"]),
 }, null, 2)} as const;
 `;

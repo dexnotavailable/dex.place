@@ -8,10 +8,11 @@
 // and never a redraw; the ahoge sways on two sprite frames. Which face shows: `data-eyes` and `data-mouth` on the svg;
 // the blush turns strong with the eyes that call for it (happy, wide, squeeze), as in the app's expressions; the open
 // eyes glance with `data-look` (-1, 0, 1), or on their own idle clock without it. Asleep, the app's zz floats by her.
+// A hop lands on the app's squash frame: her long hair splayed a pixel and her open eyes turned to the app's (LAND).
 // styles/yuki.css shows and moves them; motion/yuki.ts changes them.
 
 import { rng } from "./render/html.ts";
-import { BACK, BLUSH, BODY, EYES, FACE, FRONT, HEAD, MOUTHS, PALETTE, PROPS, TIMING, type FaceKey, type Layer } from "./yuki-faces.ts";
+import { BACK, BLUSH, BODY, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, PALETTE, PROPS, TIMING, type FaceKey, type Layer } from "./yuki-faces.ts";
 
 /** Her palette (the app's look "yuki"). */
 export const YUKI_PALETTE = PALETTE;
@@ -96,16 +97,19 @@ export function yukiSprite(o: YukiSpriteOptions = {}): string {
       ? g("yk__e yk__e--open", g("yk__look yk__look--0", layerPaths(EYES.open)) + g("yk__look yk__look--l", layerPaths(EYES["open-l"])) + g("yk__look yk__look--r", layerPaths(EYES["open-r"])))
       : g(`yk__e yk__e--${k}`, layerPaths(EYES[k])),
   ).join("");
+  const land = LAND.head.rows.length ? g("yk__land", layerPaths(LAND.head)) : "";
   return (
     `<svg class="yk${o.className ? ` ${o.className}` : ""}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${FACE} ${FACE}"${size} ` +
     `shape-rendering="crispEdges" data-eyes="${o.eyes ?? "open"}" data-mouth="${o.mouth ?? "small"}" ${a11y}` +
     `${o.seed ? ` style="${blinkVars(o.seed)}"` : ""}>` +
     `<g class="yk__hop">` +
-    frames("yk__bob yk__back", BACK) +
+    g("yk__bob yk__back", frames("yk__bk", BACK) + g("yk__land", layerPaths(LAND.back))) +
     g("yk__body", layerPaths(BODY)) +
     `<g class="yk__bob yk__head">` +
     layerPaths(HEAD) +
-    eyes +
+    land +
+    g("yk__eyes", eyes) +
+    g("yk__land-eyes", layerPaths(EYES[LAND.eyes])) +
     g("yk__bl yk__bl--soft", layerPaths(BLUSH.soft)) + g("yk__bl yk__bl--strong", layerPaths(BLUSH.strong)) +
     YUKI_MOUTHS.map((k) => g(`yk__m yk__m--${k}`, layerPaths(MOUTHS[k]))).join("") +
     frames("yk__front", FRONT) +

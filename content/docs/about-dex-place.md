@@ -37,7 +37,7 @@ Donating never unlocks anything. Every file and every part of the world is the s
 
 ## Accounts
 
-You don't need an account for anything here. A shared **dex account** for dex.place, dexCode and dexClient is planned but not connected yet.
+You don't need an account for anything here. YUKI can sign in to a **dex account** (it's optional there too); this site doesn't use it yet.
 
 ## What the site keeps about you
 

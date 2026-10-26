@@ -75,10 +75,10 @@ function docGroups(content: SiteContent, level: 2 | 3 | 4): string {
     `<div class="dcat" data-reveal="pop-block">` +
     groups
       .map(({ group, docs }) =>
-        `<section class="dgroup dgroup--${group.tone}" aria-labelledby="g-${group.id}">` +
+        `<section class="${cx("dgroup", `dgroup--${group.tone}`, group.retired && "dgroup--retired")}" aria-labelledby="g-${group.id}">` +
         `<header class="dgroup__head">${tile(group.icon, group.tone, "s")}` +
         `<${h} class="dgroup__title" id="g-${group.id}">${esc(group.label)}</${h}>` +
-        `<span class="dgroup__count">${plural(docs.length, "page", "pages")}</span></header>` +
+        `<span class="dgroup__count">${group.retired ? `<span class="retired__tag">Retired</span>` : ""}${plural(docs.length, "page", "pages")}</span></header>` +
         `<ol class="dgroup__list">${docs.map(docLink).join("")}</ol>` +
         `</section>`,
       )

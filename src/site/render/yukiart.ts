@@ -36,6 +36,20 @@ export function ringCells(cx: number, cy: number, r: number): [number, number][]
   return out.filter(([a, b]) => (seen.has(`${a},${b}`) ? false : (seen.add(`${a},${b}`), true)));
 }
 
+/**
+ * A filled pixel disc: every row a midpoint circle of radius r spans, one rectangle a row. Her orb's glow is three of
+ * these, stepped in whole cells like the ring (a smooth circle's edge would step in screen pixels, off her grid).
+ */
+export function discPath(cx: number, cy: number, r: number, fill: string, extra = ""): string {
+  const rows = new Map<number, [number, number]>();
+  for (const [x, y] of ringCells(cx, cy, r)) {
+    const e = rows.get(y);
+    rows.set(y, e ? [Math.min(e[0], x), Math.max(e[1], x)] : [x, x]);
+  }
+  const d = [...rows].sort(([a], [b]) => a - b).map(([y, [a, b]]) => `M${a} ${y}h${b - a + 1}v1h${a - b - 1}z`).join("");
+  return `<path fill="${fill}"${extra} d="${d}"/>`;
+}
+
 /** Cells as one path (one rectangle each). */
 const cellsPath = (cells: readonly (readonly [number, number])[], fill: string, extra = ""): string =>
   cells.length ? `<path fill="${fill}"${extra} d="${cells.map(([x, y]) => `M${x} ${y}h1v1h-1z`).join("")}"/>` : "";
@@ -112,7 +126,7 @@ export function yukiStage(o: StageOptions): string {
   s += cellsPath(dim, "#5a6aa8") + cellsPath(stars, "#cfe9ff");
   // her orb: a stepped glow and a two-tone ring
   if (o.ring !== false && o.yuki !== null) {
-    const glow = [ORB, ORB - 3, ORB - 6].map((rad, i) => `<circle cx="${head[0] + 0.5}" cy="${head[1] + 0.5}" r="${rad}" fill="${RING.glow}" opacity="${[0.07, 0.08, 0.1][i]}"/>`).join("");
+    const glow = [ORB, ORB - 3, ORB - 6].map((rad, i) => discPath(head[0], head[1], rad, RING.glow, ` opacity="${[0.07, 0.08, 0.1][i]}"`)).join("");
     s += `<g class="ykstage__ring" style="--hx:${head[0] + 0.5}px;--hy:${head[1] + 0.5}px">${glow}${cellsPath(ringCells(head[0], head[1], ORB), RING.outer)}${cellsPath(ringCells(head[0], head[1], ORB - 1), RING.inner, ' opacity="0.85"')}</g>`;
   }
   // ice shards: either side of her, seeded heights and places

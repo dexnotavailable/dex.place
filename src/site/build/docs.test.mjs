@@ -75,8 +75,8 @@ test("docs sort by group, then order, then title; unknown groups fail the build"
     "e.md": "---\ntitle: E\ngroup: dexcode\n---\n",
   });
   const docs = loadEntries(dir, "docs");
-  assert.deepEqual(docs.map((d) => d.slug), ["e", "c", "a", "b", "d"]);
-  assert.deepEqual(groupedDocs(docs).map((g) => g.group.id), ["dexcode", "dexclient", "dex-place", "other"]);
+  assert.deepEqual(docs.map((d) => d.slug), ["b", "e", "c", "a", "d"]);
+  assert.deepEqual(groupedDocs(docs).map((g) => g.group.id), ["dex-place", "dexcode", "dexclient", "other"]);
   const bad = fixture({ "x.md": "---\ntitle: X\ngroup: dexclinet\n---\n" });
   assert.throws(() => loadEntries(bad, "docs"), /group "dexclinet"/);
 });
@@ -153,6 +153,12 @@ test("YUKI's docs replace dexCode's and dexClient's (Dex 10-26): its group first
   const yuki = content.docs.filter((d) => d.group === "yuki").map((d) => d.slug);
   assert.deepEqual(yuki, ["yuki", "installing-yuki"]);
   assert.equal(groupedDocs(content.docs)[0].group.id, "yuki");
+  // the retired projects' docs stay for people who have them: last, tagged
+  const order = groupedDocs(content.docs).map((g) => g.group.id);
+  assert.deepEqual(order, ["yuki", "dex-place", "dexcode", "dexclient"]);
+  const index = render("/docs/").body;
+  for (const id of ["dexcode", "dexclient"]) assert.match(index, new RegExp(`<section class="dgroup dgroup--\\w+ dgroup--retired" aria-labelledby="g-${id}">[^]*?<span class="retired__tag">Retired</span>`), id);
+  assert.doesNotMatch(index, /<section class="dgroup dgroup--\w+ dgroup--retired" aria-labelledby="g-yuki">/);
   assert.equal(START_DOC, "installing-yuki");
   const install = fs.readFileSync(path.join(ROOT, "content/docs/installing-yuki.md"), "utf8");
   for (const h of ["## Download", "## Run the setup", "## Uninstalling"]) assert.ok(install.includes(h), h);
