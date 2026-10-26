@@ -1,0 +1,436 @@
+/* YUKI on dex.place (Dex 10-26, YUKI docs/build/PHASE2-SCOPE.md W12): pixel Yuki (yuki-sprite.ts), her snowy stage
+   (render/yukiart.ts), its block on Downloads, the retired line, and her page /yuki/ (render/yuki.ts). Motion:
+   motion/yuki.ts. Everything here is made with code; every idle steps on whole pixels, rests off screen (.is-off) and
+   holds still under reduced motion. */
+
+/* ================================================================== pixel Yuki
+   One layer of each kind shows: the eyes and mouth her data attributes name, ahoge frame 0. Idle (motion welcome): a
+   blink every few seconds (--blink, seeded per stage), the ahoge sways, she bobs one pixel. A glance is the eye layer
+   moved one pixel sideways (--gx, motion/yuki.ts). Units inside the SVG are her pixels. */
+.yk { display: block; overflow: visible; image-rendering: pixelated; }
+.yk .yk__e, .yk .yk__m, .yk .yk__ahoge--1 { display: none; }
+.yk[data-eyes="open"] .yk__e--open, .yk[data-eyes="blink"] .yk__e--blink, .yk[data-eyes="happy"] .yk__e--happy,
+.yk[data-eyes="sleepy"] .yk__e--sleepy { display: inline; }
+.yk[data-mouth="calm"] .yk__m--calm, .yk[data-mouth="smile"] .yk__m--smile, .yk[data-mouth="talk"] .yk__m--talk { display: inline; }
+.yk__eyes { translate: calc(var(--gx, 0) * 1px) 0; transition: translate 90ms steps(1, end); }
+@media (prefers-reduced-motion: no-preference) {
+  .yk[data-eyes="open"] .yk__e--open { animation: yk-open var(--blink, 4.7s) steps(1, end) infinite; }
+  .yk[data-eyes="open"] .yk__e--blink { display: inline; visibility: hidden; animation: yk-shut var(--blink, 4.7s) steps(1, end) infinite; }
+  .yk .yk__ahoge--0 { animation: yk-ah0 2.6s steps(1, end) infinite; }
+  .yk .yk__ahoge--1 { display: inline; visibility: hidden; animation: yk-ah1 2.6s steps(1, end) infinite; }
+  .yk .yk__body { animation: yk-bob 2.6s steps(1, end) infinite; }
+  .yk[data-eyes="sleepy"] .yk__body { animation-duration: 4.4s; }
+}
+@keyframes yk-open { 0%, 93% { visibility: visible; } 94%, 97% { visibility: hidden; } 98%, 100% { visibility: visible; } }
+@keyframes yk-shut { 0%, 93% { visibility: hidden; } 94%, 97% { visibility: visible; } 98%, 100% { visibility: hidden; } }
+@keyframes yk-ah0 { 0%, 49% { visibility: visible; } 50%, 100% { visibility: hidden; } }
+@keyframes yk-ah1 { 0%, 49% { visibility: hidden; } 50%, 100% { visibility: visible; } }
+@keyframes yk-bob { 0%, 49% { translate: 0 0; } 50%, 100% { translate: 0 1px; } }
+
+/* ================================================================== the stage
+   svg.ykstage: one unit a cell. Where round() is known, a cell is a whole number of screen pixels and the stage covers
+   its container from the bottom middle (crisp); elsewhere the SVG covers it by itself (slice). */
+.ykstage { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+@supports (width: round(up, 1.5px, 1px)) {
+  .ykstage {
+    --u: round(up, max(100cqh / var(--rows), 100cqw / var(--cols)), 1px);
+    left: 50%;
+    top: auto;
+    bottom: 0;
+    width: calc(var(--cols) * var(--u));
+    height: calc(var(--rows) * var(--u));
+    translate: -50% 0;
+  }
+}
+.ykstage__her { transform-origin: var(--hx) var(--hy); }
+.ykstage__ring { transform-origin: var(--hx) var(--hy); }
+@media (prefers-reduced-motion: no-preference) {
+  .ykstage__shard { animation: yk-shard 3.4s steps(1, end) calc(var(--i, 0) * -0.9s) infinite; }
+  .ykstage__flake { animation: yk-twinkle 5.2s steps(1, end) calc(var(--i, 0) * -1.7s) infinite; }
+  .ykstage__ring { animation: yk-ring 3.6s steps(1, end) infinite; }
+}
+@keyframes yk-shard { 0%, 49% { translate: 0 0; } 50%, 100% { translate: 0 -1px; } }
+@keyframes yk-twinkle { 0%, 70% { opacity: 1; } 71%, 80% { opacity: 0.35; } 81%, 100% { opacity: 1; } }
+@keyframes yk-ring { 0%, 59% { opacity: 1; } 60%, 79% { opacity: 0.8; } 80%, 100% { opacity: 1; } }
+
+/* snow in front: each flake is a full-height column with its 3 px pixel at the top, dropped in whole steps */
+.ykfx { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+.ykfx i {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(#fff, #fff) 0 0 / 3px 3px no-repeat;
+  translate: 0 -6%;
+  opacity: 0.9;
+}
+.ykfx i.is-big { width: 6px; background-size: 6px 6px; opacity: 0.75; }
+@media (prefers-reduced-motion: no-preference) {
+  .ykfx i { animation: yk-fall var(--d, 9s) steps(40, end) var(--t, 0s) infinite; }
+}
+@keyframes yk-fall { from { translate: 0 -6%; } to { translate: calc(var(--w, 0) * 36px) 102%; } }
+
+/* the art box in a card, a banner's hero window, a block (render/yukiart.ts yukiArt; .cart gives the clip and size) */
+.ykart { background: #22306e; }
+.ykart .cart__num { z-index: 1; }
+.ykart__stage--her .ykstage { z-index: 2; }
+
+/* the banner's back layer: her night instead of Dex's plate */
+.ykback { position: absolute; inset: 0; display: block; overflow: hidden; container-type: size; background: #161a45; }
+
+/* whatever plays, rests while its banner or stage is off screen (motion/pbanner.ts, motion/yuki.ts) */
+:is(.pban__in, [data-yuki-stage], .dlf, .ss).is-off :is(.yk *, .ykstage *, .ykfx i, .ss *) { animation-play-state: paused; }
+
+/* ================================================================== YUKI on Downloads (render/downloads.ts) */
+.dlf__art--yuki { position: relative; min-height: 300px; overflow: hidden; border-right: var(--bw) solid var(--ink); background: #22306e; }
+.dlf__art--yuki .ykart { position: absolute; inset: 0; }
+.dlf__tag, .dlf__zz { position: absolute; z-index: 3; line-height: 0; }
+.dlf__tag {
+  right: 12px;
+  top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--mint);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font: 400 1rem / 1 var(--f-label);
+  letter-spacing: 0.08em;
+}
+.dlf__zz { right: 22px; top: 18px; display: flex; align-items: flex-end; gap: 2px; color: #dff7ff; font: 400 25px / 1 var(--f-title); line-height: 1; }
+.dlf__zz i { font-style: normal; }
+.dlf__zz i:nth-child(1) { font-size: 25px; }
+.dlf__zz i:nth-child(2) { translate: 0 -10px; }
+.dlf__zz i:nth-child(3) { font-size: 50px; translate: 0 -18px; }
+@media (prefers-reduced-motion: no-preference) {
+  .dlf__zz i { animation: yk-zz 3s steps(1, end) calc(var(--z, 0) * 1s) infinite; }
+  .dlf__zz i:nth-child(2) { --z: 0.33; }
+  .dlf__zz i:nth-child(3) { --z: 0.66; }
+}
+@keyframes yk-zz { 0%, 32% { opacity: 0; } 33%, 100% { opacity: 1; } }
+.dlf__guide { margin: 0; }
+.dlf[data-yuki="none"] .dlf__cta { margin-top: 4px; }
+.dlg__more { margin: 12px 0 0; }
+@media (max-width: 699px) {
+  /* phones keep her: a short strip on top of the block instead of the drawn file */
+  .dlf[data-yuki] { grid-template-columns: 1fr; }
+  .dlf[data-yuki] .dlf__art--yuki { display: block; min-height: 180px; border-right: 0; border-bottom: var(--bw) solid var(--ink); }
+  .dlf[data-yuki] .dlf__badge { display: none; }
+}
+
+/* ================================================================== the retired line (Dex 10-26) */
+.retired {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+.retired__tag {
+  padding: 3px 6px 2px;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  font: 400 1rem / 1 var(--f-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.retired__at { scroll-margin-top: calc(var(--hdr-h) + 120px); }
+.retired--projects { position: relative; z-index: 4; margin-top: var(--s-5); }
+.retired--downloads { padding: 2px 0; }
+.retired--page { margin: var(--s-6) 0 var(--s-4); font-size: 1.25rem; }
+
+/* ================================================================== /yuki/ */
+.page--yuki { padding-bottom: var(--s-8); }
+.page--yuki .wrap { display: grid; gap: clamp(56px, 8vw, 104px); }
+
+/* ---- the stage block: an ink banner with her night on the right, a cyan plate behind */
+.ykh { position: relative; isolation: isolate; margin-top: var(--s-6); }
+.ykh__plate { position: absolute; inset: 0; z-index: -1; background: var(--cyan); border: 2px solid var(--ink); translate: 12px 12px; }
+.ykh__box {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  min-height: clamp(420px, 40vw, 540px);
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  color: #fff;
+}
+.ykh__box::after { content: ""; position: absolute; inset: 4px; z-index: 3; pointer-events: none; box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.8); }
+.ykh__text { position: relative; z-index: 2; display: grid; align-content: center; justify-items: start; gap: 14px; padding: clamp(24px, 4vw, 52px); grid-column: 1; grid-row: 1; }
+.ykh__stage {
+  --cols: 72;
+  --rows: 50;
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  overflow: hidden;
+  container-type: size;
+  background: #22306e;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ykh__art { position: absolute; inset: 0; }
+.ykh__kicker { width: 100%; color: #fff; }
+.ykh__kicker .dh__crumbs a { color: #fff; text-decoration-color: rgb(255 255 255 / 0.5); }
+.ykh__kicker .dh__rule { background: rgb(255 255 255 / 0.3); }
+.ykh__kicker .dh__aside { color: rgb(255 255 255 / 0.85); }
+.ykh__title {
+  margin: 4px 0 0;
+  font: 400 100px / 1 var(--f-title);
+  letter-spacing: 6px;
+  color: #fff;
+  text-shadow: 4px 0 0 var(--ink), -4px 0 0 var(--ink), 0 4px 0 var(--ink), 0 -4px 0 var(--ink), 8px 8px 0 var(--azure);
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+}
+.ykh__line { margin: 0; font-size: 1.25rem; line-height: 1.5; color: rgb(255 255 255 / 0.92); max-width: 26ch; }
+.ykh__chips { margin: 0; }
+.ykh__chips .chip { border-color: #fff; }
+.ykh__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 6px; }
+.ykh .btn--paper { --btn-edge: #fff; }
+.ykh__soon { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border: 2px dashed rgb(255 255 255 / 0.6); font: 400 1rem / 1 var(--f-label); letter-spacing: 0.06em; text-transform: uppercase; }
+.ykh__soon .dl-state__dot { background: var(--gold); }
+.ykh__file { margin: 0; font-size: 1rem; color: rgb(255 255 255 / 0.75); }
+.ykh__file code { font: 400 1rem / 1.3 var(--f-mono); color: #fff; }
+.ykh__file .link { color: var(--cyan); white-space: nowrap; }
+.ykh__after:empty { display: none; }
+.ykh__after {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  max-width: 36ch;
+  background: rgb(255 255 255 / 0.1);
+  border-left: 4px solid var(--mint);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.ykh__snow { z-index: 1; }
+.ykh__stage { z-index: 0; }
+
+/* her face in a tile (the facts, the steps): her bust from the chin up */
+.yktile { place-items: end center; overflow: hidden; background: #22306e; }
+.yktile .yk { width: 32px; height: 32px; margin-bottom: -4px; }
+.tile--s.yktile .yk { margin-bottom: -6px; }
+
+/* her speech bubble: a pixel balloon above her orb, its tail pointing down at her (a cell is --u there too) */
+.ykh__say {
+  --u: 8px;
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: calc(35 * var(--u));
+  margin: 0;
+  padding: 10px 14px 9px;
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  font: 400 1rem / 1.25 var(--f-px);
+  white-space: nowrap;
+  pointer-events: none;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+}
+@supports (width: round(up, 1.5px, 1px)) {
+  .ykh__say { --u: round(up, max(100cqh / var(--rows), 100cqw / var(--cols)), 1px); }
+}
+.ykh__say::before, .ykh__say::after { content: ""; position: absolute; left: calc(50% - 6px); top: 100%; width: 12px; height: 8px; background: var(--ink); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.ykh__say::after { left: calc(50% - 3px); top: calc(100% - 2px); width: 6px; height: 5px; background: #fff; }
+
+/* the burst when she hatches: eight pixels flying out from her head */
+.ykh__burst { position: absolute; left: 50%; bottom: 34%; width: 0; height: 0; z-index: 3; pointer-events: none; }
+.ykh__burst i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; background: #fff; box-shadow: 0 0 0 2px #34e1ff; opacity: 0; }
+.ykh__burst i:nth-child(even) { left: -3px; top: -3px; width: 6px; height: 6px; background: #34e1ff; box-shadow: none; }
+/* the flash as the orb opens: a pixel octagon of light */
+.ykh__burst::before {
+  content: "";
+  position: absolute;
+  left: -80px;
+  top: -80px;
+  width: 160px;
+  height: 160px;
+  background: #dff7ff;
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  opacity: 0;
+}
+
+/* the hatch (once, when motion is welcome and scripts run): her orb's ring grows in steps, a flash, she pops up, the
+   pixels fly, then she says hi */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-hatch] .ykstage__ring { animation: yk-ring-in 520ms steps(6, end) 80ms both, yk-ring 3.6s steps(1, end) 900ms infinite; }
+  html.js [data-hatch] .ykstage__her { animation: yk-pop 720ms cubic-bezier(.3, 1.6, .5, 1) 420ms both; }
+  html.js [data-hatch] .ykh__burst i { animation: yk-burst 760ms steps(8, end) calc(540ms + var(--i) * 18ms) both; }
+  html.js [data-hatch] .ykh__burst::before { animation: yk-flash 420ms steps(4, end) 470ms both; }
+  html.js .ykh__say { animation: yk-say 360ms cubic-bezier(.3, 1.5, .5, 1) 1250ms both; }
+  .ykh__say.is-new { animation: yk-say 300ms cubic-bezier(.3, 1.5, .5, 1) both; }
+  .ykstage__her.is-hop { animation: yk-hop 420ms steps(6, end); }
+}
+@keyframes yk-ring-in { from { scale: 0.1; opacity: 0; } 40% { opacity: 1; } to { scale: 1; opacity: 1; } }
+@keyframes yk-pop {
+  0% { translate: 0 10px; scale: 0.55; opacity: 0; }
+  50% { translate: 0 -2px; scale: 1.06 0.95; opacity: 1; }
+  75% { translate: 0 0; scale: 0.97 1.03; }
+  100% { translate: 0 0; scale: 1; opacity: 1; }
+}
+@keyframes yk-burst {
+  0% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; translate: calc(cos(var(--i) * 45deg + 22deg) * 170px) calc(sin(var(--i) * 45deg + 22deg) * -150px); }
+}
+@keyframes yk-flash { 0% { opacity: 0; scale: 0.3; } 25% { opacity: 0.9; scale: 0.8; } 100% { opacity: 0; scale: 1.4; } }
+@keyframes yk-say { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
+@keyframes yk-hop { 0%, 100% { translate: 0 0; } 33% { translate: 0 -3px; } 66% { translate: 0 -1px; } }
+
+/* the page after the Download click (motion/yuki.ts): the guide is where the page is */
+.page--yuki[data-stage="guide"] .ykstep[data-step="1"] .ykstep__tick { display: grid; }
+.page--yuki[data-stage="guide"] .ykstep[data-step="2"] { background: var(--mint-t); box-shadow: 6px 6px 0 var(--mint); }
+
+/* ---- the section heads on the page */
+.yks__h { display: flex; align-items: center; gap: 12px; margin: 0 0 var(--s-5); font: 400 2rem / 1.1 var(--f-px); }
+.yks__h .sub__aside { margin-left: auto; font: 400 1rem / 1 var(--f-label); letter-spacing: 0.08em; color: var(--muted); }
+.yks__note { display: flex; gap: 10px; align-items: flex-start; margin: var(--s-4) 0 0; color: var(--fg-2); }
+.yks__note .px { flex: none; margin-top: 4px; color: var(--azure); }
+
+/* ---- what she does: four tiles */
+.ykfacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.ykfact { display: grid; align-content: start; gap: 10px; padding: 18px; background: var(--panel); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.ykfact__t { margin: 4px 0 0; font: 400 1.375rem / 1.2 var(--f-px); }
+.ykfact__p { margin: 0; color: var(--fg-2); }
+
+/* ---- the tiers: a stat sheet, one card a class of PC, its rank on a tone plate */
+.yktiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 18px; margin: 0; padding: 0; list-style: none; counter-reset: none; }
+.yktier {
+  --t: var(--cyan);
+  --t-d: var(--azure);
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 18px 18px 20px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--t);
+}
+.yktier--magenta { --t: var(--magenta); --t-d: var(--scarlet); }
+.yktier--mint { --t: var(--mint); --t-d: var(--mint-d); }
+.yktier--yellow { --t: var(--gold); --t-d: var(--yellow-d); }
+.yktier__rank {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--t);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--t);
+  font: 400 50px / 1 var(--f-title);
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+}
+.yktier__name { margin: 6px 0 0; font: 400 1.375rem / 1.2 var(--f-px); }
+.yktier__pc { margin: 0; color: var(--fg-2); }
+.yktier__gets { display: flex; gap: 8px; margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
+.yktier__gets .px { flex: none; margin-top: 6px; color: var(--t-d); }
+
+/* ---- the install guide: numbered steps down a rail */
+.yks--install { scroll-margin-top: calc(var(--hdr-h) + 16px); outline: none; }
+.yksteps { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.ykstep {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: background-color 300ms var(--ease-out), box-shadow 300ms var(--ease-out);
+}
+.ykstep__no { position: relative; display: grid; place-items: center; width: 56px; height: 56px; background: var(--ink); color: #fff; font: 400 25px / 1 var(--f-title); }
+.ykstep__tick { position: absolute; right: -14px; bottom: -12px; display: none; place-items: center; width: 28px; height: 28px; background: var(--mint); color: var(--ink); border: 2px solid var(--ink); }
+.ykstep__body { display: grid; gap: 8px; min-width: 0; }
+.ykstep__t { display: flex; align-items: center; gap: 10px; margin: 0; font: 400 1.375rem / 1.2 var(--f-px); }
+.ykstep__p { margin: 0; color: var(--fg-2); }
+@media (max-width: 559px) {
+  .ykstep { grid-template-columns: 1fr; }
+  .ykstep__no { width: 44px; height: 44px; }
+}
+
+/* ---- the Windows prompt, drawn (render/yuki.ts smartScreen): two faces side by side, a pixel cursor tapping each */
+.ss { margin: 10px 0 0; }
+.ss__pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 12px; }
+.ss__arrow { align-self: center; color: var(--ink); line-height: 0; }
+.ss__win {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 220px;
+  padding: 18px 18px 16px;
+  background: #1563b0;
+  color: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  overflow: hidden;
+}
+.ss__no { position: absolute; right: 10px; top: 8px; margin: 0; font: 400 25px / 1 var(--f-title); color: rgb(255 255 255 / 0.35); }
+.ss__title { margin: 0; font: 400 1.25rem / 1.2 var(--f-px); }
+.ss__lines { display: grid; gap: 6px; }
+.ss__lines i { display: block; height: 6px; background: rgb(255 255 255 / 0.45); }
+.ss__lines i:nth-child(2) { width: 86%; }
+.ss__lines i:nth-child(3) { width: 58%; }
+.ss__more { margin: 0; }
+.ss__more .ss__target { text-decoration: underline; text-underline-offset: 3px; }
+.ss__app { margin: 0; font-size: 0.95rem; line-height: 1.5; color: rgb(255 255 255 / 0.85); overflow-wrap: anywhere; }
+.ss__app span { color: #fff; }
+.ss__btns { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin: auto 0 0; }
+.ss__btn { padding: 6px 12px 5px; background: rgb(255 255 255 / 0.12); border: 2px solid rgb(255 255 255 / 0.85); font-size: 0.95rem; white-space: nowrap; }
+.ss__btn--go { background: #fff; color: #1563b0; }
+.ss__target { position: relative; }
+.ss__cursor { position: absolute; z-index: 2; line-height: 0; color: #fff; filter: drop-shadow(2px 2px 0 var(--ink)); pointer-events: none; }
+.ss__cursor--a { left: 64px; top: 128px; }
+.ss__cursor--b { right: 74px; bottom: 6px; }
+.ss__tap { position: absolute; left: -6px; top: -6px; width: 14px; height: 14px; border: 2px solid var(--gold); opacity: 0; }
+.ss__cap { display: flex; align-items: flex-end; gap: 12px; margin-top: 14px; color: var(--fg-2); }
+.ss__cap b { color: var(--fg); font-weight: 400; }
+.ss__peek { flex: none; line-height: 0; }
+@media (max-width: 759px) {
+  .ss__pair { grid-template-columns: 1fr; }
+  .ss__arrow { justify-self: center; rotate: 90deg; }
+}
+/* the taps: cursor 1 slides to "More info" and taps, then cursor 2 to "Run anyway" (7.2 s, while in view) */
+@media (prefers-reduced-motion: no-preference) {
+  .ss__cursor--a { animation: ss-a 7.2s steps(14, end) infinite; }
+  .ss__cursor--b { animation: ss-b 7.2s steps(14, end) infinite; }
+  .ss__cursor--a .ss__tap { animation: ss-tap-a 7.2s steps(1, end) infinite; }
+  .ss__cursor--b .ss__tap { animation: ss-tap-b 7.2s steps(1, end) infinite; }
+  .ss__win--a { animation: ss-dim-a 7.2s steps(1, end) infinite; }
+  .ss__win--b { animation: ss-dim-b 7.2s steps(1, end) infinite; }
+}
+@keyframes ss-a { 0% { translate: 90px 40px; opacity: 0; } 8% { opacity: 1; } 30%, 50% { translate: 0 0; opacity: 1; } 56%, 100% { translate: 0 0; opacity: 0; } }
+@keyframes ss-b { 0%, 50% { translate: 80px 50px; opacity: 0; } 58% { opacity: 1; } 80%, 96% { translate: 0 0; opacity: 1; } 100% { translate: 0 0; opacity: 0; } }
+@keyframes ss-tap-a { 0%, 33% { opacity: 0; scale: 0.4; } 34%, 40% { opacity: 1; scale: 1.4; } 41%, 100% { opacity: 0; } }
+@keyframes ss-tap-b { 0%, 83% { opacity: 0; } 84%, 90% { opacity: 1; scale: 1.4; } 91%, 100% { opacity: 0; } }
+@keyframes ss-dim-a { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.55; } }
+@keyframes ss-dim-b { 0%, 49% { opacity: 0.55; } 50%, 100% { opacity: 1; } }
+/* reduced motion: both cursors rest on their targets */
+@media (prefers-reduced-motion: reduce) {
+  .ss__cursor { opacity: 1; }
+}
+
+/* ---- the live link (data/yuki.ts YUKI_LINK; only in the page when switched on) */
+.yklink { display: flex; align-items: center; gap: 10px; margin-top: var(--s-5); padding: 12px 14px; background: var(--cyan-t); border: 2px solid var(--ink); }
+.yklink__dot { width: 10px; height: 10px; background: var(--gold); }
+.yklink[data-state="ready"] .yklink__dot { background: var(--mint); }
+.yklink__text { margin: 0; }
+
+/* ---- phones and tablets: the stage on top, the words under it */
+@media (max-width: 899px) {
+  .ykh__box { grid-template-columns: 1fr; min-height: 0; }
+  .ykh__stage { grid-column: 1; grid-row: 1; height: clamp(240px, 62vw, 380px); border-bottom: 2px solid var(--ink); }
+  .ykh__text { grid-row: 2; padding: 20px 18px 24px; }
+  .ykh__title { font-size: 50px; letter-spacing: 3px; text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 4px 4px 0 var(--azure); }
+  .ykh__plate { translate: 8px 8px; }
+}

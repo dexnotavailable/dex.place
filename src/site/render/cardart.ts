@@ -18,6 +18,7 @@ import { existsSync, readFileSync } from "node:fs";
 import type { Project } from "../data/projects.ts";
 import { normaliseRig, type RigPartV2, type RigV2 } from "../motion/rig-read.ts";
 import { esc } from "./html.ts";
+import { yukiArt } from "./yukiart.ts";
 
 export type { RigMotion, RigPartV2, RigV2 } from "../motion/rig-read.ts";
 
@@ -143,6 +144,17 @@ export function popArt(p: Project): string {
 }
 
 export function cardArt(p: Project, className?: string, extras: CardArtExtras = {}): string {
+  // art made with code (YUKI, Dex 10-26): its own stage, a picture only where the rig's would be one
+  if (p.art.code === "yuki") {
+    const picture = !extras.card && !extras.decor && p.art.alt;
+    return yukiArt({
+      ...(className ? { className } : {}),
+      ...(picture ? { label: `${p.art.alt}${p.art.credit ? ` ${p.art.credit}.` : ""}` } : {}),
+      ...(extras.numeral !== undefined ? { numeral: extras.numeral } : {}),
+      ...(extras.card ? { card: true } : {}),
+      seed: `${p.id}-${className ?? "card"}`,
+    });
+  }
   const rig = rigOf(p);
   if (rig) return rigArt(p, rig, className, extras);
   const { w, h, layers } = p.art;

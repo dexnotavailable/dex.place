@@ -11,7 +11,8 @@ import { downloads } from "./data/downloads.ts";
 const content = { docs: [], posts: [], gallery: [] };
 
 test("card art (Dex 10-19): every project's layers fill its card, back to front, lazily, decorative, and the files exist", () => {
-  for (const p of projects.filter((q) => !q.art.rig)) {
+  // (art drawn in code has no layers on disk: YUKI's, yuki.test.mjs)
+  for (const p of projects.filter((q) => !q.art.rig && !q.art.code)) {
     const html = cardArt(p);
     assert.match(html, /^<div class="cart" aria-hidden="true" style="--aw:\d+;--ah:\d+">/);
     const imgs = [...html.matchAll(/<img class="cart__l" data-depth="(\d)" src="([^"]+)" alt="" width="(\d+)" height="(\d+)" loading="lazy" decoding="async"/g)];
@@ -41,6 +42,7 @@ test("home cards: every project leads to its page, its docs and the one action t
     const entry = downloads.find((d) => d.id === p.id);
     if (entry?.file) assert.ok(cardHtml.includes(`href="${entry.file.href}" download`), `${p.id} direct file`);
     else if (entry?.installedBy) assert.ok(cardHtml.includes(`href="#${entry.installedBy}"`), `${p.id} points at its installer`);
+    else if (entry?.guide) assert.ok(cardHtml.includes(`href="${entry.guide}"`) && cardHtml.includes(`Meet ${p.hero}`), `${p.id}: not out yet, meet her on her page`);
     else assert.ok(cardHtml.includes(`href="#world"`), `${p.id} leads up to the world`);
   }
 });
@@ -168,7 +170,7 @@ test("the seam (DESIGN-1019 7.1): the cards live in their own files, the deck ke
 });
 
 test("the card's DOM (DESIGN-1019 5.2): one owner per wrapper, the hero accents, chrome, foot and the numeral in the art", async () => {
-  const heroes = { dexcode: ["Yuki", "cyan"], dexclient: ["Bao", "yellow"], "dex-place": ["Zhusha", "magenta"] };
+  const heroes = { yuki: ["Yuki", "cyan"], "dex-place": ["Zhusha", "magenta"] };
   for (const p of projects) {
     assert.deepEqual([p.hero, p.tone], heroes[p.id], `${p.id}: hero and accent`);
     // (the cards since Dex 10-22: a project page's "other projects")
@@ -181,7 +183,12 @@ test("the card's DOM (DESIGN-1019 5.2): one owner per wrapper, the hero accents,
     assert.match(li, /<\/article><\/div><\/div><\/div><span class="pcard__ground" aria-hidden="true"><\/span><\/li>$/);
     // the art: the back parts, the numeral, the figure; then the scrim, glare and shine
     const no = String(projects.indexOf(p) + 1).padStart(2, "0");
-    assert.match(li, new RegExp(`<div class="cart__art"><div class="rig__box">.*</div><span class="cart__num">${no}</span><div class="rig__box">.*</div></div><span class="cart__scrim"></span><span class="cart__glare"></span><span class="cart__shine"></span></div>`));
+    if (p.art.code) {
+      // drawn in code (YUKI): her night, the numeral, then her; the snow; the scrim, glare and shine
+      assert.match(li, new RegExp(`<div class="ykart__stage"><svg class="ykstage".*</svg></div><span class="cart__num">${no}</span><div class="ykart__stage ykart__stage--her"><svg class="ykstage".*</svg></div><span class="ykfx" aria-hidden="true">.*</span><span class="cart__scrim"></span><span class="cart__glare"></span><span class="cart__shine"></span></div>`));
+    } else {
+      assert.match(li, new RegExp(`<div class="cart__art"><div class="rig__box">.*</div><span class="cart__num">${no}</span><div class="rig__box">.*</div></div><span class="cart__scrim"></span><span class="cart__glare"></span><span class="cart__shine"></span></div>`));
+    }
     // chrome: the number chip and the platform, the caption (decorative), four brackets
     assert.match(li, new RegExp(`<span class="pcard__no" aria-hidden="true">${no}</span><p class="pcard__plat">${p.platform}</p>`));
     assert.ok(li.includes(`<span class="pcard__cap" aria-hidden="true">${`${p.hero} // ${p.name}`.toUpperCase()}</span>`));

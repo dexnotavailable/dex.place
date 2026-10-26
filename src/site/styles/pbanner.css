@@ -179,9 +179,32 @@
 /* the others dim while one banner is pointed at */
 .pban__b::before { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; background: var(--ink); opacity: 0; transition: opacity 300ms cubic-bezier(.33, 1, .68, 1); }
 
+/* ---- Dex 10-26: YUKI leads (a taller strip, a bigger name), the dex.place world sits smaller below it. The list's
+   place for each (its width) is G's, styles/bands.css and landing.css. */
+.pban--lead .pban__lift { --ban-h: clamp(260px, 38cqw, 440px); }
+.pban--minor .pban__lift { --ban-h: clamp(200px, 24cqw, 260px); --pad: clamp(16px, 2cqw, 24px); }
+.pban--minor .pban__num { --np: 4px; font-size: 100px; }
+@container pban (min-width: 700px) {
+  .pban--lead .pban__b .pban__name { font-size: 56px; }
+}
+@container pban (min-width: 900px) {
+  .pban--lead .pban__b .pban__name { font-size: 64px; }
+  .pban--minor .pban__b .pban__name { font-size: 32px; }
+}
+@container pban (min-width: 1000px) {
+  .pban--lead .pban__num { --np: 10px; font-size: 250px; }
+  .pban--minor .pban__num { --np: 6px; font-size: 150px; }
+}
+@container pban (max-width: 559px) {
+  .pban--lead .pban__lift { --ban-h: 220px; }
+  .pban--minor .pban__lift { --ban-h: 150px; }
+}
+/* YUKI's code-drawn layers: her night fills the plate's box, the snow falls in front of the hero too */
+.pban__bk .ykback { inset: 0; }
+.pban__snow { z-index: 0; }
+.pban__hero .ykart { background: #22306e; }
+
 /* ---- per banner: where its plate and fx sit in their frame */
-.pban[data-pcard="dexcode"] { --bk-at: 62% 46%; --fx-at: 70% 40%; }
-.pban[data-pcard="dexclient"] { --bk-at: 64% 30%; }
 .pban[data-pcard="dex-place"] { --bk-at: 50% 30%; }
 
 /* ---- phones (a narrow banner): the art strip on top (168 tall), the words under it on the ink */

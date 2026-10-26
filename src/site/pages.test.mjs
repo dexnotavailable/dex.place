@@ -2,6 +2,7 @@
 // kit on white; each reading page looks onto one place of the world through one window; the stubs say what works
 // until they open, linking only pages that exist; the code on a doc reads on its pale well (WCAG AA).
 import { test } from "node:test";
+import { RETIRED } from "./data/downloads.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -124,11 +125,25 @@ test("code on a doc reads on its pale well: ink and every syntax colour pass WCA
 });
 
 test("a project's own page: the deep pages' kicker leads back to /projects/ and counts its place", () => {
-  for (const r of list.filter((x) => /^\/projects\/[^/]+\/$/.test(x.path))) {
+  // (the retired projects' old addresses are not project pages: their own test is below)
+  const retired = new Set(RETIRED.map((r) => `/projects/${r.id}/`));
+  for (const r of list.filter((x) => /^\/projects\/[^/]+\/$/.test(x.path) && !retired.has(x.path))) {
     const html = r.render().body;
     assert.match(html, /<nav class="dh__crumbs" aria-label="Breadcrumb"><a href="\/projects\/">Projects<\/a><\/nav>/, r.path);
     assert.match(html, /class="counter dh__aside"><b>0\d<\/b>/, r.path);
     assert.doesNotMatch(html, /class="crumbs"/, `${r.path}: no second breadcrumb row`);
+  }
+});
+
+test("retired projects (Dex 10-26): their old pages stay, say so in one line, point at YUKI, and stay out of search", () => {
+  for (const r of RETIRED) {
+    const route = list.find((x) => x.path === `/projects/${r.id}/`);
+    assert.ok(route, r.id);
+    const { head, body } = route.render();
+    assert.match(head, /<meta name="robots" content="noindex" \/>/);
+    assert.match(body, new RegExp(`<span class="retired__tag">Retired</span><span>${r.name} is retired\. YUKI replaces it\.</span>`));
+    assert.match(body, /<a class="btn [^"]*" href="\/yuki\/"><span class="btn__label">Meet YUKI<\/span>/);
+    assert.equal(body.match(/<h1[\s>]/g).length, 1);
   }
 });
 

@@ -32,6 +32,35 @@ loads last and re-tones them):
   design is greenlit; her sheet drops into `--hanko-sheet`).
 - **Stubs** that open later: /support/, /account/, /map/, /forums/ and /gallery/#commissions (render/stubs.ts).
 
+## YUKI (2026-10-26): the lead project, made with code
+
+Dex, 10-26 (YUKI's `docs/build/PHASE2-SCOPE.md` W12): YUKI replaces dexCode, dexClient is retired; in projects YUKI is
+the big one and the dex.place world sits smaller below it; downloads list YUKI, its file from GitHub Releases; YUKI
+gets a page at `/yuki/` (under Downloads) that turns into the install guide after the Download click. Materials are
+made with code (no image generation).
+
+- **Data, one place each:** `data/downloads.ts` `YUKI_RELEASE` (version, asset name, bytes, SHA-256; `null` until the
+  first release, and every page then says "No public download yet"), the download link is the releases repo's
+  `releases/latest/download/<asset>`; `RETIRED` (dexCode, dexClient) only feeds the one small "Retired" line where their
+  entries were, which keeps `/downloads/#dexcode` and `#dexclient` landing; their old `/projects/<id>/` pages say where
+  they went (noindex). `data/yuki.ts`: what it is, the S/A/B/C hardware tiers, and `YUKI_LINK`, the optional status
+  ping to YUKI's engine on the visitor's PC, **off** (no markup, no request) until the engine answers dex.place.
+- **Pixel Yuki** (`yuki-sprite.ts`): a 32 x 32 chibi bust as grids, drawn to Dex's pixel-face rules in the orb's
+  colours. Layers: base, eyes (open, blink, happy, sleepy), mouth (calm, smile, talk), ahoge (two frames); a data
+  attribute picks the face; a glance moves the eye layer one pixel. Idle: random-looking blinks, ahoge sway, a
+  one-pixel bob, all `steps()`.
+- **Her stage** (`render/yukiart.ts`): night in hard bands, stars, her orb's pixel ring, ice shards, big flakes, then
+  her; a cell is a whole number of screen pixels (`round()` in `styles/yuki.css`), so it stays crisp at any size. It
+  stands in for the rig art on YUKI's banner (hero window, and her night in place of Dex's plate), its card, its
+  Downloads block and the `/yuki/` hero.
+- **Banners:** `pban--lead` (taller, bigger name) and `pban--minor` (shorter, 82% wide toward the world: bands.css and
+  landing.css place it, pbanner.css sizes it).
+- **`/yuki/`** (`render/yuki.ts`, `motion/yuki.ts`): the hero (her orb hatches once on load, she pops, says one line;
+  click her and she hops), what she does, the tiers as a stat sheet, the install guide with the Windows SmartScreen
+  prompt drawn out (a pixel cursor taps More info, then Run anyway), the checksum. The Download click keeps its default
+  (the file), then the page becomes the guide (`data-stage="guide"`). Everything rests off screen and holds still under
+  reduced motion; without JS the key downloads and the guide is just there.
+
 This is how the website under the world looks and moves, and where each piece lives in the
 code. Since 2026-09-29 the site is a **dark pixel site**: a near-black page, square blocks
 with thin hard edges, hard pixel shadows that make things pop out, one loud yellow with

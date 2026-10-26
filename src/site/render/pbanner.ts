@@ -1,5 +1,6 @@
 // The project banners (Dex 10-22: "make the projects more like banners, have them going in strips all the way down";
-// lanes\site-art-1022\PLAN.md 5.4). Three strips stacked down the projects panel, each overhanging the paper onto the
+// lanes\site-art-1022\PLAN.md 5.4; Dex 10-26: YUKI the big one, the dex.place world smaller below it, `pban--lead` /
+// `pban--minor`). Strips stacked down the projects panel, each overhanging the paper onto the
 // world, each layered with Dex's own art: his painted plate behind (public/site/banners/<id>/back.webp), a giant
 // numeral, his ink slash across (public/site/banners/ink.webp), the picked card art in a slanted window at the world end
 // (the card's rig, pixels unchanged, cropped only), his front fx (public/site/banners/<id>/fx.webp) and a scrim the
@@ -21,6 +22,7 @@ import { cardArt } from "./cardart.ts";
 import { button, chip, icon } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import { fileOf, primaryAction, stateText } from "./pcard.ts";
+import { snowFx, yukiBack } from "./yukiart.ts";
 
 const BANNERS = "/site/banners/";
 const has = (path: string): boolean => existsSync(new URL(`../../../public${path}`, import.meta.url));
@@ -42,7 +44,10 @@ function layerImg(cls: string, base: string): string {
  *  slash. Every image lazy and decorative. */
 function artLayers(p: Project, no: string): string {
   const a = bannerArt(p);
-  const back = a.back ? `<span class="pban__bk">${layerImg("pban__back", a.back)}</span>` : "";
+  // YUKI's plate is drawn in code (Dex 10-26): her snowy night in the plate's place, Dex's ink slash still across it
+  const back = p.art.code === "yuki"
+    ? `<span class="pban__bk">${yukiBack()}</span>`
+    : a.back ? `<span class="pban__bk">${layerImg("pban__back", a.back)}</span>` : "";
   const slash = a.ink ? `<span class="pban__sl">${layerImg("pban__slash", a.ink)}</span>` : "";
   return `<span class="pban__art">${back}<span class="pban__num">${esc(no)}</span>${slash}</span>`;
 }
@@ -67,6 +72,7 @@ function front(p: Project): string {
   return (
     `<span class="pban__front" aria-hidden="true">` +
     (fx ? layerImg("pban__fx", fx) : "") +
+    (p.art.code === "yuki" ? snowFx(`${p.id}-front`, 22, "pban__snow") : "") +
     `<span class="pban__scrim"></span><span class="pban__shine"></span></span>`
   );
 }
@@ -82,7 +88,7 @@ function banner(p: Project, i: number, level: 2 | 3, here: "home" | "page"): str
     `<a class="btn btn--paper btn--s btn--icon pban__docs" href="${esc(p.docs.href)}" aria-label="${esc(`${p.name} docs`)}" title="Docs">` +
     `<span class="btn__ic">${icon("book", 2)}</span></a>`;
   return (
-    `<li class="pban" data-pcard="${p.id}" style="--i:${Math.min(i, 5)}">` +
+    `<li class="${cx("pban", p.size && `pban--${p.size}`)}" data-pcard="${p.id}" style="--i:${Math.min(i, 5)}">` +
     `<div class="pban__in" data-tone="${p.tone}"><div class="pban__tilt"><div class="pban__lift">` +
     `<span class="pban__plate" aria-hidden="true"></span>` +
     `<article class="${cx("pban__b", `pban--${p.tone}`)}" id="p-${p.id}" aria-labelledby="p-${p.id}-name">` +

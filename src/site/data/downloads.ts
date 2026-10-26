@@ -1,20 +1,49 @@
-// What can be downloaded. Only real, published files (CANON: don't invent
-// binaries). The file itself lives in the host's downloads folder
-// (D:\Dex\Servers\dex.place\downloads, see ops/README.md), never in git.
-// To publish a new build: copy the setup and its .sha256 sidecar there, then
-// update the entry below (version, file name, exact bytes, SHA-256).
+// What can be downloaded. Only real, published files (CANON: don't invent binaries).
+//
+// Since 2026-10-26 (Dex, YUKI docs/build/PHASE2-SCOPE.md W12) the one product is YUKI: it replaces dexCode, and
+// dexClient (the installer app) is retired. YUKI's installer is not in the host's downloads folder: GitHub Releases
+// serves it, from the public releases repo, through its "latest release" address, so the visitor clicks once on
+// dex.place and the file comes from GitHub.
+//
+// To publish a release: fill YUKI_RELEASE below with the release's installer (its asset name, the version, the exact
+// size in bytes and the SHA-256, read from the release asset itself). Until then it is null, and every page says
+// plainly that there is no public download yet.
 
 import type { IconName } from "../pixels.ts";
 
+/** The public releases repo (installers, update manifests, the model catalogue). */
+export const RELEASES_REPO = "https://github.com/dexnotavailable/yuki-releases";
+
+/** The release on the site: fill at release time, all four from the release asset. Null: nothing is out yet. */
+export interface YukiRelease {
+  /** e.g. "0.2.0". */
+  readonly version: string;
+  /** The installer's asset name on the release, e.g. "YUKI-Setup-0.2.0.exe". */
+  readonly file: string;
+  /** Exact size in bytes; shown rounded. */
+  readonly bytes: number;
+  /** Lowercase hex. */
+  readonly sha256: string;
+  /** The checksum's own asset on the release (`<file>.sha256`), when the release publishes one. */
+  readonly sidecar?: boolean;
+}
+
+export const YUKI_RELEASE: YukiRelease | null = null;
+
+/** GitHub's address for an asset of the latest release (it redirects to the file; the page stays on dex.place). */
+export const latestAsset = (file: string): string => `${RELEASES_REPO}/releases/latest/download/${encodeURIComponent(file)}`;
+
 export interface DownloadFile {
-  /** Site path. The checksum sidecar is served at `${href}.sha256`. */
+  /** Where the file is: a site path, or a release asset's address. */
   readonly href: string;
   readonly version: string;
   /** Exact size in bytes; shown rounded. */
   readonly bytes: number;
-  /** Lowercase hex, as in the .sha256 sidecar. */
+  /** Lowercase hex. */
   readonly sha256: string;
   readonly platform: string;
+  /** The checksum file beside it (`${href}.sha256`), when there is one. */
+  readonly sidecar?: string;
 }
 
 export interface DownloadEntry {
@@ -31,6 +60,8 @@ export interface DownloadEntry {
   readonly steps?: readonly InstallStep[];
   /** One honest caveat shown under the steps. */
   readonly caveat?: string;
+  /** Its own page with the full install guide (YUKI: /yuki/). */
+  readonly guide?: string;
 }
 
 export interface InstallStep {
@@ -39,36 +70,48 @@ export interface InstallStep {
   readonly icon: IconName;
 }
 
-export const downloads: readonly DownloadEntry[] = [
-  {
-    id: "dexclient",
-    name: "dexClient",
-    file: {
-      href: "/downloads/dexClient-Setup-0.4.23.exe",
-      version: "0.4.23",
-      bytes: 102_923_632,
-      sha256: "36313368dd7cb92692a8320f398391a4d57266cb30aa48ad3c270e1ac7961ff9",
-      platform: "Windows",
-    },
-    // dexClient README: per-user installer, no admin prompt, unsigned.
-    notes: ["Installs per user, no admin prompt.", "Unsigned for now, so Windows asks once."],
-    // Steps and caveat: dexClient docs/TESTERS.md (sections 1-3 and 5) and README.
+/** The release as a download, or null. */
+export function releaseFile(r: YukiRelease | null): DownloadFile | null {
+  if (!r) return null;
+  const href = latestAsset(r.file);
+  return { href, version: r.version, bytes: r.bytes, sha256: r.sha256, platform: "Windows", ...(r.sidecar ? { sidecar: `${href}.sha256` } : {}) };
+}
+
+/**
+ * YUKI's entry for a release (the site's own uses YUKI_RELEASE; tests pass others). Steps and caveat: YUKI's
+ * electron-builder.yml (per-user NSIS, no admin prompt, opens when done, unsigned) and the W7 brief.
+ */
+export function yukiEntry(r: YukiRelease | null): DownloadEntry {
+  return {
+    id: "yuki",
+    name: "YUKI",
+    file: releaseFile(r),
+    notes: r
+      ? ["Installs for your Windows user, no admin prompt.", "Unsigned, so Windows asks once."]
+      : ["No public download yet."],
     steps: [
-      { icon: "download", title: "Download", text: "Your browser may ask before keeping it, because the file isn't signed yet. Choose Keep." },
+      { icon: "download", title: "Download", text: "Your browser may ask before keeping it, because the file isn't signed. Choose Keep." },
       { icon: "window", title: "Run it", text: "Windows shows “Windows protected your PC”. Click More info, then Run anyway." },
-      { icon: "check", title: "Install", text: "It installs for your Windows user only, with no admin prompt, then checks your PC." },
-      { icon: "star", title: "Pick and play", text: "Choose what to install. dexClient installs dexCode, opens it and keeps it up to date." },
+      { icon: "check", title: "Install", text: "It installs for your Windows user only, with no admin prompt, and opens YUKI when it's done." },
+      { icon: "blob", title: "Meet Yuki", text: "She reads your PC and picks the setup that fits it. Models download from Hugging Face; each one's licence shows first." },
     ],
-    caveat: "If Smart App Control is on (Windows Security, App & browser control), this build can't run until it is signed.",
-  },
-  {
-    id: "dexcode",
-    name: "dexCode",
-    file: null,
-    // dexCode canon: no standalone public download; dexClient installs it.
-    notes: ["No standalone download yet. dexClient installs it."],
-    installedBy: "dexclient",
-  },
+    caveat: "If Smart App Control is on (Windows Security, App & browser control), Windows won't run an unsigned installer.",
+    guide: "/yuki/",
+  };
+}
+
+export const downloads: readonly DownloadEntry[] = [yukiEntry(YUKI_RELEASE)];
+
+/** Retired projects: shown only where their entries were, as one small line that points at what replaced them. */
+export interface RetiredEntry {
+  readonly id: string;
+  readonly name: string;
+  readonly replacedBy: string;
+}
+
+export const RETIRED: readonly RetiredEntry[] = [
+  { id: "dexcode", name: "dexCode", replacedBy: "yuki" },
+  { id: "dexclient", name: "dexClient", replacedBy: "yuki" },
 ];
 
 const UNITS = ["B", "kB", "MB", "GB"] as const;
@@ -82,5 +125,5 @@ export function formatBytes(bytes: number): string {
     unit += 1;
   }
   const amount = unit === 0 ? String(bytes) : value.toFixed(1);
-  return `${amount}\u00a0${UNITS[unit]}`;
+  return `${amount} ${UNITS[unit]}`;
 }

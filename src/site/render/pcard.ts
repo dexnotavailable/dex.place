@@ -1,6 +1,6 @@
-// The project cards (lane K, lanes\motion\DESIGN-1019.md section 5): dexCode = Yuki, dexClient = Bao, dex.place =
-// Zhusha. One card per project: its splash art over the whole card (render/cardart.ts), the number and platform at the
-// top, and at its foot the name (the way to the project's page), the download's state, the line, the one action that
+// The project cards (lane K, lanes\motion\DESIGN-1019.md section 5): YUKI = Yuki, dex.place = Zhusha.
+// One card per project: its splash art over the whole card (render/cardart.ts), the number and platform at the top,
+// and at its foot the name (the way to the project's page), the download's state, the line, the one action that
 // matters and its docs. Styles: styles/pcard.css; motion: motion/pcard.ts (initCards, the deck lane G drives).
 //
 // The list is `ul.pcards[data-pcards]`; lane G places it and its `li.pcards__it` (width, step, scroll parallax) and
@@ -51,6 +51,11 @@ export function primaryAction(p: Project, size: "m" | "l", here: "home" | "page"
     // No standalone file: point at the download that installs it.
     const name = downloads.find((d) => d.id === via)?.name ?? via;
     return { href: here === "home" ? `#${via}` : `/downloads/#${via}`, label: `Get ${name}`, icon: "arrow", size };
+  }
+  const guide = downloads.find((d) => d.id === p.id)?.guide;
+  if (guide) {
+    // no release yet, but a page of its own (YUKI, /yuki/): meet her there
+    return { href: guide, label: `Meet ${p.hero}`, icon: "arrow", size };
   }
   if (hasDownloadEntry(p)) {
     return { href: here === "home" ? `#${p.id}` : `/downloads/#${p.id}`, label: "Download status", icon: "arrow", size };
