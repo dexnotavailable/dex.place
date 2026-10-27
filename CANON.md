@@ -136,10 +136,11 @@ traveller and not part of the site's world unless Dex says so.
 
 ### dex account
 
-Called **dex account**. One identity shared with dexCode and dexClient, extensible to future
-products. Register, sign in, recover, sign out; saved exploration; private donation history
-and optional donor credit. In the world, a counter/attendant near the start leads to the same
-account state as the website. Never fake a session. Integration details **open**.
+Called **dex account**. One identity shared with YUKI (which replaced dexCode and dexClient)
+and YUKI on the web, extensible to future products. Register, sign in, recover, sign out;
+saved exploration; private donation history and optional donor credit. In the world, a
+counter/attendant near the start leads to the same account state as the website. Never fake
+a session. Integration details **open**.
 
 ### Other visitors
 

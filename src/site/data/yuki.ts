@@ -92,7 +92,8 @@ export const YUKI_TIERS: readonly YukiTier[] = [
   {
     rank: "D", name: "Any other PC", tone: "paper",
     pc: "AMD or Intel graphics, a smaller card, or none.",
-    gets: "A small brain on a 6 GB NVIDIA card with 16 GB of RAM. If not, the brain runs on a free cloud model.",
+    // (only NVIDIA runs the small brain: llama.cpp is a CUDA build; AMD, Intel or no card get the cloud brain)
+    gets: "A 6 GB NVIDIA card with 16 GB of RAM still runs a small brain. Less than that, AMD or Intel graphics, or no card: the brain runs on a free cloud model.",
   },
 ];
 
@@ -104,7 +105,18 @@ export const YUKI_TIERS_NOTE = "YUKI checks your PC on its first run and offers 
  * YUKI main line since 10-27, and p2/small-brain's brains). Turn on with that release, after checking YUKI_TIERS and the
  * note against its hardware.ts and brains.ts.
  */
-export const YUKI_TIERS_LIVE = false;
+export const YUKI_TIERS_LIVE = true;
+
+/**
+ * YUKI on the web (YUKI packages/webapp README): its own Worker on dex.place/yuki/app*, live since 2026-10-28. A remote
+ * for YUKI on your PC, paired like the phone (v0.2's Settings > Phone > Copy the pairing link), and dex inference for dex
+ * members (shut until it opens, friends first, as the dex inference fact says). Under what she does.
+ */
+export const YUKI_WEB = {
+  href: "/yuki/app/",
+  label: "YUKI on the web",
+  text: "is a remote for YUKI on your PC from any browser, paired like a phone. dex members can use dex inference there too.",
+} as const;
 
 /** What the installer needs, on the page whatever the tiers say. */
 export const YUKI_NEEDS = "For Windows 10 or 11, 64-bit.";

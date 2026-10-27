@@ -15,7 +15,7 @@ YUKI replaces dexCode and dexClient. Both are retired, and YUKI installs on its 
 
 ## Getting it
 
-YUKI has one setup file. Its first public release isn't out yet. When it is, [Downloads](/downloads/#yuki) and [YUKI's page](/yuki/) have the file, its size and its SHA-256. [Installing YUKI](/docs/installing-yuki/) goes through it step by step.
+YUKI has one setup file. [Downloads](/downloads/#yuki) and [YUKI's page](/yuki/) have the file, its size and its SHA-256. [Installing YUKI](/docs/installing-yuki/) goes through it step by step.
 
 ## What it does
 

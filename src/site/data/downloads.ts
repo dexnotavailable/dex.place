@@ -44,7 +44,13 @@ export interface YukiRelease {
   readonly tag?: string;
 }
 
-export const YUKI_RELEASE: YukiRelease | null = null;
+// v0.2.0, published 2026-10-27 18:32 UTC; size and digest read back from the release asset (gh release view).
+export const YUKI_RELEASE: YukiRelease | null = {
+  version: "0.2.0",
+  file: "YUKI-Setup-0.2.0.exe",
+  bytes: 125160957,
+  sha256: "32779e4fea6d0d4d9130782bbd0f39de5f4e678484833fc79dfe929c59f4edab",
+};
 
 /** GitHub's address for the release's installer (it redirects to the file; the page stays on dex.place). */
 export const releaseAsset = (r: Pick<YukiRelease, "version" | "file" | "tag">): string =>

@@ -22,7 +22,7 @@ You download one setup file. It installs YUKI for your Windows user and opens it
 
 ## Download
 
-Get the setup from [Downloads](/downloads/#yuki) or [YUKI's page](/yuki/). The file comes from GitHub, and the page lists its name, size and SHA-256. Until the first release is out, both pages say there's no public download yet.
+Get the setup from [Downloads](/downloads/#yuki) or [YUKI's page](/yuki/). The file comes from GitHub, and the page lists its name, size and SHA-256.
 
 Your browser may block it at first because it isn't signed:
 

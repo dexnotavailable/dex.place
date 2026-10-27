@@ -4,7 +4,8 @@
 // Downloads. Styles: styles/yuki.css; motion: motion/yuki.ts (own chunk).
 //
 // Top to bottom: the stage (her orb hatches and pixel Yuki says hi; the name, the line, the one key), what it is (as far
-// as the release it lists has it: the hand and the deck with data/yuki.ts YUKI_HAND_LIVE), which
+// as the release it lists has it: the hand and the deck with data/yuki.ts YUKI_HAND_LIVE; then the link to YUKI on the
+// web, data/yuki.ts YUKI_WEB), which
 // PC gets which setup (only once a release has the first run that picks it: data/yuki.ts YUKI_TIERS_LIVE), then the
 // install guide with the Windows prompt drawn out step by step and the file's checksum.
 // Complete without JavaScript: the key downloads the file and the guide is simply there below it. With it, the click
@@ -12,7 +13,7 @@
 // Not released yet (data/downloads.ts YUKI_RELEASE null): she is asleep, there is no file link, the guide still reads.
 
 import { downloads, formatBytes, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
-import { YUKI_HAND_LIVE, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, yukiFacts } from "../data/yuki.ts";
+import { YUKI_HAND_LIVE, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, YUKI_WEB, yukiFacts } from "../data/yuki.ts";
 import { yukiSprite } from "../yuki-sprite.ts";
 import { fileName, verifyBlock, waysList } from "./downloads.ts";
 import { button, chip, icon, tile } from "./glyphs.ts";
@@ -86,7 +87,10 @@ function what(hand: boolean): string {
       `<li class="ykfact" data-reveal="pop" style="--i:${i}">${tileOr(x.icon, i === 0 ? "cyan" : "paper", "m", `fact-${i}`)}` +
       `<h3 class="ykfact__t">${esc(x.title)}</h3><p class="ykfact__p">${esc(x.text)}</p></li>`,
     ).join("") +
-    `</ul></section>`
+    `</ul>` +
+    // YUKI on the web (data/yuki.ts YUKI_WEB): its own Worker on dex.place/yuki/app*, so a plain link
+    `<p class="yks__note yks__note--web">${icon("window", 2)}<span><a class="link" href="${esc(YUKI_WEB.href)}">${esc(YUKI_WEB.label)}</a> ${esc(YUKI_WEB.text)}</span></p>` +
+    `</section>`
   );
 }
 

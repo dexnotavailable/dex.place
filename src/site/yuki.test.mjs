@@ -9,7 +9,7 @@ import { BACK, BLUSH, BODY, EXPRESSIONS, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, 
 import { bandPath, discPath, GROW, ORB, ringCells, snowLayer, yukiArt, yukiStage } from "./render/yukiart.ts";
 import { smartScreen, YUKI_SAYS, yukiPage } from "./render/yuki.ts";
 import { releaseAsset, YUKI_RELEASE, yukiEntry } from "./data/downloads.ts";
-import { readLinkStatus, YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, yukiFacts } from "./data/yuki.ts";
+import { readLinkStatus, YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, YUKI_WEB, yukiFacts } from "./data/yuki.ts";
 import { projects } from "./data/projects.ts";
 import { routes } from "./render/routes.ts";
 
@@ -526,10 +526,11 @@ test("what it is and the tiers come from YUKI's docs and code (data/yuki.ts): se
   assert.deepEqual(YUKI_TIERS.map((t) => t.rank), ["S", "A", "B", "C", "D"]);
   for (const t of YUKI_TIERS) assert.ok(t.name && t.pc && t.gets, t.rank);
   for (const t of YUKI_TIERS.slice(0, 4)) assert.match(t.pc, /^An NVIDIA card with \d+ GB/, `${t.rank}: only NVIDIA counts for now`);
-  for (const t of YUKI_TIERS.slice(2)) {
-    assert.match(t.gets, /small brain/, `${t.rank}: a small brain where it fits`);
-    assert.match(t.gets, /If not, the brain runs on a free cloud model\.$/, `${t.rank}: else the brain in the cloud`);
-  }
+  for (const t of YUKI_TIERS.slice(2)) assert.match(t.gets, /small brain/, `${t.rank}: a small brain where it fits`);
+  for (const t of YUKI_TIERS.slice(2, 4)) assert.match(t.gets, /If not, the brain runs on a free cloud model\.$/, `${t.rank}: else the brain in the cloud`);
+  // D: only an NVIDIA card runs the small brain (llama.cpp is a CUDA build); AMD, Intel or no card get the cloud brain
+  assert.match(YUKI_TIERS[4].gets, /^A 6 GB NVIDIA card with 16 GB of RAM still runs a small brain\./);
+  assert.match(YUKI_TIERS[4].gets, /Less than that, AMD or Intel graphics, or no card: the brain runs on a free cloud model\.$/);
   for (const t of YUKI_TIERS) assert.doesNotMatch(t.name, /\bGB\b/, `${t.rank}: a name, not a spec`);
   assert.match(YUKI_TIERS_NOTE, /only NVIDIA/);
   const html = yukiPage(yukiEntry(null), { tiers: true });
@@ -613,6 +614,23 @@ test("the live link stays off: no markup, no request, until the engine answers d
   assert.deepEqual(readLinkStatus({ ok: true, stage: "setup", progress: 1.7 }), { kind: "setup", progress: 1, version: null });
   assert.deepEqual(readLinkStatus({ ok: true, stage: "downloading", progress: "x" }), { kind: "setup", progress: null, version: null });
   assert.equal(readLinkStatus({ ok: true, engineVersion: "v".repeat(99) }).version.length, 32);
+});
+
+// ------------------------------------------------------------------ YUKI on the web
+
+test("YUKI on the web: one plain link to dex.place/yuki/app/ under what she does, released or not", () => {
+  // (YUKI packages/webapp: its own Worker on dex.place/yuki/app*, so the site only links it)
+  assert.equal(YUKI_WEB.href, "/yuki/app/");
+  for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
+    const at = html.indexOf('<section class="yks yks--what"');
+    const what = html.slice(at, html.indexOf("</section>", at));
+    assert.match(what, /<p class="yks__note yks__note--web">.*<a class="link" href="\/yuki\/app\/">YUKI on the web<\/a> is a remote for YUKI on your PC/);
+    assert.equal(html.match(/href="\/yuki\/app\/"/g).length, 1, "linked once");
+  }
+  // what the web app does in v0.2, no more: a remote paired like the phone, dex inference for dex members
+  assert.match(YUKI_WEB.text, /paired like a phone/);
+  assert.match(YUKI_WEB.text, /dex members/);
+  assert.doesNotMatch(YUKI_WEB.text, /free|subscri|\$|soon|price/i);
 });
 
 // ------------------------------------------------------------------ motion

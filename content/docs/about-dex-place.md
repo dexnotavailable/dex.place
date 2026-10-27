@@ -20,7 +20,7 @@ Every file is reachable straight from the website, with no game and no sign-in i
 | Section | What's in it |
 |---|---|
 | [Projects](/projects/) | YUKI and dex.place |
-| [Downloads](/downloads/) | The YUKI setup, with its size and SHA-256, once its first release is out |
+| [Downloads](/downloads/) | The YUKI setup, with its size and SHA-256 |
 | [Gallery](/gallery/) | Dex's own illustrations |
 | [Docs](/docs/) | These pages |
 | [Blog](/blog/) | Posts from Dex |
@@ -37,7 +37,7 @@ Donating never unlocks anything. Every file and every part of the world is the s
 
 ## Accounts
 
-You don't need an account for anything here. YUKI can sign in to a **dex account** (it's optional there too); this site doesn't use it yet.
+You don't need an account for anything here. YUKI and [YUKI on the web](/yuki/app/) can sign in to a **dex account** (it's optional in both); the rest of this site doesn't use it yet.
 
 ## What the site keeps about you
 
