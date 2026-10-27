@@ -1,20 +1,72 @@
-// What can be downloaded. Only real, published files (CANON: don't invent
-// binaries). The file itself lives in the host's downloads folder
-// (D:\Dex\Servers\dex.place\downloads, see ops/README.md), never in git.
-// To publish a new build: copy the setup and its .sha256 sidecar there, then
-// update the entry below (version, file name, exact bytes, SHA-256).
+// What can be downloaded. Only real, published files (CANON: don't invent binaries).
+//
+// Since 2026-10-26 (Dex, YUKI docs/build/PHASE2-SCOPE.md W12) the one product is YUKI: it replaces dexCode, and
+// dexClient (the installer app) is retired. YUKI's installer is not in the host's downloads folder: GitHub Releases
+// serves it, from the public releases repo, so the visitor clicks once on dex.place and the file comes from GitHub.
+//
+// To publish a release: fill YUKI_RELEASE below with the release's installer (its asset name, the version, the exact
+// size in bytes and the SHA-256, read from the release asset itself). Until then it is null, and every page says
+// plainly that there is no public download yet. Refill it with every stable release: the link names the release's own
+// tag, so it always serves the file whose size and SHA-256 the page lists (a "latest" link to a versioned file name
+// breaks on the next release, and one to a fixed name would serve a newer file than the listed hash). A copy installed
+// from an older release updates itself, so a late refill costs nobody the newest version.
+//
+// At a release, in one commit (YUKI's packages/desktop/scripts/publish.ts tags it v<version> and uploads
+// YUKI-Setup-<version>.exe, its .blockmap and latest.yml; no .sha256 file, so `sidecar` and `tag` stay unset):
+//   1. YUKI_RELEASE = { version: "0.2.0", file: "YUKI-Setup-0.2.0.exe", bytes: <exact size>, sha256: "<64 lowercase
+//      hex>" }, read from the published asset: `gh release view v0.2.0 --repo dexnotavailable/yuki-releases --json
+//      assets` gives its name, size and digest ("sha256:..."); publish.ts also writes the SHA-256 into
+//      release/submit-to-microsoft-<version>.txt. Check the link: releaseAsset() must answer (a 302 to GitHub's file).
+//   2. data/yuki.ts YUKI_TIERS_LIVE = true, once YUKI_TIERS and YUKI_FACTS read true against that build's
+//      engine/src/catalogue/hardware.ts and brains.ts (the brain that fits is p2/small-brain's).
+//   3. content/docs/yuki.md and installing-yuki.md: drop the lines that say the first release isn't out yet
+//      (build/downloads.test.mjs fails while they remain).
+//   4. npm test, npm run build, then look at /yuki/, /downloads/ and the home page at 1440 and 390 wide.
 
 import type { IconName } from "../pixels.ts";
 
+/** The public releases repo (installers, update manifests, the model catalogue). */
+export const RELEASES_REPO = "https://github.com/dexnotavailable/yuki-releases";
+
+/** The release on the site: fill at release time, all four from the release asset. Null: nothing is out yet. */
+export interface YukiRelease {
+  /** e.g. "0.2.0". */
+  readonly version: string;
+  /** The installer's asset name on the release, e.g. "YUKI-Setup-0.2.0.exe". */
+  readonly file: string;
+  /** Exact size in bytes; shown rounded. */
+  readonly bytes: number;
+  /** Lowercase hex. */
+  readonly sha256: string;
+  /** The checksum's own asset on the release (`<file>.sha256`), when the release publishes one. */
+  readonly sidecar?: boolean;
+  /** The release's tag, when it isn't `v<version>` (YUKI's scripts/publish.ts tags `v${version}`). */
+  readonly tag?: string;
+}
+
+// v0.2.0, published 2026-10-27 18:32 UTC; size and digest read back from the release asset (gh release view).
+export const YUKI_RELEASE: YukiRelease | null = {
+  version: "0.2.0",
+  file: "YUKI-Setup-0.2.0.exe",
+  bytes: 125160957,
+  sha256: "32779e4fea6d0d4d9130782bbd0f39de5f4e678484833fc79dfe929c59f4edab",
+};
+
+/** GitHub's address for the release's installer (it redirects to the file; the page stays on dex.place). */
+export const releaseAsset = (r: Pick<YukiRelease, "version" | "file" | "tag">): string =>
+  `${RELEASES_REPO}/releases/download/${encodeURIComponent(r.tag ?? `v${r.version}`)}/${encodeURIComponent(r.file)}`;
+
 export interface DownloadFile {
-  /** Site path. The checksum sidecar is served at `${href}.sha256`. */
+  /** Where the file is: a site path, or a release asset's address. */
   readonly href: string;
   readonly version: string;
   /** Exact size in bytes; shown rounded. */
   readonly bytes: number;
-  /** Lowercase hex, as in the .sha256 sidecar. */
+  /** Lowercase hex. */
   readonly sha256: string;
   readonly platform: string;
+  /** The checksum file beside it (`${href}.sha256`), when there is one. */
+  readonly sidecar?: string;
 }
 
 export interface DownloadEntry {
@@ -31,44 +83,73 @@ export interface DownloadEntry {
   readonly steps?: readonly InstallStep[];
   /** One honest caveat shown under the steps. */
   readonly caveat?: string;
+  /** Its own page with the full install guide (YUKI: /yuki/). */
+  readonly guide?: string;
+  /** Before its file is out: what the installer will do (true of the build that ships), listed where the file's notes
+   *  go, so the block keeps its shape and height. */
+  readonly installer?: readonly string[];
 }
 
 export interface InstallStep {
   readonly title: string;
   readonly text: string;
   readonly icon: IconName;
+  /** Where it differs by browser: one short line each, shown under the text. */
+  readonly ways?: readonly { readonly who: string; readonly how: string }[];
 }
 
-export const downloads: readonly DownloadEntry[] = [
-  {
-    id: "dexclient",
-    name: "dexClient",
-    file: {
-      href: "/downloads/dexClient-Setup-0.4.23.exe",
-      version: "0.4.23",
-      bytes: 102_923_632,
-      sha256: "36313368dd7cb92692a8320f398391a4d57266cb30aa48ad3c270e1ac7961ff9",
-      platform: "Windows",
-    },
-    // dexClient README: per-user installer, no admin prompt, unsigned.
-    notes: ["Installs per user, no admin prompt.", "Unsigned for now, so Windows asks once."],
-    // Steps and caveat: dexClient docs/TESTERS.md (sections 1-3 and 5) and README.
+/** The release as a download, or null. */
+export function releaseFile(r: YukiRelease | null): DownloadFile | null {
+  if (!r) return null;
+  const href = releaseAsset(r);
+  return { href, version: r.version, bytes: r.bytes, sha256: r.sha256, platform: "Windows", ...(r.sidecar ? { sidecar: `${href}.sha256` } : {}) };
+}
+
+/**
+ * YUKI's entry for a release (the site's own uses YUKI_RELEASE; tests pass others). Steps and caveat: YUKI's
+ * electron-builder.yml (a one-click per-user NSIS installer: no wizard, no admin prompt, opens YUKI when done;
+ * unsigned); the browsers' words from the tested content/docs/installing-dexclient.md (an unsigned setup gets the same
+ * warnings); step 4 from the W7 first run on the YUKI main line (desktop renderer firstrun/FirstRun.tsx: the hatch, the
+ * stat sheet, the setup that fits, nothing downloaded before the user picks a setup and accepts its licences).
+ */
+export function yukiEntry(r: YukiRelease | null): DownloadEntry {
+  const installer = ["Installs for your Windows user, no admin prompt.", "Unsigned, so Windows asks once."];
+  return {
+    id: "yuki",
+    name: "YUKI",
+    file: releaseFile(r),
+    notes: r ? installer : ["No public download yet."],
+    ...(r ? {} : { installer }),
     steps: [
-      { icon: "download", title: "Download", text: "Your browser may ask before keeping it, because the file isn't signed yet. Choose Keep." },
+      {
+        icon: "download", title: "Download", text: "Your browser may hold it back at first, because the file isn't signed.",
+        ways: [
+          { who: "Chrome", how: "Click “Suspicious download blocked”, then Download suspicious file." },
+          { who: "Edge", how: "Click … on the file, then Keep, Show more, Keep anyway." },
+          { who: "Firefox", how: "Open the downloads list and choose Allow download." },
+        ],
+      },
       { icon: "window", title: "Run it", text: "Windows shows “Windows protected your PC”. Click More info, then Run anyway." },
-      { icon: "check", title: "Install", text: "It installs for your Windows user only, with no admin prompt, then checks your PC." },
-      { icon: "star", title: "Pick and play", text: "Choose what to install. dexClient installs dexCode, opens it and keeps it up to date." },
+      { icon: "check", title: "Install", text: "It installs for your Windows user only, with no admin prompt, and opens YUKI when it's done." },
+      { icon: "blob", title: "Meet Yuki", text: "She hatches, looks over your PC and offers the setup that fits it. Nothing downloads before you accept its licences." },
     ],
-    caveat: "If Smart App Control is on (Windows Security, App & browser control), this build can't run until it is signed.",
-  },
-  {
-    id: "dexcode",
-    name: "dexCode",
-    file: null,
-    // dexCode canon: no standalone public download; dexClient installs it.
-    notes: ["No standalone download yet. dexClient installs it."],
-    installedBy: "dexclient",
-  },
+    caveat: "If Smart App Control is on (Windows Security, App & browser control), Windows won't run an unsigned installer.",
+    guide: "/yuki/",
+  };
+}
+
+export const downloads: readonly DownloadEntry[] = [yukiEntry(YUKI_RELEASE)];
+
+/** Retired projects: shown only where their entries were, as one small line that points at what replaced them. */
+export interface RetiredEntry {
+  readonly id: string;
+  readonly name: string;
+  readonly replacedBy: string;
+}
+
+export const RETIRED: readonly RetiredEntry[] = [
+  { id: "dexcode", name: "dexCode", replacedBy: "yuki" },
+  { id: "dexclient", name: "dexClient", replacedBy: "yuki" },
 ];
 
 const UNITS = ["B", "kB", "MB", "GB"] as const;
@@ -82,5 +163,5 @@ export function formatBytes(bytes: number): string {
     unit += 1;
   }
   const amount = unit === 0 ? String(bytes) : value.toFixed(1);
-  return `${amount}\u00a0${UNITS[unit]}`;
+  return `${amount} ${UNITS[unit]}`;
 }

@@ -75,8 +75,8 @@ test("docs sort by group, then order, then title; unknown groups fail the build"
     "e.md": "---\ntitle: E\ngroup: dexcode\n---\n",
   });
   const docs = loadEntries(dir, "docs");
-  assert.deepEqual(docs.map((d) => d.slug), ["e", "c", "a", "b", "d"]);
-  assert.deepEqual(groupedDocs(docs).map((g) => g.group.id), ["dexcode", "dexclient", "dex-place", "other"]);
+  assert.deepEqual(docs.map((d) => d.slug), ["b", "e", "c", "a", "d"]);
+  assert.deepEqual(groupedDocs(docs).map((g) => g.group.id), ["dex-place", "dexcode", "dexclient", "other"]);
   const bad = fixture({ "x.md": "---\ntitle: X\ngroup: dexclinet\n---\n" });
   assert.throws(() => loadEntries(bad, "docs"), /group "dexclinet"/);
 });
@@ -141,4 +141,39 @@ test("home section: docs catalogue, the latest posts as rows, older posts folded
   assert.equal((html.match(/<h3[ >]/g) ?? []).length, 2);
   const few = docsSection({ docs, posts: posts.slice(0, 2), gallery: [] });
   assert.doesNotMatch(few, /bmore/);
+});
+
+test("YUKI's docs replace dexCode's and dexClient's (Dex 10-26): its group first, the start doc, the old addresses retired", async () => {
+  const content = loadContent(ROOT);
+  const list = routes(content);
+  const render = (p) => list.find((r) => r.path === p)?.render();
+  const { RETIRED_DOCS } = await import("../data/docs.ts");
+  const { START_DOC } = await import("../render/docs.ts");
+  // what YUKI is, installing it with the SmartScreen step, and uninstalling, in YUKI's own group, listed first
+  const yuki = content.docs.filter((d) => d.group === "yuki").map((d) => d.slug);
+  assert.deepEqual(yuki, ["yuki", "installing-yuki"]);
+  assert.equal(groupedDocs(content.docs)[0].group.id, "yuki");
+  // the retired projects' docs stay for people who have them: last, tagged
+  const order = groupedDocs(content.docs).map((g) => g.group.id);
+  assert.deepEqual(order, ["yuki", "dex-place", "dexcode", "dexclient"]);
+  const index = render("/docs/").body;
+  for (const id of ["dexcode", "dexclient"]) assert.match(index, new RegExp(`<section class="dgroup dgroup--\\w+ dgroup--retired" aria-labelledby="g-${id}">[^]*?<span class="retired__tag">Retired</span>`), id);
+  assert.doesNotMatch(index, /<section class="dgroup dgroup--\w+ dgroup--retired" aria-labelledby="g-yuki">/);
+  assert.equal(START_DOC, "installing-yuki");
+  const install = fs.readFileSync(path.join(ROOT, "content/docs/installing-yuki.md"), "utf8");
+  for (const h of ["## Download", "## Run the setup", "## Uninstalling"]) assert.ok(install.includes(h), h);
+  for (const w of ["Windows protected your PC", "More info", "Run anyway", "Unknown publisher"]) assert.ok(install.includes(w), w);
+  // the overview says where chats go as the site does (never "they never leave the PC")
+  const what = fs.readFileSync(path.join(ROOT, "content/docs/yuki.md"), "utf8");
+  assert.match(what, /your chats stay there unless you pick a cloud model/);
+  // the retired docs are gone, their old addresses say where to go now (noindex), and no doc links them
+  for (const r of RETIRED_DOCS) {
+    assert.ok(!content.docs.some((d) => d.slug === r.slug), `${r.slug} is gone`);
+    const page = render(`/docs/${r.slug}/`);
+    assert.ok(page, `/docs/${r.slug}/ still answers`);
+    assert.match(page.head, /<meta name="robots" content="noindex/);
+    assert.match(page.body, new RegExp(`${r.project} is retired\. YUKI replaces it\.`));
+    assert.ok(page.body.includes(`href="/docs/${r.to}/"`), `${r.slug} links ${r.to}`);
+    for (const d of content.docs) assert.ok(!d.html.includes(`/docs/${r.slug}/`), `${d.slug} links the retired ${r.slug}`);
+  }
 });

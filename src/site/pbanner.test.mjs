@@ -37,15 +37,22 @@ function sizeOf(path) {
   return [1 + (v & 0x3fff), 1 + ((v >> 14) & 0x3fff)];
 }
 
-test("home and /projects/ show three banner strips, in Dex's order, each linking its page, its docs and its one action", () => {
+test("home and /projects/ show the banner strips, in Dex's order (YUKI leads, dex.place smaller below), each linking its page, its docs and its one action", () => {
   for (const [html, h] of [[landing(content), "h3"], [projectsIndex(), "h2"]]) {
     const list = html.slice(html.indexOf('<ul class="pbans"'), html.indexOf("</ul>", html.indexOf('<ul class="pbans"')));
-    const ids = [...list.matchAll(/<li class="pban" data-pcard="([\w-]+)"/g)].map((m) => m[1]);
+    const ids = [...list.matchAll(/<li class="pban[^"]*" data-pcard="([\w-]+)"/g)].map((m) => m[1]);
     assert.deepEqual(ids, projects.map((p) => p.id));
+    // (Dex 10-26: the lead banner and a smaller one; their sizes are pbanner.css's, the list's place is G's)
+    assert.deepEqual([...list.matchAll(/<li class="(pban[^"]*)" data-pcard/g)].map((m) => m[1]), ["pban pban--lead", "pban pban--minor"]);
     for (const p of projects) {
       const li = list.slice(list.indexOf(`data-pcard="${p.id}"`), list.indexOf("</li>", list.indexOf(`data-pcard="${p.id}"`)));
       assert.match(li, new RegExp(`<${h} class="pban__name" id="p-${p.id}-name"><a class="pban__link" href="${projectHref(p)}">`));
       assert.ok(li.includes(`href="${p.docs.href}"`), `${p.id} docs`);
+      // the small key says where it goes, from the project's own label (YUKI's goes to its install guide, not "docs")
+      const key = li.match(/<a class="btn btn--paper btn--s btn--icon pban__docs" href="[^"]+" aria-label="([^"]+)" title="([^"]+)">/);
+      assert.ok(key, `${p.id}: a docs key`);
+      assert.equal(key[2], p.docs.label);
+      assert.ok(key[1].toLowerCase().includes(p.docs.label.toLowerCase()) && key[1].includes(p.name), `${p.id}: "${key[1]}"`);
       assert.match(li, /class="btn [^"]*pban__main /);
       // one link for keyboards: the name; the art is a pointer shortcut
       assert.match(li, /<a class="pban__hit" href="[^"]+" tabindex="-1" aria-hidden="true">/);
@@ -56,11 +63,11 @@ test("home and /projects/ show three banner strips, in Dex's order, each linking
 test("a banner's layers, back to front (PLAN 5.4): ink base, Dex's plate, the numeral, his ink slash, the hero window, his fx, the scrim, then the words", () => {
   const html = landing(content);
   for (const p of projects) {
-    const at = html.indexOf(`<li class="pban" data-pcard="${p.id}"`);
+    const at = html.indexOf(`<li class="pban pban--${p.size}" data-pcard="${p.id}"`);
     const li = html.slice(at, html.indexOf("</li>", at) + 5);
     const no = String(projects.indexOf(p) + 1).padStart(2, "0");
     // outside in: one owner per wrapper (the deck, the touch tilt, the hover lift)
-    assert.match(li, new RegExp(`^<li class="pban" data-pcard="${p.id}" style="--i:\\d"><div class="pban__in" data-tone="${p.tone}"><div class="pban__tilt"><div class="pban__lift"><span class="pban__plate" aria-hidden="true"></span><article class="pban__b pban--${p.tone}" id="p-${p.id}"`));
+    assert.match(li, new RegExp(`^<li class="pban pban--${p.size}" data-pcard="${p.id}" style="--i:\\d"><div class="pban__in" data-tone="${p.tone}"><div class="pban__tilt"><div class="pban__lift"><span class="pban__plate" aria-hidden="true"></span><article class="pban__b pban--${p.tone}" id="p-${p.id}"`));
     const order = ["pban__back", "pban__num", "pban__slash", "pban__hero", "pban__cart", "pban__front", "pban__scrim", "pban__info", "pban__brackets"];
     const where = order.map((k) => li.indexOf(`class="${k}`) >= 0 ? li.indexOf(`class="${k}`) : li.indexOf(` ${k}`));
     for (let i = 0; i < order.length; i++) {
@@ -71,7 +78,19 @@ test("a banner's layers, back to front (PLAN 5.4): ink base, Dex's plate, the nu
     assert.match(li, new RegExp(`<span class="pban__num">${no}</span>`));
     // the hero is the card's own art (its rig, pixels unchanged), decorative here, and like the rest of the art a pointer
     // shortcut to the project's page (it sits above .pban__hit; a click on it went nowhere)
-    assert.match(li, new RegExp(`<a class="pban__hero" href="${projectHref(p)}" tabindex="-1" aria-hidden="true">.*<div class="cart cart--rig[^"]* pban__cart" data-rig="/site/cards/${p.id}/"[^>]* aria-hidden="true"`));
+    if (p.art.code) {
+      // YUKI's hero is drawn in code (Dex 10-26): her stage, decorative here; her night stands in for Dex's plate. The
+      // snow falls on each one's own grid, behind her: in her night, and in her window between its night and her
+      // (nothing falls in front of the window, where a speck crossed her face)
+      assert.match(li, new RegExp(`<a class="pban__hero" href="${projectHref(p)}" tabindex="-1" aria-hidden="true">.*<div class="cart cart--code ykart pban__cart" aria-hidden="true"`));
+      assert.match(li, /<span class="pban__bk"><span class="ykback"><svg class="ykstage"[^]*?<\/svg><span class="yksnow" aria-hidden="true" style="--cols:160;--rows:48">/);
+      const win = li.slice(li.indexOf('class="pban__hero"'), li.indexOf('class="pban__front"'));
+      assert.ok(win.indexOf('class="yksnow"') > win.indexOf('<div class="ykart__stage">') && win.indexOf('class="yksnow"') < win.indexOf("ykart__stage--her"), "the window's snow between her night and her");
+      assert.doesNotMatch(li.slice(li.indexOf('class="pban__front"')), /yksnow|ykfx/);
+      assert.doesNotMatch(li, /<img class="pban__(?:back|fx)"/);
+    } else {
+      assert.match(li, new RegExp(`<a class="pban__hero" href="${projectHref(p)}" tabindex="-1" aria-hidden="true">.*<div class="cart cart--rig[^"]* pban__cart" data-rig="/site/cards/${p.id}/"[^>]* aria-hidden="true"`));
+    }
     assert.ok(!/<(?:a|button)\b/.test(li.slice(li.indexOf('class="pban__hero"'), li.indexOf('class="pban__front"'))), `${p.id}: nothing interactive inside the hero link`);
     // every Dex layer is lazy and decorative, with its phone cut
     for (const [img] of li.matchAll(/<img class="pban__(?:back|slash|fx)"[^>]*>/g)) {
@@ -84,7 +103,8 @@ test("a banner's layers, back to front (PLAN 5.4): ink base, Dex's plate, the nu
 test("Dex's banner layers: web cuts only (2400 x 720 and 800 x 340 webp, no metadata), within the budget, every one he drew", () => {
   const BUDGET = { back: 140, "back-p": 45, fx: 60, "fx-p": 30, ink: 90, "ink-p": 30 };
   const files = [];
-  for (const p of projects) {
+  // (YUKI's layers are drawn in code, Dex 10-26: no files of hers here)
+  for (const p of projects.filter((q) => !q.art.code)) {
     const a = bannerArt(p);
     assert.ok(a.back, `${p.id}: Dex's plate`);
     assert.ok(a.ink, "the ink slash");
@@ -171,7 +191,8 @@ test("motion (PLAN 5.4): the deck's entrance as timed, the idle loops on the com
 });
 
 test("a project's page: its banner is the header (P2), the name its h1, the art its picture", () => {
-  for (const p of projects) {
+  // (YUKI's page is /yuki/, render/yuki.ts: yuki.test.mjs)
+  for (const p of projects.filter((q) => !q.page)) {
     const html = projectPage(p);
     assert.match(html, /^<div class="page page--project"><div class="wrap"><header class="pbans pbans--head" data-pcards="page" data-pban>/);
     assert.match(html, new RegExp(`<h1 class="pban__name" id="p-${p.id}-name">${p.name.replace(".", "\\.")}</h1>`));

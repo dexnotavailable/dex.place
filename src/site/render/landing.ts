@@ -7,11 +7,11 @@
 // (motion/nav.ts); each section also has its own full page for deep links.
 // Every page is complete without JavaScript; motion only adds reveal and pops.
 
-import { downloads, formatBytes } from "../data/downloads.ts";
-import { projects, type Project } from "../data/projects.ts";
+import { downloads, formatBytes, type RetiredEntry } from "../data/downloads.ts";
+import { projectHref, projects, type Project } from "../data/projects.ts";
 import { docsSection } from "./docs.ts";
 import { donateSection } from "./donate.ts";
-import { downloadsSection } from "./downloads.ts";
+import { downloadsSection, retiredNote } from "./downloads.ts";
 import { gallerySection } from "./gallery.ts";
 import { button, counter, pageHead, sectionHead, tile } from "./glyphs.ts";
 import { bannerHeader, projectBanners } from "./pbanner.ts";
@@ -29,6 +29,8 @@ function projectsSection(): string {
     `<div class="wrap">` +
     sectionHead({ id: "projects-title", kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items`, more: { href: "/projects/", label: "Projects page" } }) +
     projectBanners(projects, { level: 3, here: "home" }) +
+    // (Dex 10-26: dexCode and dexClient are retired; said once, small, where their banners were)
+    retiredNote("projects") +
     `</div></section>`
   );
 }
@@ -135,6 +137,7 @@ export function projectsIndex(): string {
     `<div class="wrap">` +
     pageHead({ kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items` }) +
     projectBanners(projects, { level: 2, here: "page" }) +
+    retiredNote("projects") +
     `</div></div>`
   );
 }
@@ -195,6 +198,22 @@ export function projectPage(p: Project): string {
     getIt(p) +
     `</div>` +
     others(p) +
+    `</div></div>`
+  );
+}
+
+// ------------------------------------------------------ /projects/<retired id>/
+
+/** A retired project's old address (Dex 10-26: dexCode and dexClient retire into YUKI): one plain line and the way on. */
+export function retiredProjectPage(r: RetiredEntry): string {
+  const to = projects.find((p) => p.id === r.replacedBy);
+  const href = to ? projectHref(to) : "/projects/";
+  return (
+    `<div class="page page--retired">` +
+    `<div class="wrap">` +
+    pageHead({ kicker: "projects", title: r.name, tone: "yellow", icon: "grid" }) +
+    `<p class="retired retired--page"><span class="retired__tag">Retired</span><span>${esc(r.name)} is retired. ${esc(to ? to.name : "Its successor")} replaces it.</span></p>` +
+    `<p class="retired__go">${button({ href, label: to ? `Meet ${to.name}` : "Projects", icon: "arrow", size: "m" })}</p>` +
     `</div></div>`
   );
 }

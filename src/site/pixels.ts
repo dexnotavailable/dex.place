@@ -291,6 +291,31 @@ export const ICONS = {
     "aaaa.aaaa",
     "aaaa.aaaa",
   ],
+  // YUKI's page: a hand of model cards (a card behind, a card in front with a diamond on it), and PCs hosting together.
+  cards: [
+    "aaaaaa......",
+    "a....a......",
+    "a..aaaaaaaaa",
+    "a..a.......a",
+    "a..a...a...a",
+    "a..a..aaa..a",
+    "a..a.aaaaa.a",
+    "aaaa..aaa..a",
+    "...a...a...a",
+    "...a.......a",
+    "...aaaaaaaaa",
+  ],
+  hosts: [
+    "aaaa...aaaa",
+    "awwa...awwa",
+    "aaaa...aaaa",
+    ".a.......a.",
+    ".aaaaaaaaa.",
+    ".....a.....",
+    "...aaaaa...",
+    "...awwwa...",
+    "...aaaaa...",
+  ],
   // Docs and blog: feed link, callout labels.
   rss: [
     "aaa......",

@@ -119,6 +119,12 @@ const steps: [string, () => void][] = [
     });
     void loaded.then(afterMark).then(idle).then(start);
   }],
+  // pixel Yuki wherever she is (render/yukiart.ts) and YUKI's page (render/yuki.ts): her glances, the page's stage and
+  // its turn into the install guide after the Download click, own chunk, only where she is
+  ["yuki", () => {
+    if (!document.querySelector("svg.yk")) return;
+    import("./motion/yuki.ts").then((m) => m.initYuki(reduced.matches, fine.matches), failed("yuki"));
+  }],
   // way 4's slide-off (lane F's events dex:slideoff / dex:slideback; the home page only, where the jetty is)
   ["slideoff", () => { if (document.querySelector("[data-jetty-scene]")) initSlideoff(reduced); }],
   ["copy", () => initCopy()],

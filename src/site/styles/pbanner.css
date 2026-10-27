@@ -179,9 +179,35 @@
 /* the others dim while one banner is pointed at */
 .pban__b::before { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; background: var(--ink); opacity: 0; transition: opacity 300ms cubic-bezier(.33, 1, .68, 1); }
 
+/* ---- Dex 10-26: YUKI leads (a taller strip, a bigger name), the dex.place world sits smaller below it. The list's
+   place for each (its width) is G's, styles/bands.css and landing.css. The lead's name is bigger at every width
+   (44 px on a phone, 56 on a tablet, 64 wide; the minor's stays 32), and its art strip is taller on a phone, so "the
+   big one" reads where most people will see it. */
+.pban--lead .pban__lift { --ban-h: clamp(260px, 38cqw, 440px); }
+.pban--minor .pban__lift { --ban-h: clamp(200px, 24cqw, 260px); --pad: clamp(16px, 2cqw, 24px); }
+.pban--minor .pban__num { --np: 4px; font-size: 100px; }
+.pban--lead .pban__b .pban__name { font-size: 44px; }
+@container pban (min-width: 640px) {
+  .pban--lead .pban__b .pban__name { font-size: 56px; }
+}
+@container pban (min-width: 900px) {
+  .pban--lead .pban__b .pban__name { font-size: 64px; }
+  .pban--minor .pban__b .pban__name { font-size: 32px; }
+}
+@container pban (min-width: 1000px) {
+  .pban--lead .pban__num { --np: 10px; font-size: 250px; }
+  .pban--minor .pban__num { --np: 6px; font-size: 150px; }
+}
+@container pban (max-width: 559px) {
+  .pban--lead .pban__lift { --ban-h: 240px; }
+  .pban--minor .pban__lift { --ban-h: 150px; }
+}
+/* YUKI's code-drawn layers: her night (its snow on its own grid) fills the plate's box; her window has its own snow,
+   behind her */
+.pban__bk .ykback { inset: 0; }
+.pban__hero .ykart { background: #22306e; }
+
 /* ---- per banner: where its plate and fx sit in their frame */
-.pban[data-pcard="dexcode"] { --bk-at: 62% 46%; --fx-at: 70% 40%; }
-.pban[data-pcard="dexclient"] { --bk-at: 64% 30%; }
 .pban[data-pcard="dex-place"] { --bk-at: 50% 30%; }
 
 /* ---- phones (a narrow banner): the art strip on top (168 tall), the words under it on the ink */
@@ -191,7 +217,8 @@
   .pban__hit { position: relative; height: var(--ban-h); border-bottom: 2px solid var(--ink); }
   .pban__hero { bottom: auto; top: calc(var(--ban-h) * -0.08); height: var(--hero-h); }
   .pban__front { bottom: auto; height: var(--ban-h); }
-  .pban__scrim { background: linear-gradient(to top, rgb(31 23 41 / 0.7), rgb(31 23 41 / 0) 45%); }
+  /* (the scrim stops where the hero window starts: the portrait is never under it) */
+  .pban__scrim { right: calc(var(--hero-r) + var(--hero-w)); background: linear-gradient(to top, rgb(31 23 41 / 0.7), rgb(31 23 41 / 0) 45%); }
   .pban__num { --np: 4px; font-size: 100px; left: 10px; right: auto; bottom: -0.04em; }
   .pban__info { width: auto; padding: 14px var(--pad) var(--pad); }
   .pban__cap { display: none; }

@@ -442,6 +442,10 @@
 }
 .band--projects .pbans > * { min-width: 0; }
 .band--projects .pbans > :nth-child(2) { margin-inline: var(--ban-step) calc(-1 * var(--ban-step)); }
+/* (Dex 10-26: the dex.place world sits smaller below YUKI: a narrower strip toward the world, on a wide enough panel) */
+@media (min-width: 700px) {
+  .band--projects .pbans > .pban--minor { width: 82%; justify-self: end; }
+}
 /* (a tablet's strip has no overhang: the stepped one lands on the world strip beside the paper, the others stay on it) */
 
 /* ---- the fore: a piece of the world in front of the paper's open corner (z5), never over text: it laps the paper's

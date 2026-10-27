@@ -6,10 +6,13 @@ import { downloadsPage } from "./downloads.ts";
 import { shell } from "./layout.ts";
 import { notFoundPage } from "./pages.ts";
 import { galleryArrival, galleryOrder, galleryPage, piecePage } from "./gallery.ts";
-import { landing, projectPage, projectsIndex } from "./landing.ts";
+import { landing, projectPage, projectsIndex, retiredProjectPage } from "./landing.ts";
 import { projectHref, projects } from "../data/projects.ts";
-import { blogIndex, docsIndex, entryPage } from "./docs.ts";
-import { docGroup } from "../data/docs.ts";
+import { RETIRED } from "../data/downloads.ts";
+import { YUKI_LINE } from "../data/yuki.ts";
+import { yukiPage } from "./yuki.ts";
+import { blogIndex, docsIndex, entryPage, retiredDocPage } from "./docs.ts";
+import { docGroup, RETIRED_DOCS } from "../data/docs.ts";
 import { donatePage } from "./donate.ts";
 import { STUBS, stubPage } from "./stubs.ts";
 import type { Entry, PageMeta, Rendered, SiteContent } from "./types.ts";
@@ -38,16 +41,27 @@ export function routes(content: SiteContent): Route[] {
       main: () => landing(content),
     },
     {
-      meta: { path: "/projects/", title: "Projects", page: "projects", description: "dexCode, dexClient and dex.place." },
+      meta: { path: "/projects/", title: "Projects", page: "projects", description: `${projects.map((p) => p.name).join(" and ")}.` },
       main: projectsIndex,
     },
-    ...projects.map((p) => ({
+    // (a project with a page of its own, YUKI's /yuki/, has no /projects/<id>/)
+    ...projects.filter((p) => !p.page).map((p) => ({
       meta: { path: projectHref(p), title: p.name, page: "projects" as const, description: p.line },
       main: () => projectPage(p),
     })),
+    // the retired projects' old pages say where they went (Dex 10-26)
+    ...RETIRED.map((r) => ({
+      meta: { path: `/projects/${r.id}/`, title: r.name, page: "projects" as const, description: `${r.name} is retired.`, noindex: true },
+      main: () => retiredProjectPage(r),
+    })),
+    // YUKI's page (Dex 10-26: dex.place/yuki, under Downloads)
+    {
+      meta: { path: "/yuki/", title: "YUKI", page: "downloads", description: `YUKI: ${YUKI_LINE} Download, install guide and what your PC gets.` },
+      main: () => yukiPage(),
+    },
     {
       meta: { path: "/downloads/", title: "Downloads", page: "downloads", description: "Direct downloads for Dex's projects, with sizes and SHA-256 checksums." },
-      main: downloadsPage,
+      main: () => downloadsPage(),
     },
     {
       meta: { path: "/gallery/", title: "Gallery", page: "gallery", description: "Dex's illustrations." },
@@ -63,10 +77,15 @@ export function routes(content: SiteContent): Route[] {
       main: () => piecePage(content, i),
     })),
     {
-      meta: { path: "/docs/", title: "Docs", page: "docs", description: "Documentation for dexCode, dexClient and dex.place." },
+      meta: { path: "/docs/", title: "Docs", page: "docs", description: "Documentation for YUKI and dex.place, and for the retired dexCode and dexClient." },
       main: () => docsIndex(content),
     },
     ...entryRoutes(content, content.docs),
+    // the retired docs' old addresses say where their readers go now (Dex 10-26), unless a doc of that name is back
+    ...RETIRED_DOCS.filter((r) => !content.docs.some((d) => d.slug === r.slug)).map((r) => ({
+      meta: { path: `/docs/${r.slug}/`, title: r.title, page: "docs" as const, description: `${r.project} is retired. YUKI replaces it.`, noindex: true },
+      main: () => retiredDocPage(content, r),
+    })),
     {
       meta: { path: "/blog/", title: "Blog", page: "blog", description: "Posts from Dex." },
       main: () => blogIndex(content),

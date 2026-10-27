@@ -47,6 +47,9 @@
 .pbans > * { min-width: 0; }
 .page--projects .pbans { margin-top: var(--s-5); }
 .page--projects .pbans > :nth-child(2) { margin-inline: clamp(0px, 3vw, 48px) 0; }
+@media (min-width: 700px) {
+  .page--projects .pbans > .pban--minor { width: 82%; justify-self: end; }
+}
 .pbans--head { margin: var(--s-6) 0 clamp(56px, 8vw, 104px); }
 
 /* ========================================================= /projects/ */

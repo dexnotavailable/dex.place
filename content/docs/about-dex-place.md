@@ -19,8 +19,8 @@ Every file is reachable straight from the website, with no game and no sign-in i
 
 | Section | What's in it |
 |---|---|
-| [Projects](/projects/) | dexCode, dexClient and dex.place |
-| [Downloads](/downloads/) | The dexClient setup, with its size and SHA-256 |
+| [Projects](/projects/) | YUKI and dex.place |
+| [Downloads](/downloads/) | The YUKI setup, with its size and SHA-256 |
 | [Gallery](/gallery/) | Dex's own illustrations |
 | [Docs](/docs/) | These pages |
 | [Blog](/blog/) | Posts from Dex |
@@ -37,7 +37,7 @@ Donating never unlocks anything. Every file and every part of the world is the s
 
 ## Accounts
 
-You don't need an account for anything here. A shared **dex account** for dex.place, dexCode and dexClient is planned but not connected yet.
+You don't need an account for anything here. YUKI and [YUKI on the web](/yuki/app/) can sign in to a **dex account** (it's optional in both); the rest of this site doesn't use it yet.
 
 ## What the site keeps about you
 

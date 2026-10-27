@@ -27,14 +27,15 @@ export interface Stub {
 }
 
 export const STUBS: readonly Stub[] = [
-  // content/docs/error-reports.md
+  // content/docs/installing-yuki.md (YUKI 0.2 sends no error reports of its own; dexCode's and dexClient's did, and
+  // content/docs/error-reports.md stays for people who still have them)
   {
     id: "support", title: "Support", href: "/support/", icon: "page", tone: "cyan", line: "Write to Dex about a bug or a question.", place: "the Crane Desk in the Hall of Works",
-    until: { line: "When something breaks, dexCode and dexClient send Dex a short report, and you can send one by hand.", href: "/docs/error-reports/", label: "Error reports and privacy" },
+    until: { line: "YUKI sends Dex no reports by itself. Installing YUKI covers the Windows warnings, antivirus alarms and removing it.", href: "/docs/installing-yuki/", label: "Installing YUKI" },
   },
-  // content/docs/about-dex-place.md "Accounts"
+  // content/docs/about-dex-place.md "Accounts" (the dex account YUKI and YUKI on the web sign in to)
   {
-    id: "account", title: "dex account", href: "/account/", icon: "star", tone: "yellow", line: "One account for dex.place, dexCode and dexClient.", place: "Hanko's desk in the Hall of Works",
+    id: "account", title: "dex account", href: "/account/", icon: "star", tone: "yellow", line: "One account for dex.place and YUKI.", place: "Hanko's desk in the Hall of Works",
     until: { line: "You don't need an account for anything here.", href: "/docs/about-dex-place/#accounts", label: "About dex.place" },
   },
   // content/docs/world.md

@@ -135,16 +135,22 @@ test("every door leads to a spawn, and the Prize Court stands on ground between 
   for (const id of ["bao", "stands", "champion", "install-bar", "glint", "champion-hp"]) assert.ok(w.sprites.some((s) => s.id === id), `sprite ${id}`);
 });
 
-test("prizes come from the downloads data: dexCode's plaque wins dexClient's file", async () => {
+test("prizes come from the downloads data: an entry's own file, or the file of the entry that installs it, else none", async () => {
+  // (Dex 10-26: the site's one download is YUKI, its file from GitHub Releases once the first release is out; dexCode
+  // and dexClient are retired, so their plaques win nothing until the world's props are updated)
   const { prizeFor } = await import("./court.ts");
   const { downloads } = await import("../site/data/downloads.ts");
-  const client = downloads.find((d) => d.id === "dexclient");
-  const a = prizeFor("dexclient");
-  assert.equal(a.file.href, client.file.href);
-  const b = prizeFor("dexcode");
-  assert.equal(b.owner.id, "dexclient");
-  assert.equal(b.file.href, client.file.href);
-  assert.equal(prizeFor("nothing"), null);
+  for (const d of downloads) {
+    const prize = prizeFor(d.id);
+    const owner = d.file ? d : downloads.find((x) => x.id === d.installedBy);
+    if (owner?.file) {
+      assert.equal(prize.owner.id, owner.id);
+      assert.equal(prize.file.href, owner.file.href);
+    } else {
+      assert.equal(prize, null, `${d.id}: no file, no prize`);
+    }
+  }
+  for (const gone of ["dexclient", "dexcode", "nothing"]) assert.equal(prizeFor(gone), null, gone);
 });
 
 test("destruction: a broken crate's pieces and the jar it carried all come to rest on real ground", async () => {
