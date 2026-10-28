@@ -3,13 +3,16 @@
 // the live link that stays off (data/yuki.ts), and the motion's rules (motion/yuki.ts, styles/yuki.css).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { blinkVars, eyesLayer, OPEN_EYES, STRONG_BLUSH, YUKI_EYES, YUKI_MOUTHS, YUKI_TIMING, yukiSprite } from "./yuki-sprite.ts";
 import { BACK, BLUSH, BODY, EXPRESSIONS, EYES, FACE, FRONT, HEAD, LAND, MOUTHS, PALETTE, PROPS, YUKI_FACES_SOURCE } from "./yuki-faces.ts";
 import { bandPath, discPath, GROW, ORB, ringCells, snowLayer, yukiArt, yukiStage } from "./render/yukiart.ts";
 import { smartScreen, YUKI_SAYS, yukiPage } from "./render/yuki.ts";
 import { releaseAsset, YUKI_RELEASE, yukiEntry } from "./data/downloads.ts";
-import { readLinkStatus, YUKI_FACTS, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, YUKI_WEB, yukiFacts } from "./data/yuki.ts";
+import {
+  readLinkStatus, YUKI_CONTACT_EMAIL, YUKI_FACTS, YUKI_FOOT, YUKI_HAND, YUKI_HAND_LIVE, YUKI_LINK, YUKI_NEEDS, YUKI_PLAN_KEYS, YUKI_PLANS,
+  YUKI_PLANS_INTRO, YUKI_PLANS_NOTE, YUKI_REFUNDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, YUKI_WEB, yukiFacts,
+} from "./data/yuki.ts";
 import { projects } from "./data/projects.ts";
 import { routes } from "./render/routes.ts";
 
@@ -616,16 +619,143 @@ test("the live link stays off: no markup, no request, until the engine answers d
   assert.equal(readLinkStatus({ ok: true, engineVersion: "v".repeat(99) }).version.length, 32);
 });
 
+// ------------------------------------------------------------------ plans, refunds, the page's foot
+
+/** A section of the page by its class, up to its end. */
+const sectionOf = (html, cls) => {
+  const at = html.indexOf(`<section class="yks ${cls}"`);
+  return at < 0 ? "" : html.slice(at, html.indexOf("</section>", at) + "</section>".length);
+};
+
+test("the plans (the Lemon Squeezy review, Dex 10-28): what's sold, its prices, Free to Pro, the one-time app, Max and Ultra greyed out", () => {
+  // the brief's prices: a year is ten months; the app is $19 once; Max and Ultra aren't on sale
+  const by = Object.fromEntries(YUKI_PLANS.map((p) => [p.id, p]));
+  assert.deepEqual(YUKI_PLANS.map((p) => p.name), ["Free", "YUKI Lite", "YUKI Plus", "YUKI Pro", "YUKI for your PC", "Max and Ultra"]);
+  assert.deepEqual(by.free.price, { usd: 0 });
+  for (const [id, m] of [["lite", 5], ["plus", 12], ["pro", 30]]) assert.deepEqual(by[id].price, { usd: m, per: "month", yearUsd: m * 10 }, id);
+  assert.deepEqual(by.pc.price, { usd: 19, per: "once", note: "yours forever" });
+  assert.equal(by.next.price, null);
+  assert.deepEqual(by.next.includes, []);
+  assert.equal(YUKI_PLANS_INTRO, "Start free. Upgrade when you want more of her.");
+  assert.equal(YUKI_PLANS_NOTE, "Unlimited means fair use: heavy use queues only when we're busy. YUKI is in beta, so some features are still rolling out and limits may change.");
+  // the app is priced but not on sale until 0.3 (Dex 10-28: 0.2.0 stays a free download)
+  assert.equal(by.pc.soon, "On sale with YUKI 0.3");
+  assert.equal(YUKI_PLAN_KEYS.kofi.href, "https://ko-fi.com/dexdonation/tiers");
+  for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
+    const sec = sectionOf(html, "yks--plans");
+    assert.match(sec, /<section class="yks yks--plans" id="plans" aria-labelledby="yk-plans"/);
+    assert.match(sec, /<h2 class="yks__h" id="yk-plans">.*<span>Plans<\/span><span class="sub__aside">05 plans<\/span><\/h2>/);
+    assert.ok(sec.includes(YUKI_PLANS_INTRO) && sec.includes(YUKI_PLANS_NOTE));
+    const cards = sec.match(/<li class="ykplan [^"]*"[^]*?(?=<li class="ykplan |<\/ul><p class="yks__note">)/g);
+    assert.equal(cards.length, 6);
+    const [free, lite, plus, pro, pc, next] = cards;
+    // the prices as a visitor reads them
+    assert.match(free, /<span class="ykplan__amt">\$0<\/span><\/p>/);
+    for (const [c, m, y] of [[lite, 5, 50], [plus, 12, 120], [pro, 30, 300]]) {
+      assert.match(c, new RegExp(`<span class="ykplan__amt">\\$${m}</span><span class="ykplan__per">/month</span></p><p class="ykplan__under">or \\$${y}/year</p>`));
+    }
+    assert.match(pc, /<span class="ykplan__amt">\$19<\/span><span class="ykplan__per">one-time<\/span><\/p><p class="ykplan__under">yours forever<\/p>/);
+    // Free starts on the web app; each paid plan joins on Ko-fi, and paying by card is a disabled key with no link
+    assert.match(free, /<a class="btn btn--mint btn--m" href="\/yuki\/app\/"><span class="btn__label">Start free<\/span>/);
+    assert.doesNotMatch(free, /ko-fi|Pay with card/);
+    assert.doesNotMatch(pc, /ko-fi|Pay with card|href=/);
+    assert.match(pc, /<button class="btn btn--paper btn--m ykplan__card" type="button" disabled><span class="btn__label">On sale with YUKI 0\.3<\/span><\/button>/);
+    for (const c of [lite, plus, pro]) {
+      assert.equal(c.match(/href="https:\/\/ko-fi\.com\/dexdonation\/tiers" rel="noopener" aria-label="Join on Ko-fi: [^"]+"><span class="btn__label">Join on Ko-fi<\/span>/g).length, 1);
+      assert.match(c, /<button class="btn btn--paper btn--m ykplan__card" type="button" disabled><span class="btn__label">Pay with card<\/span><span class="ykplan__later">Coming soon<\/span><\/button>/);
+      assert.equal(c.match(/href=/g).length, 1, "the card key has no link");
+    }
+    // what each includes, word for word
+    for (const [c, p] of [[free, by.free], [lite, by.lite], [plus, by.plus], [pro, by.pro], [pc, by.pc]]) {
+      assert.deepEqual([...c.matchAll(/<li><svg[^]*?<\/svg><span>([^<]*)<\/span><\/li>/g)].map((m) => m[1]), [...p.includes]);
+    }
+    // Max and Ultra: greyed out, coming soon, no price, nothing to press
+    assert.match(next, /^<li class="ykplan ykplan--paper ykplan--next ykplan--soon"/);
+    assert.match(next, /<p class="ykplan__soon">Coming soon<\/p>/);
+    assert.doesNotMatch(next, /ykplan__amt|href=|<button/);
+  }
+  // greyed out, and the card key reads as one that isn't there yet (no pop, a dashed edge)
+  const css = read("./styles/yuki.css");
+  assert.match(css, /\.ykplan--soon \{[^}]*border-style: dashed;[^}]*box-shadow: none;[^}]*color: var\(--muted\);/);
+  assert.match(css, /\.ykplan__card, \.ykplan__card:hover, \.ykplan__card:active \{ transform: none; box-shadow: none;/);
+});
+
+test("refunds and cancellations: the three lines, the contact address as a mail link, the app's refund at the app's price", () => {
+  assert.equal(YUKI_REFUNDS.length, 3);
+  assert.equal(YUKI_REFUNDS[0], "Cancel any time; you keep access until the end of the period you paid for.");
+  assert.equal(YUKI_REFUNDS[1], "If something didn't work, email us at {email} within 14 days of a payment and we'll refund it.");
+  // (the $19 in the line is the app's price)
+  const pc = YUKI_PLANS.find((p) => p.id === "pc");
+  assert.equal(YUKI_REFUNDS[2], `The $${pc.price.usd} app has a 14-day refund if it can't run a brain on your PC.`);
+  for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
+    const sec = sectionOf(html, "yks--refunds");
+    assert.match(sec, /<section class="yks yks--refunds" id="refunds" aria-labelledby="yk-refunds"/);
+    assert.match(sec, /<span>Refunds and cancellations<\/span><span class="sub__aside">14 days<\/span><\/h2>/);
+    assert.equal(sec.match(/<li>/g).length, 3);
+    const mail = `<a class="link" href="mailto:${YUKI_CONTACT_EMAIL}">${YUKI_CONTACT_EMAIL}</a>`;
+    assert.ok(sec.includes(`If something didn't work, email us at ${mail} within 14 days of a payment and we'll refund it.`));
+    assert.doesNotMatch(sec, /\{email\}/);
+    // right under the plans, so what's sold and how refunds work read together
+    assert.ok(html.indexOf("yks--plans") < html.indexOf("yks--refunds"));
+  }
+});
+
+test("the page's foot: terms and privacy (the pages the YUKI web app links), refunds on this page, and the contact address", () => {
+  assert.deepEqual(YUKI_FOOT.map((l) => [l.label, l.href]), [
+    ["Terms", "/api/legal/terms"],
+    ["Privacy", "/api/legal/privacy"],
+    ["Refunds", "#refunds"],
+    ["Contact", `mailto:${YUKI_CONTACT_EMAIL}`],
+  ]);
+  for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
+    const foot = html.slice(html.indexOf('<nav class="ykfoot"'), html.indexOf("</nav>", html.indexOf('<nav class="ykfoot"')));
+    assert.match(foot, /^<nav class="ykfoot" aria-label="YUKI: terms, privacy, refunds and contact"><ul>/);
+    const links = [...foot.matchAll(/<a href="([^"]+)">[^]*?<span>([^<]+)<\/span>/g)].map((m) => [m[2], m[1]]);
+    assert.deepEqual(links, YUKI_FOOT.map((l) => [l.label, l.href]));
+    // the address shows, not only behind the word
+    assert.ok(foot.includes(`<span class="ykfoot__mail">${YUKI_CONTACT_EMAIL}</span>`));
+    // the anchor it points at is on the page; the foot is the page's last block
+    assert.match(html, /id="refunds"/);
+    assert.ok(html.indexOf('<nav class="ykfoot"') > html.indexOf('id="install"'));
+  }
+});
+
+test("the contact address is written in one place (data/yuki.ts YUKI_CONTACT_EMAIL), so swapping it is one edit", () => {
+  assert.match(YUKI_CONTACT_EMAIL, /^[^@\s]+@[^@\s]+\.[a-z]+$/);
+  const files = readdirSync(new URL(".", import.meta.url), { recursive: true })
+    .filter((f) => /\.(ts|mjs|css|html|json|md)$/.test(f) && !/\.test\.mjs$/.test(f));
+  const hits = files.flatMap((f) => {
+    const n = read(`./${f.replaceAll("\\", "/")}`).split(YUKI_CONTACT_EMAIL).length - 1;
+    return n ? [[f.replaceAll("\\", "/"), n]] : [];
+  });
+  assert.deepEqual(hits, [["data/yuki.ts", 1]]);
+});
+
+test("the plans' words follow the copy rules: plain, sentence case, nothing about filters, no model names or hosting talk", () => {
+  const html = yukiPage(yukiEntry(SAMPLE));
+  const words = [sectionOf(html, "yks--plans"), sectionOf(html, "yks--refunds"), html.slice(html.indexOf('<nav class="ykfoot"'))]
+    .join(" ").replace(/<[^>]+>/g, " ");
+  assert.doesNotMatch(words, /uncensored|unfiltered|nsfw/i);
+  assert.doesNotMatch(words, /qwen|llama|gpt|claude|gemini|deepseek|mistral|\bAA\b|artificial analysis|gpu|vram|cuda|runpod|cloudflare|server|host/i);
+  // headings in sentence case: a capital to start, then lower case but for YUKI's name
+  for (const h of ["Plans", "Refunds and cancellations"]) assert.ok(html.includes(`<span>${h}</span>`), h);
+  for (const p of YUKI_PLANS) {
+    for (const line of p.includes) assert.match(line, /^[A-Z0-9]/, `${p.id}: "${line}" starts with a capital`);
+  }
+});
+
 // ------------------------------------------------------------------ YUKI on the web
 
-test("YUKI on the web: one plain link to dex.place/yuki/app/ under what she does, released or not", () => {
+test("YUKI on the web: one plain link to dex.place/yuki/app/ under what she does, and the Free plan's key, released or not", () => {
   // (YUKI packages/webapp: its own Worker on dex.place/yuki/app*, so the site only links it)
   assert.equal(YUKI_WEB.href, "/yuki/app/");
   for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
     const at = html.indexOf('<section class="yks yks--what"');
     const what = html.slice(at, html.indexOf("</section>", at));
     assert.match(what, /<p class="yks__note yks__note--web">.*<a class="link" href="\/yuki\/app\/">YUKI on the web<\/a> is a remote for YUKI on your PC/);
-    assert.equal(html.match(/href="\/yuki\/app\/"/g).length, 1, "linked once");
+    assert.equal(what.match(/href="\/yuki\/app\/"/g).length, 1, "linked once under what she does");
+    // (the Free plan starts there: data/yuki.ts YUKI_PLAN_KEYS.free)
+    assert.equal(html.match(/href="\/yuki\/app\/"/g).length, 2, "and once more, as the Free plan's key");
   }
   // what the web app does in v0.2, no more: a remote paired like the phone, dex inference for dex members
   assert.match(YUKI_WEB.text, /paired like a phone/);
