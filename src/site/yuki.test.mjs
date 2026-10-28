@@ -637,7 +637,9 @@ test("the plans (the Lemon Squeezy review, Dex 10-28): what's sold, its prices, 
   assert.equal(by.next.price, null);
   assert.deepEqual(by.next.includes, []);
   assert.equal(YUKI_PLANS_INTRO, "Start free. Upgrade when you want more of her.");
-  assert.equal(YUKI_PLANS_NOTE, "Unlimited means fair use: heavy use queues only when we're busy. Limits may change during the beta.");
+  assert.equal(YUKI_PLANS_NOTE, "Unlimited means fair use: heavy use queues only when we're busy. YUKI is in beta, so some features are still rolling out and limits may change.");
+  // the app is priced but not on sale until 0.3 (Dex 10-28: 0.2.0 stays a free download)
+  assert.equal(by.pc.soon, "On sale with YUKI 0.3");
   assert.equal(YUKI_PLAN_KEYS.kofi.href, "https://ko-fi.com/dexdonation/tiers");
   for (const html of [yukiPage(yukiEntry(null)), yukiPage(yukiEntry(SAMPLE))]) {
     const sec = sectionOf(html, "yks--plans");
@@ -656,7 +658,9 @@ test("the plans (the Lemon Squeezy review, Dex 10-28): what's sold, its prices, 
     // Free starts on the web app; each paid plan joins on Ko-fi, and paying by card is a disabled key with no link
     assert.match(free, /<a class="btn btn--mint btn--m" href="\/yuki\/app\/"><span class="btn__label">Start free<\/span>/);
     assert.doesNotMatch(free, /ko-fi|Pay with card/);
-    for (const c of [lite, plus, pro, pc]) {
+    assert.doesNotMatch(pc, /ko-fi|Pay with card|href=/);
+    assert.match(pc, /<button class="btn btn--paper btn--m ykplan__card" type="button" disabled><span class="btn__label">On sale with YUKI 0\.3<\/span><\/button>/);
+    for (const c of [lite, plus, pro]) {
       assert.equal(c.match(/href="https:\/\/ko-fi\.com\/dexdonation\/tiers" rel="noopener" aria-label="Join on Ko-fi: [^"]+"><span class="btn__label">Join on Ko-fi<\/span>/g).length, 1);
       assert.match(c, /<button class="btn btn--paper btn--m ykplan__card" type="button" disabled><span class="btn__label">Pay with card<\/span><span class="ykplan__later">Coming soon<\/span><\/button>/);
       assert.equal(c.match(/href=/g).length, 1, "the card key has no link");

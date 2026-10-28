@@ -121,6 +121,9 @@ function planKeys(p: YukiPlan): string {
   if (p.price.usd === 0) {
     return `<p class="ykplan__keys">${button({ href: k.free.href, label: k.free.label, icon: "arrow", tone: "mint", size: "m" })}</p>`;
   }
+  if (p.soon) {
+    return `<p class="ykplan__keys"><button class="btn btn--paper btn--m ykplan__card" type="button" disabled><span class="btn__label">${esc(p.soon)}</span></button></p>`;
+  }
   return (
     `<p class="ykplan__keys">` +
     button({ href: k.kofi.href, label: k.kofi.label, icon: "external", tone: "magenta", size: "m", external: true, ariaLabel: `${k.kofi.label}: ${p.name}` }) +

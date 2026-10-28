@@ -149,6 +149,8 @@ export interface YukiPlan {
   readonly tone: "cyan" | "mint" | "yellow" | "magenta" | "paper";
   /** null: not on sale yet (greyed out, "Coming soon", no keys). */
   readonly price: YukiPrice | null;
+  /** Priced but not on sale yet: a disabled key with this label instead of the Ko-fi and card keys. */
+  readonly soon?: string;
   readonly includes: readonly string[];
 }
 
@@ -160,7 +162,7 @@ export const YUKI_PLANS: readonly YukiPlan[] = [
   {
     id: "free", name: "Free", icon: "blob", tone: "paper",
     price: { usd: 0 },
-    includes: ["20 messages a day", "3 fast pictures", "5 web searches", "3 Deep think answers"],
+    includes: ["20 messages a day", "3 fast pictures a day", "5 web searches a day", "3 Deep think answers a day"],
   },
   {
     id: "lite", name: "YUKI Lite", icon: "star", tone: "mint",
@@ -194,13 +196,14 @@ export const YUKI_PLANS: readonly YukiPlan[] = [
   {
     id: "pc", name: "YUKI for your PC", icon: "window", tone: "yellow",
     price: { usd: 19, per: "once", note: "yours forever" },
-    includes: ["The desktop app", "A 14-day refund if it can't run a brain on your PC", "Included with Pro"],
+    soon: "On sale with YUKI 0.3",
+    includes: ["The desktop app", "A 14-day refund if it can't run a brain on your PC", "Included with Pro", "Today's 0.2 preview is free to download above"],
   },
   { id: "next", name: "Max and Ultra", icon: "plus", tone: "paper", price: null, includes: [] },
 ];
 
 /** Under the plans. */
-export const YUKI_PLANS_NOTE = "Unlimited means fair use: heavy use queues only when we're busy. Limits may change during the beta.";
+export const YUKI_PLANS_NOTE = "Unlimited means fair use: heavy use queues only when we're busy. YUKI is in beta, so some features are still rolling out and limits may change.";
 
 /**
  * A plan's keys. Free opens YUKI on the web; a paid plan joins on Ko-fi's tiers page, and paying by card shows as
