@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-28T19:08:45.389Z (29/10/2026, 02:08:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-28T20:08:46.173Z (29/10/2026, 03:08:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,8 +12,8 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_6127e087-a00 — last activity 9 min ago
-7 agents: 3 done, 4 running or stopped mid-way, 0 failed.
+### wf_6127e087-a00 — last activity 5 min ago
+10 agents: 7 done, 3 running or stopped mid-way, 0 failed.
 
 - **director:plan** (done): Planned the whole yukiai.app job in five waves (full plan, inter-lane contracts, decisions, spend plan and open items are in D:/Dex/AI/Scratch/v3build/director/NOTEBOOK.md). Survey: v3-site is at 9018544 with the old pixel storefront; packages/cloud has the card door (lemonsqueezy, test mode, all flags off), look/ pages, the app licence/download routes; no thank-you page exists and Paddle's overlay isn't wired on the
 - **claude:page:r1** (done): Everything is built, green and committed as `d052b50` on `v3/page`. The page is well inside every budget.
@@ -26,22 +26,27 @@ Each entry is one orchestration run; agents are listed with their latest result.
 **Files** (all new)
 - **codex:art:r1** (running)
 - **codex:art:r1** (running)
-- **director:review:page:r1** (running)
-- **director:review:scene:r1** (running)
+- **director:review:page:r1** (done): 
+- **director:review:scene:r1** (done): 
+- **claude:scene:r2** (running)
+- **claude:page:r2** (done): Round 2 is done and committed as `c8e8eea` on `v3/page`. All seven fixes are in, tests/typecheck/build pass, and every budget is met. The one caveat: on 1.25x screens the still and live music bars differ by one device pixel at some edges when they swap.
 
-### wf_6b8b5e4f-1c6 — last activity 1447 min ago
+**What changed** (worktree `D:/Dex/Projects/Y
+- **director:review:page:r2** (done): 
+
+### wf_6b8b5e4f-1c6 — last activity 1507 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **deploy:web** (done): YUKI 0.2.0 is fully live: the cloud Worker is redeployed, YUKI on the web answers at dex.place/yuki/app/, and dex.place's YUKI page serves the real download. Nothing failed, so no rollback was needed. 1. Cloud Worker (dex-api): no D1 migration was waiting, since 0001-0005 were already applied (`wrangler d1 migrations list` said so). Typecheck and the 186 cloud tests passed, then I deployed version fa0344f5. That depl
 - **verify:live** (done): verdict fix
 
-### wf_fba5f572-725 — last activity 2609 min ago
+### wf_fba5f572-725 — last activity 2669 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **prep:site** (done): The YUKI page on branch claude/yuki-page is ready to ship once v0.2 is published. Nothing was pushed, merged or deployed. Work happened only in D:\Dex\Projects\dex.place-wt\yuki-page; the YUKI repo was only read, never edited. The PC checkout and the live server were not touched. Every local server I started was stopped. What changed: - The site's Yuki is now the app's final mascot. Round 3 is finished and committed.
 - **check:site** (done): verdict fix
 
-### wf_201c626b-e06 — last activity 2839 min ago
+### wf_201c626b-e06 — last activity 2899 min ago
 4 agents: 4 done, 0 running or stopped mid-way, 0 failed.
 
 - **merge:w6a-picker** (done): The picker lane (p2/w6a-picker) is merged into codex/phase1-finish-20261023 as 78dc72e. The three leftovers each have their own commit after it, plus one extra fix I found while checking the swap. The root typecheck passes and the tests are green. Nothing was pushed. **The merge** - **Conflicts:** four files had them: ModelControls, demoData, fakeEngine and ModelSources. I kept both sides each time: - The main line's
@@ -49,7 +54,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **merge:w7b-firstrun** (done): I merged p2/w7b-firstrun into codex/phase1-finish-20261023 (merge commit 09e7167) and added two follow-up commits. The root typecheck passes and every test passes. Nothing was pushed or published. **Conflicts:** 22 files, all resolved by keeping both sides: - Catalogue: voices and runtimes sit side by side (protocol, schema, the check, the catalogue copy). - Downloads: main's installer registration runs alongside the
 - **check:w7b-firstrun** (done): verdict fix
 
-### wf_d62c443d-630 — last activity 2872 min ago
+### wf_d62c443d-630 — last activity 2932 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **draw:r1** (done): 
@@ -57,12 +62,12 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **judge2:r1** (done): 
 - **draw:r2** (running)
 
-### wf_6e3339e3-3ac — last activity 3685 min ago
+### wf_6e3339e3-3ac — last activity 3745 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **draw:r1** (running)
 
-### wf_9c8aa1d9-320 — last activity 3686 min ago
+### wf_9c8aa1d9-320 — last activity 3746 min ago
 12 agents: 12 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:w11-suite** (done): The release check suite is built and committed on p2/w11-suite as d283fe1. `npm run release-check` starts the engine bundle the installer ships, on Electron as Node like the app. It uses a fresh scratch profile (port 4785x, `YUKI_NO_KEYRING=1`, inherited `YUKI_*` variables stripped, relay off) and talks to the engine over the WebSocket the way the app does. Scenarios pass or fail on content, never on "no error" alone
