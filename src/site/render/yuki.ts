@@ -5,15 +5,19 @@
 //
 // Top to bottom: the stage (her orb hatches and pixel Yuki says hi; the name, the line, the one key), what it is (as far
 // as the release it lists has it: the hand and the deck with data/yuki.ts YUKI_HAND_LIVE; then the link to YUKI on the
-// web, data/yuki.ts YUKI_WEB), which
+// web, data/yuki.ts YUKI_WEB), the plans and their prices (data/yuki.ts YUKI_PLANS), refunds and cancellations, which
 // PC gets which setup (only once a release has the first run that picks it: data/yuki.ts YUKI_TIERS_LIVE), then the
-// install guide with the Windows prompt drawn out step by step and the file's checksum.
+// install guide with the Windows prompt drawn out step by step and the file's checksum, and last the page's foot: terms,
+// privacy, refunds and the contact address (data/yuki.ts YUKI_FOOT, YUKI_CONTACT_EMAIL).
 // Complete without JavaScript: the key downloads the file and the guide is simply there below it. With it, the click
 // turns the page into the guide (data-stage="guide": she cheers, the page goes to the steps, step one ticks).
 // Not released yet (data/downloads.ts YUKI_RELEASE null): she is asleep, there is no file link, the guide still reads.
 
 import { downloads, formatBytes, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
-import { YUKI_HAND_LIVE, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, YUKI_WEB, yukiFacts } from "../data/yuki.ts";
+import {
+  YUKI_CONTACT_EMAIL, YUKI_FOOT, YUKI_HAND_LIVE, YUKI_LINE, YUKI_LINK, YUKI_NEEDS, YUKI_PLAN_KEYS, YUKI_PLANS, YUKI_PLANS_INTRO,
+  YUKI_PLANS_NOTE, YUKI_REFUNDS, YUKI_TIERS, YUKI_TIERS_LIVE, YUKI_TIERS_NOTE, YUKI_WEB, yukiFacts, type YukiPlan, type YukiPrice,
+} from "../data/yuki.ts";
 import { yukiSprite } from "../yuki-sprite.ts";
 import { fileName, verifyBlock, waysList } from "./downloads.ts";
 import { button, chip, icon, tile } from "./glyphs.ts";
@@ -91,6 +95,97 @@ function what(hand: boolean): string {
     // YUKI on the web (data/yuki.ts YUKI_WEB): its own Worker on dex.place/yuki/app*, so a plain link
     `<p class="yks__note yks__note--web">${icon("window", 2)}<span><a class="link" href="${esc(YUKI_WEB.href)}">${esc(YUKI_WEB.label)}</a> ${esc(YUKI_WEB.text)}</span></p>` +
     `</section>`
+  );
+}
+
+// ------------------------------------------------------------------ the plans
+
+const usd = (n: number): string => `$${n}`;
+
+/** The price block: the amount big, what it's per beside it, the yearly price or a note under it. */
+function price(p: YukiPrice): string {
+  const per = p.per === "month" ? "/month" : p.per === "once" ? "one-time" : "";
+  const under = p.yearUsd !== undefined ? `or ${usd(p.yearUsd)}/year` : (p.note ?? "");
+  return (
+    `<p class="ykplan__price"><span class="ykplan__amt">${esc(usd(p.usd))}</span>` +
+    (per ? `<span class="ykplan__per">${esc(per)}</span>` : "") +
+    `</p>` +
+    (under ? `<p class="ykplan__under">${esc(under)}</p>` : "")
+  );
+}
+
+/** Free opens YUKI on the web; a paid plan joins on Ko-fi, and paying by card is a key that isn't there yet. */
+function planKeys(p: YukiPlan): string {
+  if (!p.price) return "";
+  const k = YUKI_PLAN_KEYS;
+  if (p.price.usd === 0) {
+    return `<p class="ykplan__keys">${button({ href: k.free.href, label: k.free.label, icon: "arrow", tone: "mint", size: "m" })}</p>`;
+  }
+  return (
+    `<p class="ykplan__keys">` +
+    button({ href: k.kofi.href, label: k.kofi.label, icon: "external", tone: "magenta", size: "m", external: true, ariaLabel: `${k.kofi.label}: ${p.name}` }) +
+    `<button class="btn btn--paper btn--m ykplan__card" type="button" disabled>` +
+    `<span class="btn__label">${esc(k.card.label)}</span><span class="ykplan__later">${esc(k.card.soon)}</span></button>` +
+    `</p>`
+  );
+}
+
+function plan(p: YukiPlan, i: number): string {
+  return (
+    `<li class="${cx("ykplan", `ykplan--${p.tone}`, `ykplan--${p.id}`, !p.price && "ykplan--soon")}" data-reveal="pop" style="--i:${i}">` +
+    `<h3 class="ykplan__name">${tileOr(p.icon, p.tone, "s", `plan-${p.id}`)}<span>${esc(p.name)}</span></h3>` +
+    (p.price ? price(p.price) : `<p class="ykplan__soon">Coming soon</p>`) +
+    (p.includes.length
+      ? `<ul class="ykplan__inc">${p.includes.map((x) => `<li>${icon("check", 2)}<span>${esc(x)}</span></li>`).join("")}</ul>`
+      : "") +
+    planKeys(p) +
+    `</li>`
+  );
+}
+
+function plans(): string {
+  const onSale = YUKI_PLANS.filter((p) => p.price);
+  return (
+    `<section class="yks yks--plans" id="plans" aria-labelledby="yk-plans" tabindex="-1">` +
+    `<h2 class="yks__h" id="yk-plans">${tile("coin", "yellow", "s")}<span>Plans</span>` +
+    `<span class="sub__aside">${pad2(onSale.length)} plans</span></h2>` +
+    `<p class="yks__lead">${esc(YUKI_PLANS_INTRO)}</p>` +
+    `<ul class="ykplans">${YUKI_PLANS.map(plan).join("")}</ul>` +
+    `<p class="yks__note">${icon("info", 2)}<span>${esc(YUKI_PLANS_NOTE)}</span></p>` +
+    `</section>`
+  );
+}
+
+// ------------------------------------------------------------------ refunds and cancellations
+
+const mail = (): string => `<a class="link" href="mailto:${esc(YUKI_CONTACT_EMAIL)}">${esc(YUKI_CONTACT_EMAIL)}</a>`;
+
+function refunds(): string {
+  return (
+    `<section class="yks yks--refunds" id="refunds" aria-labelledby="yk-refunds" tabindex="-1">` +
+    `<h2 class="yks__h" id="yk-refunds">${tile("check", "mint", "s")}<span>Refunds and cancellations</span>` +
+    `<span class="sub__aside">14 days</span></h2>` +
+    `<ul class="ykrefunds">` +
+    YUKI_REFUNDS.map((line) => `<li>${icon("arrow", 2)}<span>${line.split("{email}").map(esc).join(mail())}</span></li>`).join("") +
+    `</ul>` +
+    `</section>`
+  );
+}
+
+// ------------------------------------------------------------------ the page's foot
+
+function foot(): string {
+  return (
+    `<nav class="ykfoot" aria-label="YUKI: terms, privacy, refunds and contact"><ul>` +
+    YUKI_FOOT.map((l) => {
+      const contact = l.href.startsWith("mailto:");
+      return (
+        `<li><a href="${esc(l.href)}">${icon(l.icon, 2)}<span>${esc(l.label)}</span>` +
+        (contact ? `<span class="ykfoot__mail">${esc(YUKI_CONTACT_EMAIL)}</span>` : "") +
+        `</a></li>`
+      );
+    }).join("") +
+    `</ul></nav>`
   );
 }
 
@@ -190,8 +285,11 @@ export function yukiPage(d: DownloadEntry = yukiDownload(), o: { tiers?: boolean
     `<div class="wrap">` +
     hero(f) +
     what(o.hand ?? YUKI_HAND_LIVE) +
+    plans() +
+    refunds() +
     ((o.tiers ?? YUKI_TIERS_LIVE) ? tiers() : "") +
     install(d, f) +
+    foot() +
     `</div></div>`
   );
 }

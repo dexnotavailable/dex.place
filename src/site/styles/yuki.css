@@ -510,6 +510,73 @@
 .yktier__gets { display: flex; gap: 8px; margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
 .yktier__gets .px { flex: none; margin-top: 6px; color: var(--t-d); }
 
+/* ---- the plans (render/yuki.ts plans, data/yuki.ts YUKI_PLANS): a card a plan, built like the tiers' stat sheet: its
+   tone on the hard shadow, the price big in the title face, what it includes ticked, its keys at its foot (level across
+   a row). Wide, the four subscriptions share a row and the one-time app and what's next share the one under it; two
+   columns on a tablet, one on a phone. Max and Ultra are greyed out until they exist. */
+.yks__lead { margin: calc(var(--s-2) - var(--s-5)) 0 var(--s-5); font-size: 1.25rem; line-height: 1.5; color: var(--fg-2); }
+.ykplans { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .ykplans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1000px) {
+  .ykplans { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ykplan--pc, .ykplan--next { grid-column: span 2; }
+}
+.ykplan {
+  --t: var(--cyan);
+  --t-d: var(--azure);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px 18px 20px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--t);
+}
+.ykplan--mint { --t: var(--mint); --t-d: var(--mint-d); }
+.ykplan--magenta { --t: var(--magenta); --t-d: var(--scarlet); }
+.ykplan--yellow { --t: var(--gold); --t-d: var(--yellow-d); }
+.ykplan--paper { --t: var(--line-2); --t-d: var(--muted); }
+.ykplan__name { display: flex; align-items: center; gap: 10px; margin: 0; font: 400 1.375rem / 1.2 var(--f-px); }
+.ykplan__name .tile { flex: none; }
+.ykplan__price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 6px 0 0; }
+.ykplan__amt { font: 400 50px / 1 var(--f-title); color: var(--ink); font-synthesis: none; -webkit-font-smoothing: none; }
+.ykplan__per { font: 400 1rem / 1 var(--f-label); letter-spacing: 0.06em; color: var(--muted); }
+.ykplan__under { margin: -4px 0 0; color: var(--fg-2); }
+/* (ul.: base.css resets every classed list's padding with ul[class]) */
+ul.ykplan__inc { display: grid; gap: 6px; margin: 4px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); list-style: none; }
+.ykplan__inc li { display: flex; gap: 8px; color: var(--fg-2); }
+.ykplan__inc .px { flex: none; margin-top: 6px; color: var(--t-d); }
+/* (in a narrow card the two keys stack, and the card key wraps its tag under its words rather than spill out) */
+.ykplan__keys { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin: auto 0 0; padding-top: 8px; }
+.ykplan__keys .btn { flex: 0 1 auto; min-width: 0; }
+/* paying by card: a key that isn't there yet (a disabled button, no link): no fill, a dashed edge, no pop */
+.ykplan__card { --btn-bg: transparent; --btn-fg: var(--muted); --btn-edge: var(--line-2); flex-wrap: wrap; gap: 6px 8px; padding-block: 6px; white-space: normal; border-style: dashed; cursor: not-allowed; }
+.ykplan__card, .ykplan__card:hover, .ykplan__card:active { transform: none; box-shadow: none; --btn-edge: var(--line-2); }
+.ykplan__later { padding: 3px 6px 2px; border: 1px solid var(--line-2); font: 400 1rem / 1 var(--f-label); letter-spacing: 0.04em; }
+/* what's next: greyed out, a dashed edge and no tone, its name and "Coming soon" in the middle of its slot */
+.ykplan--soon { justify-content: center; align-items: center; background: var(--panel-2); border-style: dashed; border-color: var(--line-2); box-shadow: none; color: var(--muted); }
+.ykplan--soon .tile { filter: grayscale(1); opacity: 0.7; }
+.ykplan__soon { margin: 0; padding: 6px 10px 5px; border: 2px dashed var(--line-2); font: 400 1rem / 1 var(--f-label); letter-spacing: 0.06em; }
+
+/* ---- refunds and cancellations (render/yuki.ts refunds): three plain lines on one panel */
+.yks--refunds { scroll-margin-top: calc(var(--hdr-h) + 16px); outline: none; }
+ul.ykrefunds { display: grid; gap: 10px; margin: 0; padding: 18px; background: var(--panel); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); list-style: none; }
+.ykrefunds li { display: flex; gap: 10px; color: var(--fg-2); }
+.ykrefunds .px { flex: none; margin-top: 6px; color: var(--mint-d); }
+.ykrefunds .link { overflow-wrap: anywhere; }
+
+/* ---- the page's foot (render/yuki.ts foot): terms, privacy, refunds, contact, in a row over the site's footer */
+.ykfoot { padding-top: var(--s-4); border-top: 2px solid var(--ink); }
+.ykfoot ul { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 0; padding: 0; list-style: none; }
+/* (each link as the site footer's: a muted glyph, the word; the address shows beside Contact) */
+.ykfoot a { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 40px; color: var(--fg-2); text-decoration: none; }
+.ykfoot a:hover { color: var(--fg); }
+.ykfoot a:hover > span:not(.ykfoot__mail) { text-decoration: underline; text-underline-offset: 4px; }
+.ykfoot .px { flex: none; color: var(--muted); }
+.ykfoot a:hover .px { color: var(--scarlet); }
+.ykfoot__mail { color: var(--azure); text-decoration: underline; text-underline-offset: 4px; overflow-wrap: anywhere; }
+
 /* ---- the install guide: numbered steps down a rail */
 .yks--install { scroll-margin-top: calc(var(--hdr-h) + 16px); outline: none; }
 .yksteps { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }

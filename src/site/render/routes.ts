@@ -56,7 +56,7 @@ export function routes(content: SiteContent): Route[] {
     })),
     // YUKI's page (Dex 10-26: dex.place/yuki, under Downloads)
     {
-      meta: { path: "/yuki/", title: "YUKI", page: "downloads", description: `YUKI: ${YUKI_LINE} Download, install guide and what your PC gets.` },
+      meta: { path: "/yuki/", title: "YUKI", page: "downloads", description: `YUKI: ${YUKI_LINE} Download, plans and prices, install guide and what your PC gets.` },
       main: () => yukiPage(),
     },
     {

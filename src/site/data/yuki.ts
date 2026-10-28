@@ -10,8 +10,12 @@
 //                that first run (YUKI_TIERS_LIVE).
 //   needs        packages/desktop/electron-builder.yml (an x64 NSIS installer; Electron runs on Windows 10 and 11)
 // The release itself (version, file, size, SHA-256) is data/downloads.ts YUKI_RELEASE: one place to fill.
+//   plans, refunds, the page's foot   the coordinator's brief for the Lemon Squeezy store review (Dex 10-28), word for
+//                word: the prices, what each plan includes, the refund lines. The legal pages are the ones the YUKI
+//                web app already links (dex.place/api/legal: terms, privacy). The contact address is YUKI_CONTACT_EMAIL.
 
 import type { IconName } from "../pixels.ts";
+import { KOFI_URL } from "./nav.ts";
 
 export const YUKI_LINE = "A local AI agent for your own PC.";
 
@@ -120,6 +124,111 @@ export const YUKI_WEB = {
 
 /** What the installer needs, on the page whatever the tiers say. */
 export const YUKI_NEEDS = "For Windows 10 or 11, 64-bit.";
+
+// ------------------------------------------------------------------ plans, refunds, contact
+
+/**
+ * Where to write about YUKI: a refund, a plan, anything that didn't work (Dex 10-28: a spare address he picked, fine to
+ * publish). The only place it is written: the refunds section and the page's foot both read it from here.
+ */
+export const YUKI_CONTACT_EMAIL = "saniczlord@gmail.com";
+
+/** A plan's price in US dollars: `per` "month" is a subscription (`yearUsd` its yearly price), "once" a purchase. */
+export interface YukiPrice {
+  readonly usd: number;
+  readonly per?: "month" | "once";
+  readonly yearUsd?: number;
+  /** A few words under the price. */
+  readonly note?: string;
+}
+
+export interface YukiPlan {
+  readonly id: string;
+  readonly name: string;
+  readonly icon: IconName;
+  readonly tone: "cyan" | "mint" | "yellow" | "magenta" | "paper";
+  /** null: not on sale yet (greyed out, "Coming soon", no keys). */
+  readonly price: YukiPrice | null;
+  readonly includes: readonly string[];
+}
+
+/** Over the plans. */
+export const YUKI_PLANS_INTRO = "Start free. Upgrade when you want more of her.";
+
+/** The plans, cheapest first; the one-time app and what's next after the subscriptions. */
+export const YUKI_PLANS: readonly YukiPlan[] = [
+  {
+    id: "free", name: "Free", icon: "blob", tone: "paper",
+    price: { usd: 0 },
+    includes: ["20 messages a day", "3 fast pictures", "5 web searches", "3 Deep think answers"],
+  },
+  {
+    id: "lite", name: "YUKI Lite", icon: "star", tone: "mint",
+    price: { usd: 5, per: "month", yearUsd: 50 },
+    includes: [
+      "Unlimited chat (fair use)",
+      "Remembers you across chats",
+      "10 fast pictures a day, plus unlimited slow-lane pictures",
+      "10 Deep think a day",
+      "30 web searches a day",
+    ],
+  },
+  {
+    id: "plus", name: "YUKI Plus", icon: "sparkle", tone: "cyan",
+    price: { usd: 12, per: "month", yearUsd: 120 },
+    includes: ["Everything in Lite", "Remembers more detail", "30 fast pictures a day", "40 Deep think a day", "100 web searches a day"],
+  },
+  {
+    id: "pro", name: "YUKI Pro", icon: "cards", tone: "magenta",
+    price: { usd: 30, per: "month", yearUsd: 300 },
+    includes: [
+      "Everything in Plus",
+      "Remembers the most",
+      "75 fast pictures a day, ahead in line",
+      "Unlimited Deep think and web search, plus deep research (fair use)",
+      "2 chats at once",
+      "Long agent runs",
+      "The YUKI desktop app included",
+    ],
+  },
+  {
+    id: "pc", name: "YUKI for your PC", icon: "window", tone: "yellow",
+    price: { usd: 19, per: "once", note: "yours forever" },
+    includes: ["The desktop app", "A 14-day refund if it can't run a brain on your PC", "Included with Pro"],
+  },
+  { id: "next", name: "Max and Ultra", icon: "plus", tone: "paper", price: null, includes: [] },
+];
+
+/** Under the plans. */
+export const YUKI_PLANS_NOTE = "Unlimited means fair use: heavy use queues only when we're busy. Limits may change during the beta.";
+
+/**
+ * A plan's keys. Free opens YUKI on the web; a paid plan joins on Ko-fi's tiers page, and paying by card shows as
+ * coming soon (no link until a checkout exists).
+ */
+export const YUKI_PLAN_KEYS = {
+  free: { label: "Start free", href: YUKI_WEB.href },
+  kofi: { label: "Join on Ko-fi", href: `${KOFI_URL}/tiers` },
+  card: { label: "Pay with card", soon: "Coming soon" },
+} as const;
+
+/** Refunds and cancellations. `{email}` is where YUKI_CONTACT_EMAIL goes, as a mail link. */
+export const YUKI_REFUNDS: readonly string[] = [
+  "Cancel any time; you keep access until the end of the period you paid for.",
+  "If something didn't work, email us at {email} within 14 days of a payment and we'll refund it.",
+  "The $19 app has a 14-day refund if it can't run a brain on your PC.",
+];
+
+/**
+ * The page's foot: the terms and privacy pages the YUKI web app links (served by dex.place/api/legal), the refunds
+ * section on this page, and the contact address.
+ */
+export const YUKI_FOOT: readonly { readonly label: string; readonly href: string; readonly icon: IconName }[] = [
+  { label: "Terms", href: "/api/legal/terms", icon: "page" },
+  { label: "Privacy", href: "/api/legal/privacy", icon: "book" },
+  { label: "Refunds", href: "#refunds", icon: "coin" },
+  { label: "Contact", href: `mailto:${YUKI_CONTACT_EMAIL}`, icon: "arrow" },
+];
 
 /**
  * The live link (Dex 10-26: "optional live link where YUKI answers a status ping from the dex.place origin only"):
