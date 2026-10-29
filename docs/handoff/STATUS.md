@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-29T04:48:46.611Z (29/10/2026, 11:48:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-29T05:48:45.681Z (29/10/2026, 12:48:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,19 +12,19 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_6b8b5e4f-1c6 — last activity 2027 min ago
+### wf_6b8b5e4f-1c6 — last activity 2087 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **deploy:web** (done): YUKI 0.2.0 is fully live: the cloud Worker is redeployed, YUKI on the web answers at dex.place/yuki/app/, and dex.place's YUKI page serves the real download. Nothing failed, so no rollback was needed. 1. Cloud Worker (dex-api): no D1 migration was waiting, since 0001-0005 were already applied (`wrangler d1 migrations list` said so). Typecheck and the 186 cloud tests passed, then I deployed version fa0344f5. That depl
 - **verify:live** (done): verdict fix
 
-### wf_fba5f572-725 — last activity 3189 min ago
+### wf_fba5f572-725 — last activity 3249 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **prep:site** (done): The YUKI page on branch claude/yuki-page is ready to ship once v0.2 is published. Nothing was pushed, merged or deployed. Work happened only in D:\Dex\Projects\dex.place-wt\yuki-page; the YUKI repo was only read, never edited. The PC checkout and the live server were not touched. Every local server I started was stopped. What changed: - The site's Yuki is now the app's final mascot. Round 3 is finished and committed.
 - **check:site** (done): verdict fix
 
-### wf_201c626b-e06 — last activity 3419 min ago
+### wf_201c626b-e06 — last activity 3479 min ago
 4 agents: 4 done, 0 running or stopped mid-way, 0 failed.
 
 - **merge:w6a-picker** (done): The picker lane (p2/w6a-picker) is merged into codex/phase1-finish-20261023 as 78dc72e. The three leftovers each have their own commit after it, plus one extra fix I found while checking the swap. The root typecheck passes and the tests are green. Nothing was pushed. **The merge** - **Conflicts:** four files had them: ModelControls, demoData, fakeEngine and ModelSources. I kept both sides each time: - The main line's
@@ -32,34 +32,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **merge:w7b-firstrun** (done): I merged p2/w7b-firstrun into codex/phase1-finish-20261023 (merge commit 09e7167) and added two follow-up commits. The root typecheck passes and every test passes. Nothing was pushed or published. **Conflicts:** 22 files, all resolved by keeping both sides: - Catalogue: voices and runtimes sit side by side (protocol, schema, the check, the catalogue copy). - Downloads: main's installer registration runs alongside the
 - **check:w7b-firstrun** (done): verdict fix
 
-### wf_d62c443d-630 — last activity 3452 min ago
+### wf_d62c443d-630 — last activity 3512 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **draw:r1** (done): 
 - **judge1:r1** (done): 
 - **judge2:r1** (done): 
 - **draw:r2** (running)
-
-### wf_6e3339e3-3ac — last activity 4265 min ago
-1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
-
-- **draw:r1** (running)
-
-### wf_9c8aa1d9-320 — last activity 4266 min ago
-12 agents: 12 done, 0 running or stopped mid-way, 0 failed.
-
-- **build:w11-suite** (done): The release check suite is built and committed on p2/w11-suite as d283fe1. `npm run release-check` starts the engine bundle the installer ships, on Electron as Node like the app. It uses a fresh scratch profile (port 4785x, `YUKI_NO_KEYRING=1`, inherited `YUKI_*` variables stripped, relay off) and talks to the engine over the WebSocket the way the app does. Scenarios pass or fail on content, never on "no error" alone
-- **build:w12-site** (done): I finished lane W12 on branch claude/yuki-page. Nothing is pushed or merged, and the PC checkout and the live server were not touched. On dex.place, YUKI is now the big project and the dex.place world sits as a smaller strip below it. In Downloads, YUKI replaces dexCode and dexClient, and a small "Retired" line says so in both places. YUKI's page at /yuki/ covers what it is, a hardware-tier stat sheet (S/A/B/C), and 
-- **critic1:w11-suite:r1** (done): verdict ship
-- **critic2:w11-suite:r1** (done): verdict ship
-- **critic1:w12-site:r1** (done): verdict fix
-- **critic2:w12-site:r1** (done): verdict fix
-- **fix:w12-site:r1** (done): I fixed all 13 findings: every high and medium one, and the low ones that were cheap. Items 4, 6 and 10 are merge and release steps that stay outside this lane; they are written out in the integrator notes. Changes: - The drawn Windows prompt's second cursor now taps "Run anyway" at every width. It used to land on "Don't run". - Clicking Yuki makes her hop, and each new line pops her speech bubble again. The one-time
-- **critic1:w12-site:r2** (done): verdict fix
-- **critic2:w12-site:r2** (done): verdict fix
-- **fix:w12-site:r2** (done): I fixed all nine findings that belong to this lane and committed them as bc13a971 on claude/yuki-page in D:\Dex\Projects\dex.place-wt\yuki-page. The page now only describes what v0.2 will actually do. Step 4 says YUKI opens and looks over your PC: its graphics card, its memory and the AI engines already on it. It no longer says she picks the setup or shows licences before Hugging Face downloads. The tier table now co
-- **critic1:w12-site:r3** (done): verdict fix
-- **critic2:w12-site:r3** (done): verdict fix
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
