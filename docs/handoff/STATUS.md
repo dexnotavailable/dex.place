@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-30T18:20:22.428Z (31/10/2026, 01:20:22 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-30T19:28:48.388Z (31/10/2026, 02:28:48 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,12 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_6b8b5e4f-1c6 — last activity 4281 min ago
-2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
-
-- **deploy:web** (done): YUKI 0.2.0 is fully live: the cloud Worker is redeployed, YUKI on the web answers at dex.place/yuki/app/, and dex.place's YUKI page serves the real download. Nothing failed, so no rollback was needed. 1. Cloud Worker (dex-api): no D1 migration was waiting, since 0001-0005 were already applied (`wrangler d1 migrations list` said so). Typecheck and the 186 cloud tests passed, then I deployed version fa0344f5. That depl
-- **verify:live** (done): verdict fix
-
+_No workflow activity in the last 72 hours._
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
 
