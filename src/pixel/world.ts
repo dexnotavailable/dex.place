@@ -8,7 +8,7 @@
 // textures on its next frame. Tear a whole room down with
 // renderer.releaseWorld(world).
 
-import { Chunk, Particles, P_DRAG, P_FADE, P_RISE } from "./bodies.ts";
+import { Chunk, Particles, P_AMB, P_DRAG, P_FADE, P_RISE } from "./bodies.ts";
 import { F_FRESH, type Rect } from "./cells.ts";
 import { rawRect } from "./break.ts";
 import { coverage, hitBounds, type Hit } from "./hits.ts";
@@ -18,6 +18,23 @@ import type { Part } from "./part.ts";
 import { follow, Prop, type BaseParams, type Hang, type Recipe } from "./prop.ts";
 import { physics, SCALE } from "./scale.ts";
 import { rng, type Rng } from "./util.ts";
+import { FlashGate } from "../scenes/engine/flashes.ts";
+
+/** Something that walks through the room (the player, later mobs): feet at (x, y). Grass bends, puddles splash. */
+export interface Actor {
+  x: number;
+  y: number;
+  /** Horizontal speed, px/s (sign = direction). */
+  vx: number;
+  /** Height in px (the player: H). */
+  h: number;
+  id?: string;
+}
+
+/** The global flash gate shape (src/scenes/engine/flashes.ts): at most 3 starts a second, 1 per 2 s reduced. */
+export interface FlashGateLike {
+  allow(now: number, reduced: boolean): boolean;
+}
 
 /** Same fields as the lab's PointLight (src/lab/engine/renderer.ts). */
 export interface PointLight {
@@ -96,7 +113,26 @@ export class PixelWorld {
   hostGlows: Glow[] = [];
   heal: { delay: number; rate: number; time?: number };
   wind: { x: number; gust: number };
-  budget = { chunks: 72, particles: 6000, lights: 16, cells: 600_000 };
+  budget = { chunks: 72, particles: 6000, lights: 16, cells: 600_000, ambient: 320 };
+  /**
+   * Room breakage rule: "normal", or "sway" where nothing fractures, tears or
+   * shatters (the chapel nave). Per-prop classes are the recipes' `breakage`.
+   */
+  breakage: "normal" | "sway" = "normal";
+  /** Reduced motion: ambient emitters thin out, flashes go through the reduced gate, nothing strobes. */
+  reduced = false;
+  /** Rain 0..1 (the host copies its weather here): puddles dot, flames hiss. */
+  rain = 0;
+  /** Who is walking through the room this frame (the host sets it). */
+  actors: Actor[] = [];
+  /**
+   * The camera view in world px (the host sets it each frame). Dynamic parts
+   * (flames, cloth, ropes) outside it by more than 2 H skip re-rasterising,
+   * and ambient emitters only spawn inside it. null: everything counts as in view.
+   */
+  view: { x: number; y: number; w: number; h: number } | null = null;
+  /** Every light flash asks this gate; the host passes the runtime's global one. */
+  flashGate: FlashGateLike = new FlashGate();
   saveData: Record<string, Record<string, unknown>> = {};
   readonly gravity: number;
   private transientLights: { l: PointLight; t: number; dur: number; i0: number }[] = [];
@@ -111,7 +147,11 @@ export class PixelWorld {
   addEffect(e: { done: boolean; step(dt: number): void }): void {
     this.effects.push(e);
   }
-  private groundFn = (x: number, y: number): boolean => this.solidAt(x, y);
+  /** Ropes rest on the ground only (a cable leaving a solid body must not be shoved out of it every step). */
+  private ropeGroundFn = (x: number, y: number): boolean => {
+    for (const p of this.props) for (const part of p.parts) if (part.ground && part.visible && part.cellAt(x, y) >= 0) return true;
+    return y >= this.height + 40;
+  };
   /** Parts removed for good whose GPU textures the renderer frees on its next frame. */
   private retired: Part[] = [];
 
@@ -137,7 +177,7 @@ export class PixelWorld {
     this.chunks = keep;
   }
   /** Counters for the sandbox readout. */
-  stats = { steps: 0, simMs: 0, awakeRopes: 0, awakeCloth: 0, awakeChunks: 0, wounds: 0 };
+  stats = { steps: 0, simMs: 0, awakeRopes: 0, awakeCloth: 0, awakeChunks: 0, wounds: 0, dynamicRuns: 0, ambient: 0, flashDenied: 0 };
 
   constructor(o: WorldOptions = {}) {
     this.H = o.H ?? SCALE.H;
@@ -209,7 +249,7 @@ export class PixelWorld {
     let ar = 0, ac = 0;
     for (const p of this.props) {
       for (const r of p.ropes) {
-        r.step(dt, g, this.hasWind() ? windFn : undefined, this.groundFn);
+        r.step(dt, g, this.hasWind() ? windFn : undefined, this.ropeGroundFn);
         if (!r.sleeping) ar++;
       }
       for (const c of p.cloths) {
@@ -222,7 +262,7 @@ export class PixelWorld {
         if (h.rope.cut.some((v) => v)) this.landHang(h);
       }
     }
-    let ak = 0;
+    let ak = 0, dyn = 0;
     for (const c of this.chunks) {
       c.step(dt, g, this, this.width);
       if (!c.asleep) ak++;
@@ -244,7 +284,14 @@ export class PixelWorld {
         if (part.glintT > 1.3) part.glintT = -1;
       }
       part.updateTransform();
-      if (part.dynamic) part.dynamic(part, dt);
+      if (part.dynamic) {
+        // throttled parts (pixel-art flames at 15 Hz) and parts out of view wait
+        if (part.dynamicEvery > 1 && (this.stats.steps + part.dynamicPhase) % part.dynamicEvery !== 0 && part.tag["drawn"]) continue;
+        if (this.view && part.tag["drawn"] && !this.partInView(part)) continue;
+        part.dynamic(part, dt);
+        part.tag["drawn"] = true;
+        dyn++;
+      }
     }
     for (const p of this.props) {
       const s = p.save();
@@ -255,6 +302,8 @@ export class PixelWorld {
     this.stats.awakeCloth = ac;
     this.stats.awakeChunks = ak;
     this.stats.wounds = this.wounds.length;
+    this.stats.dynamicRuns = dyn;
+    this.stats.ambient = this.countAmbient();
     this.stats.simMs = performance.now() - t0;
   }
 
@@ -290,7 +339,8 @@ export class PixelWorld {
     for (const p of [...this.props]) {
       const b = p.bounds();
       const loose = p.ropes.length + p.cloths.length > 0;
-      if (!loose && (b.x1 < hb.x0 || b.x0 > hb.x1 || b.y1 < hb.y0 || b.y0 > hb.y1)) continue;
+      const m = (p.recipe.feel ?? 0) * this.H;
+      if (!loose && (b.x1 + m < hb.x0 || b.x0 - m > hb.x1 || b.y1 + m < hb.y0 || b.y0 - m > hb.y1)) continue;
       const reports = p.hit(hit);
       out.push({ prop: p, reports });
     }
@@ -395,12 +445,72 @@ export class PixelWorld {
 
   // --- lights, glows, sound, events ------------------------------------------
 
-  flashLight(x: number, y: number, colour: [number, number, number], radius: number, intensity: number, dur: number): void {
+  /**
+   * A short light flash (sparks, a flare, an impact). It asks the flash gate
+   * first; a denied flash is dropped (`force` skips the gate for lights that
+   * rise slowly and never strobe). Returns whether it started.
+   */
+  flashLight(x: number, y: number, colour: [number, number, number], radius: number, intensity: number, dur: number, o: { force?: boolean } = {}): boolean {
+    if (!o.force && !this.flashGate.allow(this.time, this.reduced)) {
+      this.stats.flashDenied++;
+      return false;
+    }
+    if (this.reduced) {
+      intensity *= 0.6;
+      dur = Math.max(dur, 0.25);
+    }
     this.transientLights.push({ l: { x, y, height: this.H * 0.5, radius, colour, intensity }, t: 0, dur, i0: intensity });
+    return true;
   }
 
-  flashGlow(g: Glow, dur: number): void {
-    this.transientGlows.push({ g, t: 0, dur, i0: g.intensity });
+  flashGlow(g: Glow, dur: number, o: { force?: boolean } = {}): boolean {
+    if (!o.force && !this.flashGate.allow(this.time, this.reduced)) {
+      this.stats.flashDenied++;
+      return false;
+    }
+    this.transientGlows.push({ g, t: 0, dur, i0: g.intensity * (this.reduced ? 0.6 : 1) });
+    return true;
+  }
+
+  // --- view, actors, ambient ---------------------------------------------------
+
+  /** Is world (x, y) inside the view (plus a margin in px)? No view set: always. */
+  inView(x: number, y: number, margin = 0): boolean {
+    const v = this.view;
+    if (!v) return true;
+    return x >= v.x - margin && x <= v.x + v.w + margin && y >= v.y - margin && y <= v.y + v.h + margin;
+  }
+
+  private partInView(part: Part): boolean {
+    const v = this.view!;
+    const b = part.worldBounds();
+    const m = this.H * 2;
+    return !(b.x1 < v.x - m || b.x0 > v.x + v.w + m || b.y1 < v.y - m || b.y0 > v.y + v.h + m);
+  }
+
+  /** Actors whose feet are within `r` px of (x, y) horizontally and `ry` vertically. */
+  actorsNear(x: number, y: number, r: number, ry = this.H): Actor[] {
+    return this.actors.filter((a) => Math.abs(a.x - x) <= r && Math.abs(a.y - y) <= ry);
+  }
+
+  private countAmbient(): number {
+    const P = this.particles;
+    let n = 0;
+    for (let i = 0; i < P.n; i++) if (P.flags[i]! & P_AMB) n++;
+    return n;
+  }
+
+  /**
+   * Spawn an ambient particle (dust, motes, moths, drifting ash): capped per
+   * room (`budget.ambient`, halved in reduced motion), only in view, and
+   * never allowed to crowd out debris. Returns the index or -1.
+   */
+  spawnAmbient(s: Parameters<Particles["spawn"]>[0]): number {
+    const cap = this.reduced ? this.budget.ambient >> 1 : this.budget.ambient;
+    if (this.stats.ambient >= cap || !this.inView(s.x, s.y, this.H)) return -1;
+    if (this.particles.n >= this.particles.cap - 200) return -1;
+    this.stats.ambient++;
+    return this.particles.spawn({ ...s, flags: s.flags | P_AMB });
   }
 
   private stepTransients(dt: number): void {

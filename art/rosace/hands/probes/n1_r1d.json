@@ -1,0 +1,25 @@
+{
+ "_doc": "glaive-hands round 1d: GR-N02 on N1 m8 (the near upper arm 7 deg off the haft). The near arm's pole swings the elbow up and back so the upper arm crosses the haft.",
+ "base": "art/rosace/hands/poses/n1_contact.json",
+ "variants": {
+  "e0_m8": {},
+  "e1_elbow_back": {
+   "poles": {
+    "arm.R": [
+     -0.45,
+     0.45,
+     0.9
+    ]
+   }
+  },
+  "e2_elbow_out": {
+   "poles": {
+    "arm.R": [
+     -0.8,
+     0.0,
+     0.7
+    ]
+   }
+  }
+ }
+}

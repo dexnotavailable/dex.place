@@ -1,0 +1,41 @@
+{
+ "name": "t5_hiphand",
+ "idea": "free hand on the far hip instead of the collar (A/B for the second arm window)",
+ "set": {
+  "arms": {
+   "far": {
+    "hand": [
+     24,
+     82
+    ],
+    "elbow_hint": [
+     40,
+     96
+    ],
+    "foreshorten": [
+     0.8,
+     0.9
+    ]
+   }
+  }
+ },
+ "score": 11,
+ "gap_area": 318,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [],
+ "rank": 1,
+ "kept": true,
+ "_doc": "thumbnail t5_hiphand (free hand on the far hip instead of the collar (A/B for the second arm window)): 11/11 silhouette rules pass, gap area 318 px2. KEPT: passes FG-P08, FG-P09, FG-P10, FG-P11, FG-P13, FG-P14, FG-N04, GR-P05, GR-P09, GR-P10, GR-N02"
+}

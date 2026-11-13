@@ -81,9 +81,9 @@ for these numbers. The scene engine and the world runtime read it: `src/world/co
 its names from it and authors room geometry in H through `h(n)`. Nudging H there rescales
 everything written in H below. Nothing in this plan is sized in raw pixels.
 
-**One loose end.** The pixel lane keeps a second copy, `src/pixel/scale.ts` (`SCALE.H`,
-`closeupH`, `present.integerCover`). Its values agree today, but two copies can drift apart. It
-should import from `src/scenes/engine/scale.ts` instead; that is lane P0's first task (section 13).
+**One loose end (closed by P0, 2026-09-29).** `src/pixel/scale.ts` now reads
+`src/scenes/engine/scale.ts`: it only renames the numbers for the pixel engine (`SCALE.H`,
+`closeupH`, `present.integerCover`) and uses the same `presentRect`, so nothing can drift apart.
 
 | Key | Value | What it means |
 |---|---|---|
@@ -114,18 +114,18 @@ accelerations, jump velocities and gravity together by `SCALE.player / 96` (the 
 `src/world/config.ts`), so every jump covers the same number of H, and nudging H keeps every gap
 in this plan valid. Timings never scale.
 
-The heights below were **measured in `/world/`** (`src/world/tools/flow.mjs`). The distances
-across are still the drafts' simulations of the lab tuning, taking the more conservative number
-where they differed. Measuring them is part of lane W0's acceptance.
+The heights below were **measured in `/world/`** (`src/world/tools/flow.mjs`), and since W0 the
+distances across too (`src/world/tools/reach.mjs`, on the flat pier of the grey-box A0, real
+input at 60 Hz, 2026-09-29).
 
 | Move | Reach | Design limit, with margin |
 |---|---|---|
 | Run | 2.0 H/s, so one screen takes 8 s | |
 | Walkable step (no jump) | the runtime steps up 0.26 H by itself (`PHYSICS.stepUp`) | 0.25 H |
-| Single jump | **1.03 H up (measured)**, about 1.4 H across at a run | **ledges up to 0.9 H, gaps up to 1.1 H** |
-| Jump + double jump | **1.71 H up (measured)**, about 2.2 H across | ledges up to 1.5 H, gaps up to 1.9 H |
-| Ground dash | about 1.1 H | |
-| Jump + double + air dash | about 3.2 to 3.6 H across | dash gaps up to 2.8 H |
+| Single jump | **1.02 H up, 1.30 H across at a run (measured)** | **ledges up to 0.9 H, gaps up to 1.1 H** |
+| Jump + double jump | **1.70 H up, 2.27 H across (measured)** | ledges up to 1.5 H, gaps up to 1.9 H |
+| Ground dash | **1.14 H (measured)** | |
+| Jump + double + air dash | **3.17 H across (measured)** | dash gaps up to 2.8 H |
 
 **Rules the map follows.** They keep the world friendly to people who never play games.
 
@@ -185,9 +185,14 @@ Each room names one mode:
 give fixed compositions with extra bars, which covers most of the vista hold. The locked, rail,
 free and arena-clamp modes and a per-room anchor are W0 asks (section 12).
 
-The arrival scene's deck currently sits at 0.91 of the view, which is the scenes lane's
-composition, against this plan's 0.8. R-A settles it by looking at both. The dock's reflections
-of the player and pilings need visible rows above the bottom bar.
+**Settled by R-A (2026-09-29): the dock's deck sits at 0.8.** The scenes lane first composed the
+arrival with the deck at 0.91 of the view. Looked at side by side with the world's bars
+(`review/world/phase2/R-A/anchor/compare-091-vs-080-with-bars.png`): at 0.91 the deck is 20 px
+above the bottom bar, the player's reflection and the pilings' are cut off, and a phone's touch
+pad covers the dock; at 0.8 the lake gets a full reflected player and pier under the dock, the
+sky still fills the top two thirds, the figure stands against the sparkle path, and every
+Ringwater room keeps the feet on the same row. `src/scenes/scenes/arrival/geo.ts` `DECK_AT`
+holds it.
 
 ---
 
@@ -1423,6 +1428,11 @@ never one chart with two y-axes, with a hover tooltip on each point. The same da
 These values are design intent, not measurements. The integration lane checks them in a real
 playtest (section 13, I1).
 
+**Checked by I1 (2026-09-29, `review/world/phase2/I1/pacing.png`):** in the recorded playtest the
+game's tension was in the plan's band at every beat walked and its space at 18 of 23 (A4, D3, the
+pilgrim shrine, E3 and A0 read one band off, as their room texts say), in the plan's order; the
+bot took 8.8 minutes, so the times are compressed against a person's 12 to 15.
+
 ---
 
 ## 11. Save state and world flags
@@ -1449,6 +1459,10 @@ answers every "is it open" question.
 | `latch:sky-door` (S4) | the latch on E4 | the sky door is a two-way door; the dusk patch lies in the loft |
 | `round:done` | walking through the released door the first time | the keeper and two cups at Pier's End, evening light (this session); later visits show her chair in the dusk patch |
 | `keeper:greeted` | her first line, once | she won't repeat it |
+
+**Start place after the round (I1):** completing the round (`round:done`) sets the save's start
+place to the dock, so the next visit opens on the morning dock; resting at a shrine later moves it
+as usual.
 
 **Not saved:** Ringwater's evening light (it lasts only for the session, so the arrival is
 morning again next visit) and every broken or healed prop apart from the cuts above.
@@ -1542,8 +1556,9 @@ is actually wired today:
 - Scenes are found by a glob in `src/scenes/main.ts`, so a new scene file needs no shared edit.
 - Rooms are registered in `src/world/main.ts`, which W0 owns. Region lanes hand W0 one import
   line each.
-- Pixel-matter recipes are exported from `src/pixel/props/index.ts`, which P0 owns. Region lanes
-  put their recipes in `src/pixel/props/<region>/` and hand P0 the export line.
+- Pixel-matter recipes in `src/pixel/props/<region>/` are found automatically
+  (`src/pixel/registry.ts`, `findRecipe(id)`), so region lanes add files and never edit
+  `src/pixel/props/index.ts` (P0, proven; `docs/props/ENGINE.md`, "Region recipes").
 
 - A lane never edits another lane's paths.
 - Nobody edits `vite.config.ts`, `src/site/**`, `src/lab/**`, `tools/**`, `art/**` or
@@ -1578,6 +1593,202 @@ is actually wired today:
 | **S1 Sound** | `src/world/sound/**` (cue points, beds, footstep tables), `public/audio/world/**` | Copy the chosen files from `legacy/site/public/audio/` into `public/audio/` and switch `AUDIO_BASE`, since `legacy/` is never served in production. Then the music state machine's content: cue points, fades, the rest-then-swell rule, the ambience beds and the SFX list in section 9, footsteps per surface. | state changes driven by W0 | No abrupt starts: every music entry is a swell. Rooms that belong together keep one playhead. The archive is silent. **Dex listens and approves by ear**; fade checks alone don't count. |
 | **I1 Story and integration** (last) | `src/world/story/**` | The residents' states; the keeper's arc and the ending; distant lamps keyed to the save; the lamp board; the evening state; all shortcuts end to end. | the whole round | A full first-round playtest recorded, with space and tension checked against section 10. Returning-visitor times checked against section 6. Real-device runs on Samsung Internet (Android) and iPad Safari, reported separately from emulation. A laptop GPU measurement per region. |
 
+**Status, P0 (2026-09-29): proven.** The scale is folded into one source; region recipe folders
+are auto-discovered; the whole shared kit is built (shrine lantern and offering bowl, doors of
+every kind with the latched state and maintenance rail, lamp post, bench and pew, loose candles,
+hanging lantern, hanging bell, banners, tapestry and pennants, prayer flags and laundry, grass,
+flowers and vines, rubble, crates and barrels, luggage, signs including neon, cables and chains,
+breakable pillars, training dummy, lever, dust, moths, puddles, paper); the proof props match
+the section 1 sizes and the map banner shows the real route. Each recipe is recorded through its
+states, critiqued at game size and fixed once; undisturbed props cost nothing but 15 Hz flames;
+caps hold; the breakage policy is enforced and checked (fix round 2: grass, vines and rubble's
+`shake` no longer cut or crumble in a sway-only room, and `policy.mjs` now fires every move from
+both sides and checks the form of code-drawn plants and the floor too: 0 violations, and it
+reports 4 when the plant gates are removed). Details and numbers:
+`docs/props/ENGINE.md`; captures: `review/world/phase2/P0/`.
+
+**Status, R-A Ringwater (2026-09-29): built and proven** (details: `RUNTIME.md` "Ringwater";
+captures `review/world/phase2/R-A/`). A0 to A4 and the ferry ride's lake replace the grey-box
+by id in `src/world/rooms/ringwater/`, on the grey-box's world coordinates, spawns, exits and
+prop ids, so the round's bot still walks them. Backdrops: the arrival scene made into a factory
+(`arrivalScene()`): the dock with its older boardwalk, the red line and the cliff foot (A1);
+Pier's End seen from 27 H further left with true parallax (a camera bias: A0); the cliff stair
+and the yard seen from higher (a camera rise: A2, A4); the evening palette after the round; the
+lodge interior is its own scene. The arrival colossus's rear-leg slice is fixed (the body's
+`EXTENT.x1` 300 -> 380: 68 of 116 sampled seconds of a pass showed a straight vertical cut of up
+to 61 rows before, none longer than 15 rows after, those being real straight leg edges and the
+cliff's occlusion; `edgecut-before/after.json`), and the deck is at 0.8 (section 1). Seventeen
+region recipes in `src/pixel/props/ringwater/` (counter with bell and ledger, keeper, lamp
+board, product board, stove and kettle, cups, the ringBench, shelves, lodge and sky doors,
+lodge facade, shrine arch, pier lantern, mooring posts with floats, bell post, reeds, ferry
+boat with the ferryman). Acceptance: the first frame has nothing usable in view and the red
+line runs from the player's feet to the right; the colossus crosses the shaft once a pass
+(about 118 s) and its lit reflection breaks up in the ripples; the account panel says plainly
+that the dex account isn't open yet; the map panel and the banner show only the save's lit
+shrines; the keeper's first line comes once per save (`keeper:greeted`); the sky door opens
+barred onto the dusk until `latch:sky-door`, then goes through; with `round:done` set this
+session Ringwater turns to evening, the keeper leaves the lodge (front door open) and sits at
+Pier's End with two cups and says her second line when you sit with her. Changed from the grey-
+box: A2 is one locked 9 H frame (the whole climb in view, so the lake backdrop holds true) and
+its top lamp post stands on the upper flight; the A4 shrine keeps the grey-box's x.
+Independent critic (2026-09-29, `review/world/phase2/critic-R-A/`, own Playwright probes at
+720p, 1080p 1.5x sharp, 1440p 2x and a 844 x 390 phone): every R-A acceptance item re-proven
+with real input and no page errors (nothing usable in view for 20 s at all four sizes, feet at
+0.8; colossus lit in the shaft about every 118 s; account panel text only; map and lamp board
+show exactly the save's shrines; sky door barred on a fresh save; ending through the real E4
+latch with `round:done`, "There they go." shown 1.5 to 6 s after sitting). The edge scan finds
+no body-space slice left on the arrival or colossus-plain. Polish notes, not blocking: the lodge
+is warm-toned but evenly lit (small stove glow, a bare upper-left wall); A2's cliff is a large
+flat dark mass; the player stands, not sits, on the Pier's End bench (no sit pose); after the
+round the lodge windows keep morning light.
+
+**Status, lane W0 (2026-09-29; details and numbers in [`RUNTIME.md`](RUNTIME.md)).** Built and
+proven in `/world/`: the grey-box of all 21 rooms (`src/world/rooms/_blockout/`, B3 and B4 as
+areas of B2, plus the ferry ride S2), walkable end to end by a bot using real input
+(`src/world/tools/round.mjs`); every jump the round needs is a 0.8 H ledge or a gap of at most
+1.1 H; the section 6 times are within 20% (first visit: account 18 s, donate 21 s, map 28 s,
+documentation 153 s, downloads 280 s, illustrations 372 s; returning: 18, 21, 29, 72, 117, 40 s);
+all four shortcuts work and their flags survive a reload (the sky door stays barred on a fresh save
+until the balcony latch); the website scroll-away works in every room, by wheel on desktop and by
+a vertical swipe on a phone. Also built: the pixel-matter adapter, the camera modes and per-room anchor, vista holds and
+the arena clamp, rides (crane hook, spire lift with the express stop, ferry) and wading,
+sitting, the music states of section 9 (as a machine; nothing listened to), the underground
+flag, the section 11 save keys, the travel-time logger, the story and sound hooks. Region lanes
+replace a grey-box room by giving theirs the same id in `src/world/rooms/<region>/`; nobody edits
+`main.ts`. Deviations: E4 is 28 H wide (a 12 H stair of standard steps needs 18 H of run), the
+A3 loft is 3.4 H tall so the lodge fits one locked screen.
+
+**Status, lane R-E (2026-09-29): E1 to E4 built and proven in `/world/`** (details and numbers in
+[`RUNTIME.md`](RUNTIME.md), "Region E"; recipes in [`../props/ENGINE.md`](../props/ENGINE.md),
+"Chapel"; captures in `review/world/phase2/R-E/`). The pilgrim path down the fallen ring at dusk
+(sun in the far ring's hole, colossi on the horizon, lit shrines as points on the valley floor,
+keyed to the save), the porch with the keeper's story in props, the Chapel of Light with Dex's
+nine works as real thumbnails pinned in their frames (section 14, default 3) and the full work on
+E with previous / next / all works, the catalogue, the rose shutter and its sweep, the nave rule,
+and the bell tower with the latch home. `verify.mjs` passes 23 of 23 with real input; the common
+checks pass (scale, sharp-bilinear, flash at most 3 a second under bell spam, 0.9 to 3.4 ms on
+d3d11). Deviations: the E1 surface is flights of standard steps (0.2 x 0.3 H, 33.7 degrees) with
+landings, since 44 H of drop over 80 H with a 6 H terrace leaves no room for a sub-30-degree ramp;
+shrine 5 sits at x 356.8 on a terrace 351.6..358 (plan: 360), the rib bell at 342.45 (plan: 344);
+E4 keeps W0's 28 H width and puts the balcony at the east end (its view looks back across the
+valley with the sun and ring in front of you); the gallery's DOM overlay and panel buttons reach
+the runtime through `window.__world` until W0 exposes a mapping (asks in RUNTIME.md).
+Fix round after the R-E critique (2026-09-29): where Rosace passes in front of a work, only her
+exact sprite silhouette is masked out of the thumbnail (no more fixed box that showed the black
+board as a strip under the work, or a box while jumping); measured in pixels over 162 captures
+at 1080p, 1440p and phone (`mask.mjs`): no board shows. The rose light now visibly comes to rest
+on the niches 06 to 09, and the nave's candelabras relight themselves after a hit
+(`verify.mjs`: 24 of 24).
+
+**Status, lane R-C (2026-09-29): C1 to C3 built and proven in `/world/`** (details and numbers in
+[`RUNTIME.md`](RUNTIME.md), "Region C"; recipes in [`../props/ENGINE.md`](../props/ENGINE.md),
+"Hollow"). The market is the amber-hollow scene re-framed for its street with the market's own
+near layers; the archive and the lift foot have their own scenes. Every prop in the R-C row is
+pixel matter (26 region recipes plus the kit). Acceptance: the archive door is an ordinary door
+with no prerequisite; the documentation index is the site's real `/docs/` page in W0's DOM dialog
+(focus in, Esc out); the music's real gain reaches 0 within 4 s of the door (3.9 to 4.0 s measured); grit sifts on the
+same tick as every footfall (a thud every 2.5 s through a crossing); flash at most 2 a second;
+1080p, 1440p and phone captures; 1.4 to 5.4 ms a frame on d3d11. Open: per-product docs need the
+archive panel to use its `arg` (W0's `ui.ts`; the bays already send the `/docs/` group anchor).
+
+**Status, lane R-D (2026-09-29): D1 to D4 built and proven in `/world/`** (details and numbers in
+[`RUNTIME.md`](RUNTIME.md), "Region D"; recipes in [`../props/ENGINE.md`](../props/ENGINE.md),
+"Spire"; captures in `review/world/phase2/R-D/`). The lift ride with its backdrop keyed to the
+car's height (the foundry's haze, the ceiling rock, the storm), the outer climb on the spire's
+face with the storm alcove (shrine 4) and the secret perch, the Crown's arena, and the Blade with
+the stepped storm-break onto the dusk world (colossi below, the lit shrines as lamp points). One
+storm program drives gusts, the rain's lean, the pennants and the beacons from the backdrop's
+clock. Acceptance: every gust's tell starts 1.48 to 1.50 s before the push, and the push never
+carries her past a catwalk's stop or off it (standing, walking with and against it, on every
+catwalk); the terminal wakes on the real products from the site's downloads data, summons (seals,
+shutters, arena clamp), then cools down and points at the website: no fight, no download, nothing
+unlocked; flash starts at most 1 in any second in D1 to D4 (reduced motion too); the whole climb
+walks with real input from R-C's Lift Foot into R-E's Pilgrim Path (ride 25.8 s, climb 81.8 s,
+express return 36.9 s), and W0's round walks over it; 1080p, 1440p and phone captures; 1.2 to
+3.9 ms a frame on d3d11. Fix pass after the critic (`review/world/phase2/R-D/fix/`): the Blade's
+bench stands on a widened flat tip (it floated 0.5 H over the slope), the D1 foundry yard fills
+the lower screen, the terminal's caret shows and the roster pages instead of dropping products,
+the lit lamps and the colossi below read better; the climb, gusts timing and checks re-run on the
+integrated repo with the same numbers. Open, for W0: the runtime's `rain` strikes (1.2 a minute)
+still brighten the player's key and rim (about 2.1 times the brightness around her at a full
+strike, the critic's measure), so the acceptance line "no white flash on the player" is not met
+until the weather program gets a sky-only strike option (or a per-room lightning override) that
+D1 to D4 then turn on; the spire's own storm lightning stays in the clouds. Also for W0: the
+`summon` close-up frames her at the terminal, so the seal ring lighting in sequence is off
+screen.
+
+**Status, lane R-B (2026-09-29): B1 to B5 built and proven in `/world/`** (details and numbers in
+[`RUNTIME.md`](RUNTIME.md), "Region B"; recipes in [`../props/ENGINE.md`](../props/ENGINE.md),
+"Shore and Plain"; scenes in [`SCENES.md`](SCENES.md); captures in `review/world/phase2/R-B/`).
+Three backdrops built from colossus-plain: the reed shallows (the lake late in the morning, a
+colossus wading at depth 8), the causeway (flooded sheet water, the colossus at depth 9 and a
+ghost, the spire and its storm ahead, the wind rising east) and the hollow mouth (the shaft
+from above, cold grey to amber). Every prop in the R-B row is pixel matter: 11 region recipes
+(rope bridge, reed beds, marker posts, standing stones, rib arch, bus shelter, route sign, crane
+frame, culvert gate with its horn, call levers, the rumble) plus the kit's prayer flags,
+pillars, lever, lamp posts, shrine set, bench, sign, rubble, grass, paper, puddles, moths,
+chains and vines; the crane's hook is the runtime's carrier in the region's steel. S1 (cut only
+from the east bank), S2 (the culvert lever; R-A's ferryman wakes on `lever:culvert`) and both
+hook calls work and persist across a reload. Acceptance: the one big footfall a pass throws a
+ring that reaches the player plane 2.5 to 2.9 s later and bows the reeds and grass (lean 0.22
+to 1.14 in B1); the shake is 1 px in B1 and 2 px in B2, off in reduced motion, and flash starts
+stay at most 2 a second; the colossus fills 0.65 (road) and 0.79 (summit) of the frame's height
+as it passes Stonetop; the causeway takes 34.2 s end to end with something new every screen
+(marks and stones, colonnade and crater, the wade and the ribs, the shelter and the tor); 1080p,
+1440p and phone captures; 1.5 to 6.6 ms a frame on d3d11. Deviations: the crater is standard
+steps down 2.8 H (the grey-box's), the hook drops 32 H in 10 s, B5's way down keeps the
+grey-box's slabs 4 H apart. Critic fix (2026-09-29): the B5 street's flat dark wall (about 45% of the
+bottom frame) is now the hollow's lit floor with two rows of market stalls, the fallen arcade across
+the street and the east arch full of the market's light; in that region near-black pixels fell from
+90% to 11% (`review/world/phase2/R-B/fix-b5/`).
+
+**Status, lane S1 Sound (2026-09-29): built; proven by measurement only with a W0 patch still to apply; not yet approved by ear**
+(details in [`RUNTIME.md`](RUNTIME.md), "Sound"; evidence `review/world/phase2/S1/`). The chosen
+files are copied from `legacy/` into `public/audio/world/` with their attribution, and
+`AUDIO_BASE` is `/audio/world` (through the sound hook, `src/world/sound/tables.ts`). Built: the
+twelve beds of section 9, every missing effect (bells for the ferry, the rib and the chapel,
+splashes, cloth, glass shatter and the shard reassemble, the colossus footfall, the horn, the
+crank, and more), a footstep pair for each of the nine surfaces, a file for every cue id the code
+emits, the bell per place, and wind alone at Stonetop. `verify.mjs` passes 25 of 25 with real
+input and real Web Audio: ambience first; every entry rises from zero gain (largest step 0.006
+per 50 ms); Ringwater keeps one playhead; the lodge is muffled; the archive reaches silence in
+4.0 s; the storm has no music; the grand passage enters at 48 s and carries into E1; the chapel
+starts from the top; the end rests 72 s, then swells in; Stonetop ducks for the whole pass.
+Critic fix (2026-09-29): that run timed entries by the clock, and the critic heard three real
+failures, all in W0's `audio.ts`. `verify.mjs` now times each entry by actual playback, walks onto
+the Blade, lets the rest end inside the archive and runs on emulated fast 3G (29 checks). On the
+tree as it is: **25 of 29** (the Blade's entry arrives at 44% gain when the rain eases mid-swell;
+after a rest that ends in the archive the Hollow's music stays dead; on fast 3G, A2 and D4 first
+sound 27 to 28 s late at full level). With S1's handoff patch for W0
+(`review/world/phase2/S1/w0-handoff/audio.ts.patch`, served in place of `audio.ts` on a proof
+server, nothing outside S1's paths edited): **29 of 29**, every entry 19 to 25 dB under its
+settled level for its first half second and at zero gain when the element starts. **Not signed
+off until W0 applies the patch.** Also open: Dex's ears (every file is `listening: pending`); for
+R-D, D1's "Opening up" ramp and D4's storm cut-off with 2 s of silence (room data); iOS Safari on
+a real device.
+
+**Status, lane I1 Story and integration (2026-09-29): the whole round integrated and played;
+real-device and laptop runs pending for Dex** (details and numbers in [`RUNTIME.md`](RUNTIME.md),
+"The round, integrated"; evidence `review/world/phase2/I1/`). One continuous first round from a
+fresh save through every region's real rooms, dock to lodge to Pier's End, with real input, 0
+errors, recorded as 15 key-beat clips and a timelapse. The story glue (`src/world/story/`) makes
+the evening arrive everywhere at once after the sky door (the lodge beyond it used to keep morning
+windows), starts the next visit on the dock once the round is done, and shows the lamps you lit,
+live from the save, on Ringwater's far strand (the ending's "line across the valley", with the
+colossus walking over them) and from the balcony (the scene's own lamps were hidden under the
+valley mist). The residents and the keeper's arc run as the regions built them: her first line
+once, the lamp board, away at evening, two cups and "There they go." at Pier's End; the ferryman
+wakes on the culvert and runs the ferry; the archivist hums (R-C). All four shortcuts work end to
+end; returning times 18.5 / 20.9 / 29.2 / 74.6 / 121.1 (+15%) / 39.8 s against section 6; all 15
+flags survive a reload. Pacing against section 10: tension in the plan's band at all 23 beats
+walked (one rise, the peak at the Crown, calm from the Blade), space at 18 (the other five are
+boundary cases the room texts describe), cozy places every 0.5 to 2.4 minutes; the bot's round is
+8.8 minutes (44 s of stops) against the plan's 13.75, so the 12 to 15 minutes needs a human
+playtest. Common checks re-run on the integrated tree: 1080p, 1440p, phone; flash at most 2 a
+second over the whole round (A2's glints reach 3 alone); 0.8 to 5.9 ms a frame on d3d11.
+**Pending for Dex:** Samsung Internet and iPad Safari on real devices; a laptop GPU per region; a
+listening pass; a human stopwatch round. Open for other lanes: see RUNTIME.md "Open".
+
 **Order and overlap.**
 
 - Days 1 to 2: W0 and P0 start. R-A to R-E start their backdrop scenes and lay out their rooms
@@ -1590,6 +1801,19 @@ is actually wired today:
 ---
 
 ## 14. Open for Dex
+
+**Defaults applied for phase 2 (2026-09-29, coordinator; Dex may override any of them):**
+1. Order as planned: services before combat, gallery last.
+2. "The Round" as written; the player is Rosace.
+3. Art in the world: option B, a DOM overlay of the real thumbnail pinned inside each frame
+   (never pixelated, tinted, lit or used as a texture), with the full work on E.
+4. Breakage policy and nave rule as in section 4; craters and broken props heal in the room.
+5. Arena music: `arena-chamber-v1` for now.
+6. Length 12–15 minutes; 4 screens of causeway.
+7. The new props in section 7 are approved.
+8. The storm has weather only, no music.
+
+The original questions:
 
 1. **The order.** Services (account, docs) come before combat (the arena), and the gallery comes
    last. Is that right?

@@ -1,0 +1,417 @@
+{
+ "_doc": "Drive 9 whole-character round 3 finish: an overlay deep-merged over r2_finish.json (which is itself over d9_finish.json; d9_post.load_finish, lists replaced whole). Each change answers a round-2 blind critic (review/rosace/art/drive9/round-2/verdicts/); the reasons are in 'why'. The 'r3' block switches on round 3's steps in drive9/r3_post.py; without it d9_post.py runs exactly as round 2.",
+ "base": "r2_finish.json",
+ "r2_faces": "r3_faces.json",
+ "materials": {
+  "white": {
+   "stops": [
+    [
+     0,
+     "#1b1733"
+    ],
+    [
+     0.06,
+     "#2c2750"
+    ],
+    [
+     0.12,
+     "#403a6c"
+    ],
+    [
+     0.19,
+     "#57528a"
+    ],
+    [
+     0.26,
+     "#726ca2"
+    ],
+    [
+     0.33,
+     "#8d88b8"
+    ],
+    [
+     0.4,
+     "#a7a2ca"
+    ],
+    [
+     0.5,
+     "#bdb8d6"
+    ],
+    [
+     0.65,
+     "#cfcadd"
+    ],
+    [
+     0.82,
+     "#d9d5e2"
+    ],
+    [
+     1,
+     "#e3dfe5"
+    ]
+   ],
+   "tones": 10,
+   "chroma": 0.75,
+   "tex": 0.04,
+   "strand": 0.03
+  },
+  "veil": {
+   "stops": [
+    [
+     0,
+     "#1b1733"
+    ],
+    [
+     0.06,
+     "#2c2750"
+    ],
+    [
+     0.12,
+     "#403a6c"
+    ],
+    [
+     0.19,
+     "#57528a"
+    ],
+    [
+     0.26,
+     "#726ca2"
+    ],
+    [
+     0.33,
+     "#8d88b8"
+    ],
+    [
+     0.4,
+     "#a7a2ca"
+    ],
+    [
+     0.5,
+     "#bdb8d6"
+    ],
+    [
+     0.65,
+     "#cfcadd"
+    ],
+    [
+     0.82,
+     "#d9d5e2"
+    ],
+    [
+     1,
+     "#e3dfe5"
+    ]
+   ],
+   "tones": 8,
+   "chroma": 0.75
+  },
+  "skin": {
+   "tones": 10,
+   "chroma": 0.85,
+   "tex": 0.025,
+   "face": {
+    "lift": 0.3,
+    "cav": 0.05,
+    "lift_shot": {
+     "back": 0.56,
+     "q": 0.4,
+     "n1": 0.38
+    }
+   }
+  },
+  "hair": {
+   "tones": 10,
+   "tex": 0.02,
+   "strand": 0.1,
+   "chroma": 0.9,
+   "sheen": null,
+   "spec_k": 0.35
+  },
+  "hairtip": {
+   "tones": 6,
+   "chroma": 0.85
+  },
+  "stocking": {
+   "tones": 8,
+   "chroma": 0.75,
+   "gamma": 1.1,
+   "sheer": {
+    "col": "#7d5873",
+    "k": 0.5,
+    "v0": 0.18
+   }
+  },
+  "boot": {
+   "tones": 7,
+   "chroma": 0.85,
+   "gamma": 1.4,
+   "spec_k": 0.95,
+   "stops": [
+    [
+     0,
+     "#07061a"
+    ],
+    [
+     0.12,
+     "#0c0a26"
+    ],
+    [
+     0.26,
+     "#131036"
+    ],
+    [
+     0.42,
+     "#1b1748"
+    ],
+    [
+     0.58,
+     "#241e5a"
+    ],
+    [
+     0.72,
+     "#2e276c"
+    ],
+    [
+     0.83,
+     "#3b3384"
+    ],
+    [
+     0.91,
+     "#5550a8"
+    ],
+    [
+     0.96,
+     "#8c88d0"
+    ],
+    [
+     1.0,
+     "#b0acec"
+    ]
+   ]
+  },
+  "indigo": {
+   "tones": 7,
+   "chroma": 0.75
+  },
+  "lining": {
+   "tones": 7,
+   "chroma": 0.75,
+   "strand": 0.04
+  },
+  "haft": {
+   "tones": 5,
+   "tex": 0.0,
+   "strand": 0.0,
+   "cav": 0.0,
+   "chroma": 0.75
+  },
+  "steel": {
+   "tones": 7,
+   "chroma": 0.75,
+   "tex": 0.0
+  },
+  "gold": {
+   "tones": 8,
+   "chroma": 0.85,
+   "tex": 0.015
+  },
+  "beige": {
+   "tones": 7,
+   "chroma": 0.8
+  }
+ },
+ "hair_clumps": {
+  "sep_rank": 0.12,
+  "k": 0.75,
+  "min_run": 2
+ },
+ "r3": {
+  "noise_blur": {
+   "iso_px": 1.4,
+   "strand_px": 0.4,
+   "strand_px_y": 1.6,
+   "gain": 0.9
+  },
+  "despeckle": {
+   "passes": 2,
+   "skip": [
+    "thong",
+    "glass",
+    "glass2",
+    "glasscore",
+    "edge"
+   ]
+  },
+  "rim_inset": false,
+  "rim_outline": {
+   "materials": [
+    "skin",
+    "hair",
+    "white",
+    "veil",
+    "stocking",
+    "boot",
+    "indigo",
+    "lining",
+    "beige"
+   ],
+   "thr": 0.4,
+   "normal_thr": -0.15,
+   "t": 0.72,
+   "k": 0.55,
+   "min_run": 3,
+   "max": 230
+  },
+  "face": {
+   "neck_col": "#c9868a",
+   "neck_rows": [
+    0.7,
+    0.35
+   ],
+   "neck_rows80": [
+    0.55
+   ],
+   "jaw_t": 0.42,
+   "jaw_k": 0.4,
+   "blush": true,
+   "blush_col": "#e3898a",
+   "blush_k": [
+    0.62,
+    0.26
+   ],
+   "blush_dy": 4
+  },
+  "hair": {
+   "sheen": {
+    "core": "#b8aee6",
+    "halo": "#8676cc",
+    "depth": 0.3,
+    "span": 0.42,
+    "segs": [
+     4,
+     3,
+     5,
+     3,
+     4,
+     3
+    ],
+    "segs80": [
+     3,
+     2,
+     3
+    ],
+    "lit_frac": 0.62,
+    "bow": 2
+   },
+   "fringe": {
+    "gaps": [
+     0.18,
+     0.4,
+     0.63,
+     0.84
+    ],
+    "gaps80": [
+     0.33,
+     0.7
+    ],
+    "depth": 2,
+    "notch_t": 0.34
+   },
+   "tips": {
+    "t": [
+     0.36,
+     0.56,
+     0.74,
+     0.88
+    ],
+    "k": 0.75,
+    "t_join": 0.2
+   },
+   "flyaways": {
+    "strands": [
+     {
+      "ang": 160,
+      "len": 6,
+      "curl": 30,
+      "g": 0.9,
+      "tan": 1.2
+     },
+     {
+      "ang": 22,
+      "len": 5,
+      "curl": -25,
+      "g": 0.9,
+      "tan": 1.2
+     },
+     {
+      "ang": 140,
+      "len": 4,
+      "curl": 35,
+      "g": 0.7,
+      "tan": 1.4
+     }
+    ],
+    "n80": 1,
+    "scale80": 0.6
+   }
+  },
+  "bust": {
+   "cleave_frac": 0.45,
+   "underside_k": 0.3,
+   "lit_t": 0.8,
+   "lit_thr": 0.05,
+   "lit_k": 0.6,
+   "hl_col": "#f1eef0"
+  },
+  "belly": {
+   "t": 0.3,
+   "k": [
+    0.45,
+    0.2
+   ]
+  },
+  "fx": {
+   "n1": {
+    "pivot": "hand_R",
+    "sweep": 48,
+    "width": 28,
+    "dir": 1,
+    "taper": 0.8,
+    "lead": [
+     0.22,
+     0.46,
+     0.7
+    ],
+    "sliver": [
+     0.08,
+     0.42
+    ],
+    "curl": 0.1
+   },
+   "q": {
+    "arms": {
+     "h": 6,
+     "up": 5
+    },
+    "arms80": {
+     "h": 3,
+     "up": 3
+    },
+    "crack": 12
+   }
+  },
+  "fx_rgb": {}
+ },
+ "why": {
+  "noise_blur": "Critic materials 14/16 (round 2): 'cloth, bust and hair carry speckle noise that reads as dither grit, not painted texture; replace per-pixel noise with 2-3 px directional texture clusters'. The noise passes are box-blurred at the render scale (brush 1.4 px, strands 0.4 x 1.6 px) with their spread restored, then a despeckle pass (min cluster 2).",
+  "rim": "Critic 17: 'a strong dashed cyan line inset 1 px from the outline: a double outline that flattens; merge it into the outline, continuous, lit side only'. The inset rim is off; the rim is drawn on the outline pixel of curved forms facing the rim direction, bridged, runs of 3 or more.",
+  "values": "Critic 15: 'whites too bright and saturation high' (ours p90 luma 208, mean S 0.31 against ref G 186 / 0.20). White and veil top out at #e3dfe5; OKLab chroma x0.75 on white, dark cloth and haft, x0.85 on skin, hair and gold (the hues stay, PX-P39).",
+  "stocking": "Critic 13: 'boots and thigh-highs are the same navy so the leg is one tube'. The stocking's lit side lets a muted rose through (sheer, refs E/G); the boot gets its own deeper, bluer ramp with a stronger gloss.",
+  "haft": "Critics 7/16: 'the shaft stair-steps with alternating light/dark pixels; clean it to a straight 2-tone line'. The haft takes no texture or cavity and 5 tones.",
+  "hair": "Critic 4: 'a banded purple helmet with a horizontal sheen stripe; a 5-6 tone hue-shifted ramp; a sheen arc that follows the skull; fringe clumps with dark gaps; flyaways; tapered azure tips'. The spec-band patch is off (sheen null, spec_k 0.25); r3_post draws the arc from the crown's own top edge, cuts the fringe, tapers the tips and adds 4 flyaways at 144 (2 at 80). 8 hair tones.",
+  "face": "Critic 2/3: 'flat pale peach skin with no cheek or jaw form; restore the blush; relight the back-view face'. The head's cast shadow on the neck, a jaw step, a 2 px blush under each eye's outer half, and the face lift per shot (back 0.56: a fill on the turned face).",
+  "bust": "Critic 5: 'two grey-lavender spheres in shadow, not one lifted form in the bodice; keep the bodice lit near-white; one designed highlight'. The cleavage wedge shrinks to the top 45 % (the neckline V), the underside step to 0.3, the key-facing bust is lifted toward the white ramp's 0.8 tone, one 4 px highlight on the lit apex.",
+  "belly": "Critic 12: 'shade the lower belly into the tabard'. Skin beside the tabard takes a 2 px occlusion falloff.",
+  "fx": "Critics 11 and first impression: 'no stretch, no smear; the refs sell the hit with FX'. MOVESET 0.6 puts N1's contact (f9) in the leaded stage: a crescent behind the blade tip about the front fist with A0 leading into cells and a G1 sliver. Q5's contact is 'butt strikes the floor; local flash; crack'. Drawn on the background only, left out of the silhouette and colour counts."
+ }
+}

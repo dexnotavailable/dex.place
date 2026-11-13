@@ -19,6 +19,7 @@ are ignored (drafts you don't want built).
 title: Installing dexClient       required
 summary: One line for the index   optional
 date: 2026-09-29                  optional, YYYY-MM-DD, blog posts; never invent one
+sequence: 10                      optional, blog posts on the same date; higher first
 order: 1                          optional, docs only, lower first
 group: dexclient                  optional, docs only: dexcode, dexclient or dex-place
 placeholder: true                 shows a "Placeholder" tag, adds noindex, keeps it out of the feed
@@ -27,7 +28,10 @@ placeholder: true                 shows a "Placeholder" tag, adds noindex, keeps
 
 Docs are listed by group (`src/site/data/docs.ts`), then `order`, then title; an
 unknown group fails the build. Posts are listed newest first by `date`, grouped
-by year; undated posts are listed as drafts.
+by year. Same-date posts use `sequence` (a non-negative safe integer), higher
+first; without it, numbered slugs such as `characterforge-10-title` supply the
+sequence. Remaining ties sort by title, then slug. Undated posts are listed as
+drafts in title order. Dates are never filled in from file modification times.
 
 The body is Markdown (GitHub flavour). Start sections at `##`; the page title is
 the `#`. Headings get anchor ids for deep links, and pages with two or more

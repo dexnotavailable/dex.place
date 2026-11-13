@@ -1,0 +1,459 @@
+{
+ "_doc": "Painted face stamp, round R1 (tools/art-construct/head_paint.py from art/rosace/construct/faces/r1/head_q34.json). rows use the KEY in tools/art-construct/artlib.py; origin = [column, row] of the chin point; landmarks follow the face.json schema in docs/character/art-rules/checklist.json inputs and are measured from the painted pixels.",
+ "name": "idle_hero_r2__t8_lean_rest_face",
+ "params": {
+  "yaw": "q34",
+  "expression": "confident",
+  "gaze": [
+   -1,
+   0
+  ],
+  "roll": -1,
+  "pitch": 0,
+  "eye_row": 0,
+  "pupil": false,
+  "gaze_target": "viewer",
+  "facing": "right",
+  "route": "r1 painted layers",
+  "bangs": [
+   {
+    "root": [
+     10,
+     15
+    ],
+    "tip_y": 23
+   },
+   {
+    "root": [
+     16,
+     20
+    ],
+    "tip_y": 20
+   },
+   {
+    "root": [
+     21,
+     24
+    ],
+    "tip_y": 19
+   },
+   {
+    "root": [
+     25,
+     29
+    ],
+    "tip_y": 22
+   }
+  ]
+ },
+ "landmarks": {
+  "facing": "right",
+  "yaw": "q34",
+  "yaw_deg": 30,
+  "expression": "confident",
+  "head_px": 26,
+  "chin_y": 36,
+  "rows_above_chin": {
+   "mouth": 2,
+   "nose": 6,
+   "eye_bottom": 10,
+   "lash_top": 14,
+   "brow": 16,
+   "hairline": 20,
+   "skull_top": 26,
+   "hair_top": 29
+  },
+  "skull_top_row": 26,
+  "hair_top_row": 29,
+  "centre_line_x_at_eye_row": 21,
+  "gaze_target": "viewer",
+  "light": [
+   0.6,
+   -0.8
+  ],
+  "origin": [
+   22,
+   36
+  ],
+  "hair_top_measured": 29,
+  "far_edge": {
+   "20": 27,
+   "19": 27,
+   "18": 27,
+   "17": 27,
+   "16": 27,
+   "15": 27,
+   "14": 27,
+   "13": 27,
+   "12": 27,
+   "11": 27,
+   "10": 28,
+   "9": 28,
+   "8": 28,
+   "7": 27,
+   "6": 27,
+   "5": 26,
+   "4": 26,
+   "3": 25,
+   "2": 24,
+   "1": 23,
+   "0": 23
+  },
+  "near_edge": {
+   "20": 12,
+   "19": 12,
+   "18": 12,
+   "17": 12,
+   "16": 12,
+   "15": 12,
+   "14": 12,
+   "13": 12,
+   "12": 12,
+   "11": 12,
+   "10": 12,
+   "9": 12,
+   "8": 12,
+   "7": 14,
+   "6": 15,
+   "5": 16,
+   "4": 17,
+   "3": 18,
+   "2": 19,
+   "1": 20,
+   "0": 21
+  },
+  "face_width_eye_row": {
+   "y": 26,
+   "x0": 13,
+   "x1": 28
+  },
+  "eyes": {
+   "near": {
+    "box": [
+     13,
+     22,
+     18,
+     27
+    ],
+    "template": "r1_q34_near_confident",
+    "mirrored": false,
+    "lash_px": 14,
+    "iris_cols": [
+     14,
+     15,
+     16
+    ],
+    "iris_rows": [
+     23,
+     24,
+     25,
+     26
+    ],
+    "iris_w": 3,
+    "highlight": [
+     16,
+     24
+    ],
+    "whites": [
+     [
+      17,
+      24
+     ]
+    ],
+    "white_side": "right"
+   },
+   "far": {
+    "box": [
+     22,
+     21,
+     26,
+     26
+    ],
+    "template": "r1_q34_far_confident",
+    "mirrored": false,
+    "lash_px": 9,
+    "iris_cols": [
+     23,
+     24,
+     25
+    ],
+    "iris_rows": [
+     22,
+     23,
+     24,
+     25
+    ],
+    "iris_w": 3,
+    "highlight": [
+     25,
+     22
+    ],
+    "whites": [
+     [
+      26,
+      23
+     ],
+     [
+      26,
+      24
+     ]
+    ],
+    "white_side": "right"
+   }
+  },
+  "gaze": {
+   "dx": -1,
+   "dy": 0,
+   "target": "viewer"
+  },
+  "brows": {
+   "near": [
+    [
+     14,
+     18
+    ],
+    [
+     15,
+     19
+    ],
+    [
+     16,
+     19
+    ],
+    [
+     17,
+     20
+    ]
+   ],
+   "far": [
+    [
+     26,
+     17
+    ],
+    [
+     25,
+     18
+    ],
+    [
+     24,
+     19
+    ]
+   ]
+  },
+  "mouth": {
+   "key": "confident",
+   "px": [
+    [
+     18,
+     32,
+     "S3"
+    ],
+    [
+     19,
+     33,
+     "S4"
+    ],
+    [
+     20,
+     34,
+     "S4"
+    ],
+    [
+     21,
+     34,
+     "S4"
+    ]
+   ]
+  },
+  "nose": [
+   [
+    22,
+    29
+   ],
+   [
+    22,
+    30
+   ]
+  ],
+  "blush": {
+   "near": [
+    [
+     13,
+     28
+    ],
+    [
+     14,
+     28
+    ]
+   ],
+   "far": [
+    [
+     25,
+     27
+    ],
+    [
+     26,
+     27
+    ]
+   ]
+  },
+  "centre_line": [
+   [
+    16.64,
+    10.23
+   ],
+   [
+    18.01,
+    11.16
+   ],
+   [
+    18.8,
+    12.1
+   ],
+   [
+    19.38,
+    13.03
+   ],
+   [
+    19.83,
+    13.97
+   ],
+   [
+    20.19,
+    14.9
+   ],
+   [
+    20.49,
+    15.83
+   ],
+   [
+    20.72,
+    16.77
+   ],
+   [
+    20.91,
+    17.7
+   ],
+   [
+    21.05,
+    18.64
+   ],
+   [
+    21.14,
+    19.57
+   ],
+   [
+    21.2,
+    20.51
+   ],
+   [
+    21.22,
+    21.44
+   ],
+   [
+    21.2,
+    22.37
+   ],
+   [
+    21.14,
+    23.31
+   ],
+   [
+    21.05,
+    24.24
+   ],
+   [
+    20.91,
+    25.18
+   ],
+   [
+    20.72,
+    26.11
+   ],
+   [
+    20.49,
+    27.05
+   ],
+   [
+    20.19,
+    27.98
+   ],
+   [
+    19.83,
+    28.91
+   ],
+   [
+    19.38,
+    29.85
+   ],
+   [
+    18.8,
+    30.78
+   ],
+   [
+    18.01,
+    31.72
+   ],
+   [
+    16.64,
+    32.65
+   ],
+   [
+    22.0,
+    36.0
+   ]
+  ]
+ },
+ "rows": [
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  ".............OOOOOOO..................",
+  "..........OOOnlkkkkkOOO...............",
+  "........OOnnlkkkkkkkkklOO.............",
+  "......OOnnlllkkklkkkkkkklOO...........",
+  ".....OdnnllllkkklkklklkkkklO..........",
+  "....OdnnllljjjjnjjjnljnkjjjlO.........",
+  "OOOOddnnnljjlllnllnlljlnkklllOOOO.....",
+  "nddddnnnnllllllnlllnllllnkklkkklnO....",
+  "OnOddnnnlllllnllllnllllnlkklkkllnO....",
+  ".OddnnnnlllllnllllllllllnlkklkllnOO...",
+  ".OddnnnnlllllkkknlkklnkkknlkkllllllO..",
+  "OnndllllllllllkdlllkkdlkkdOkklllkllO..",
+  "OnndllkkllnllnntttnkkklnsnslklnlknO...",
+  "OnnndlkkllnlntsnnsnlslnsnssnlnnlkO....",
+  "OnnndlklllnlltsssnnttttssssOnnnklO....",
+  "OnnndldnllllOOssssstsssOOOOOlnnklO....",
+  "OnndnldnllklsOOOOsssssOOahssnnnkO.....",
+  "OnndkndnllkntOOaOOOssssanbeslnnlkO....",
+  "OnndkdnllnkltOanhesssssbbbeslnnlkO....",
+  "OndkndnllnkllsbbbssssssccbOslnnlkO....",
+  "OndkndnllnlklOOcbssssssssssssnnkO.....",
+  "Ondnlldnllnklsss11sssssssppssnnkO.....",
+  "OnndlldnllnklppssssssssssssssnlkO.....",
+  "OnndlldnllnkllsssssssstssssslnlkO.....",
+  "OnndnlldnllklllssssssstssstslnlkO.....",
+  "OlnndlldnllkllnlsssssssssttOlllkO.....",
+  "OlnndlldnllklllnlstsssssstsOlllkO.....",
+  "OlnndnlldnllkllnllsmssssssO.bbcO......",
+  "OnlnndkldnllklllnllsmmsssO..ObcO......",
+  "OnlnndkldnllklllnlllssssO...OcO.......",
+  "OnknndkdnlllklllllllnsssO....O........",
+  "OlkndnldnzxxvnnnttmmmmOO..............",
+  "O.......nllll...tttmmsO...............",
+  "O........nlll...ttssssO...............",
+  "O........nbbb...ttssssO...............",
+  "O.........bcc...tsssssO...............",
+  "O.........cc....tsssssO...............",
+  "O.........c.....tsssssO...............",
+  "O...............tsssssO...............",
+  "................tsssss................"
+ ],
+ "origin_on_sprite": [
+  83,
+  44
+ ]
+}

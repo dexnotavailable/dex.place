@@ -1,0 +1,65 @@
+{
+ "name": "t8_lean_rest",
+ "idea": "t7 plus t2: the soft lean and the lower grip (glaive 16 deg, grip 84 px up, butt 1 px further out than t2 for GR-P10)",
+ "set": {
+  "neck": {
+   "pit_dx": 11,
+   "back": 6
+  },
+  "head": {
+   "chin_dx": 15
+  },
+  "ribcage": {
+   "dx": 10
+  },
+  "waist": {
+   "dx": 11
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     15,
+     1
+    ],
+    "knee_hint": [
+     22,
+     40
+    ],
+    "toe": [
+     26,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "angle_deg": 16,
+   "butt": [
+    -14,
+    0
+   ],
+   "grip_along": 84
+  }
+ },
+ "score": 10,
+ "gap_area": 363,
+ "width": 85,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-N02"
+ ],
+ "near_reach_px": 44.9,
+ "failed": [
+  "GR-P10: closest clear gap 3.0 px; overlap 0 px"
+ ],
+ "verdict": "dropped (#3, 10/11): the lean plus the low grip; the haft runs 3 px from the near boot (GR-P10, a tangent), and at 2x the arm hangs so low that the bell covers the near thigh",
+ "kept": false,
+ "rank": 3
+}

@@ -1,0 +1,95 @@
+{
+ "_doc": "Shading lane round 2 world-rim policy (rim.py inner_rim, selected by $ROSACE_RIM_STYLE; the lane's stills set it). The rim sits on the first pixel inside the silhouette line, never the line; only where that pixel is in a shadow tone of its material (the side the key light leaves dark); tinted by the material; runs of run_min..run_max px with a 1 px break; at most max_share of the silhouette ring (PX-P19 <= 3%). Level 'full' (the effect light) keeps the DESIGN s9 cyan outline rim. full_as_world: the lane's stills bake no effect layer, so the 'full' attack frames (N1, Q) take this world rim as well; the cyan outline returns with the effect light (runtime rim LUT, DESIGN s9).",
+ "style": "inner",
+ "thr": 0.45,
+ "head_thr": 0.8,
+ "head_run": 3,
+ "run_min": 2,
+ "run_max": 5,
+ "max_share": 0.03,
+ "min_step": 1.3,
+ "convex_max": 52,
+ "tint": {
+  "hair": "I1",
+  "hairtip": "A3",
+  "white": "W1",
+  "veil": "W1",
+  "beige": "B1",
+  "skin": "S1",
+  "stocking": "I2",
+  "boot": "I2",
+  "indigo": "I1",
+  "lining": "I2",
+  "thong": "I3",
+  "gold": "G0",
+  "haft": "I2",
+  "steel": "T2",
+  "steeldark": "T3"
+ },
+ "shadow_codes": {
+  "hair": [
+   "I3",
+   "I4"
+  ],
+  "hairtip": [
+   "I3",
+   "A2"
+  ],
+  "white": [
+   "W2",
+   "W3",
+   "W4"
+  ],
+  "veil": [
+   "W2",
+   "W3",
+   "W4"
+  ],
+  "skin": [
+   "S3",
+   "S4"
+  ],
+  "stocking": [
+   "K2",
+   "K3"
+  ],
+  "boot": [
+   "I3",
+   "I4"
+  ],
+  "gold": [
+   "G2",
+   "G3",
+   "G4"
+  ],
+  "lining": [
+   "I3",
+   "I4"
+  ],
+  "indigo": [
+   "I3",
+   "I4"
+  ],
+  "haft": [
+   "OL",
+   "I4",
+   "I3"
+  ],
+  "steel": [
+   "T3",
+   "T4"
+  ],
+  "steeldark": [
+   "T4"
+  ],
+  "thong": [
+   "OL",
+   "I4"
+  ],
+  "beige": [
+   "B2",
+   "W3"
+  ]
+ },
+ "full_as_world": true
+}

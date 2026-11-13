@@ -1,0 +1,8 @@
+{"_doc": "glaive-hands round 1b: idle grip thumbnails. The lean runs along the camera's screen-left axis (her right and back), the butt just behind-outside the near foot, so the haft comes within reach of the near shoulder (r1: every 20-28 deg lean from R3's butt left a 20-39 cm gap).",
+ "base": "art/rosace/poses/idle_hero.json",
+ "variants": {
+  "j1_lean20": {"weapon": {"butt": [-0.14, 0.10, 0.0], "dir": [-0.30, 0.17, 0.94], "edge": [-0.87, 0.5, 0]}, "hands": {"R": {"slide": 0.0}}},
+  "j2_lean24": {"weapon": {"butt": [-0.12, 0.12, 0.0], "dir": [-0.35, 0.20, 0.91], "edge": [-0.87, 0.5, 0]}, "hands": {"R": {"slide": 0.0}}},
+  "j3_lean28": {"weapon": {"butt": [-0.10, 0.14, 0.0], "dir": [-0.41, 0.23, 0.88], "edge": [-0.87, 0.5, 0]}, "hands": {"R": {"slide": 0.0}}},
+  "j4_lean24_out": {"weapon": {"butt": [-0.18, 0.08, 0.0], "dir": [-0.35, 0.20, 0.91], "edge": [-0.87, 0.5, 0]}, "hands": {"R": {"slide": -0.1}}}
+ }}

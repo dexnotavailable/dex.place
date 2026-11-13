@@ -1,0 +1,80 @@
+{
+ "name": "t6_control",
+ "idea": "negative control: level shoulders and hips, both knees straight, glaive 6 deg (the round-4 mannequin); must score last",
+ "set": {
+  "head": {
+   "chin_dx": 15
+  },
+  "neck": {
+   "back": 6
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -9,
+     1
+    ],
+    "knee_hint": [
+     -9,
+     40
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   },
+   "far": {
+    "heel": [
+     13,
+     1
+    ],
+    "knee_hint": [
+     13,
+     40
+    ],
+    "toe": [
+     24,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ],
+   "angle_deg": 6,
+   "grip_along": 98
+  },
+  "shoulders": {
+   "tilt_deg": 0
+  },
+  "pelvis": {
+   "tilt_deg": 0
+  }
+ },
+ "score": 6,
+ "gap_area": 220,
+ "width": 73,
+ "passed": [
+  "FG-P11",
+  "FG-P12",
+  "FG-P13",
+  "FG-P14",
+  "GR-P05",
+  "CL-P05"
+ ],
+ "feet_apart": 22,
+ "failed": [
+  "FG-P08: -0.0 deg (0.0 px drop)",
+  "FG-P09: -0.0 deg vs shoulders -0.0",
+  "FG-P10: weight leg 5.3 deg; free knee bend 2 deg; free knee -0.7 px lower",
+  "FG-N04: arms without a gap: near",
+  "GR-P09: 6.0 deg from vertical, leaning away",
+  "GR-P10: closest clear gap 3.0 px; overlap 0 px",
+  "GR-N02: closest: upper_arm_near 3, spine 3, shin_far 11"
+ ],
+ "verdict": "the mannequin control scored last (6/13: FG-P08, FG-P09, FG-P10, FG-N04, GR-P09, GR-P10, GR-N02), as it must: the score still catches the round-4 stance [M]",
+ "kept": false,
+ "rank": 9
+}

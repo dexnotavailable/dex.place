@@ -1,0 +1,204 @@
+{
+ "_doc": "Round 5 paint-over for q at 80 (r5_paint.py). Seeded from round 4's head layers (art/rosace/overrides/drive9/q_80.json) moved by the head-skin offset R4u -> R5xu (0, -1), then re-authored for the round-4 critics' face and hair fixes. Layers with port: true are also painted on the twin build (R5u).",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#150c1e",
+  "k": "#4a2c44",
+  "A": "#34307a",
+  "B": "#465a98",
+  "C": "#6078b0",
+  "D": "#8ea6d2",
+  "H": "#b8cce6",
+  "W": "#dcdfec",
+  "w": "#c4c6da",
+  "L": "#b27a78",
+  "R": "#e2928f",
+  "r": "#eab0a4",
+  "M": "#8a4452",
+  "m": "#b86a70",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac",
+  "g8": "#c291cf",
+  "g9": "#d6b0dc",
+  "J": "#7a3c4a",
+  "Wd": "mat:white@0.2"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    36,
+    55
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "a clean face plane first (FC-P35)",
+   "rows": [
+    "332222112222",
+    "332222211122",
+    "333222221122",
+    "333222222112",
+    "433322222222",
+    "443332222223",
+    "444433222233",
+    "444444333334",
+    "444444444444",
+    "444444444444",
+    "444444444444"
+   ],
+   "port": true
+  },
+  {
+   "name": "brows",
+   "kind": "px",
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Q: brows set down toward the centre.",
+   "pts": [
+    [
+     38,
+     55,
+     "b"
+    ],
+    [
+     39,
+     55,
+     "b"
+    ],
+    [
+     43,
+     57,
+     "b"
+    ],
+    [
+     44,
+     57,
+     "b"
+    ]
+   ],
+   "port": true
+  },
+  {
+   "name": "eye_far",
+   "kind": "stamp",
+   "at": [
+    37,
+    56
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic (round 4, face 2): 'an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan'. At 80 the eye keeps round 4's 3-4 row shape (a 2-row lash block would close it); the palette takes the 144 eye's ramp: D (was #86b8ee cyan) is now the pale desaturated #8ea6d2, B/C the muted blues.",
+   "rows": [
+    "K...",
+    ".KKK",
+    ".BHk",
+    ".DC."
+   ],
+   "port": true
+  },
+  {
+   "name": "eye_near",
+   "kind": "stamp",
+   "at": [
+    42,
+    58
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic (round 4, face 2): 'an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan'. At 80 the eye keeps round 4's 3-4 row shape (a 2-row lash block would close it); the palette takes the 144 eye's ramp: D (was #86b8ee cyan) is now the pale desaturated #8ea6d2, B/C the muted blues.",
+   "rows": [
+    "...K",
+    "KKK.",
+    "kBH.",
+    ".DC."
+   ],
+   "port": true
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: the blush at 80.",
+   "pts": [
+    [
+     44,
+     61,
+     "R"
+    ],
+    [
+     37,
+     61,
+     "r"
+    ]
+   ],
+   "port": true
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "MOVESET Q: a small open shout.",
+   "pts": [
+    [
+     40,
+     62,
+     "M"
+    ],
+    [
+     41,
+     62,
+     "m"
+    ]
+   ],
+   "port": true
+  }
+ ],
+ "authored_on": {
+  "still_sha1": "0e66574b6977ebc01b5e84ff12383d8ebee90c3c",
+  "canvas": [
+   66,
+   126
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5x/q/px80/R5xu"
+ },
+ "ported_on": {
+  "still_sha1": "85333185ffd88b4740fd0cb84c827042794c8692",
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5/q/px80/R5u",
+  "offset": [
+   0,
+   0
+  ],
+  "how": "head-skin mask overlap (r5_paint.head_offset)"
+ }
+}

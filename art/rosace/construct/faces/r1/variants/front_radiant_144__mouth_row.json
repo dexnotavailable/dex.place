@@ -1,0 +1,383 @@
+{
+ "_doc": "Painted face stamp, round R1 (tools/art-construct/head_paint.py from art/rosace/construct/faces/r1/head_front.json). rows use the KEY in tools/art-construct/artlib.py; origin = [column, row] of the chin point; landmarks follow the face.json schema in docs/character/art-rules/checklist.json inputs and are measured from the painted pixels.",
+ "name": "front_radiant_144__mouth_row",
+ "params": {
+  "yaw": "front",
+  "expression": "radiant",
+  "gaze": [
+   -1,
+   0
+  ],
+  "roll": 0,
+  "pitch": 0,
+  "eye_row": 0,
+  "pupil": false,
+  "gaze_target": "viewer",
+  "facing": "right",
+  "route": "r1 painted layers",
+  "variant_of": "front_radiant_144",
+  "variant_axis": "mouth_row"
+ },
+ "landmarks": {
+  "facing": "right",
+  "yaw": "front",
+  "yaw_deg": 0,
+  "expression": "radiant",
+  "head_px": 26,
+  "chin_y": 36,
+  "rows_above_chin": {
+   "mouth": 2,
+   "nose": 6,
+   "eye_bottom": 10,
+   "lash_top": 14,
+   "brow": 16,
+   "hairline": 20,
+   "skull_top": 26,
+   "hair_top": 29
+  },
+  "skull_top_row": 26,
+  "hair_top_row": 29,
+  "centre_line_x_at_eye_row": 19,
+  "gaze_target": "viewer",
+  "light": [
+   0.6,
+   -0.8
+  ],
+  "origin": [
+   19,
+   36
+  ],
+  "hair_top_measured": 29,
+  "far_edge": {
+   "20": 27,
+   "19": 27,
+   "18": 27,
+   "17": 27,
+   "16": 27,
+   "15": 27,
+   "14": 27,
+   "13": 27,
+   "12": 27,
+   "11": 27,
+   "10": 27,
+   "9": 27,
+   "8": 26,
+   "7": 26,
+   "6": 25,
+   "5": 24,
+   "4": 23,
+   "3": 23,
+   "2": 22,
+   "1": 21,
+   "0": 20
+  },
+  "near_edge": {
+   "20": 11,
+   "19": 11,
+   "18": 11,
+   "17": 11,
+   "16": 11,
+   "15": 11,
+   "14": 11,
+   "13": 11,
+   "12": 11,
+   "11": 11,
+   "10": 11,
+   "9": 11,
+   "8": 12,
+   "7": 12,
+   "6": 13,
+   "5": 14,
+   "4": 15,
+   "3": 15,
+   "2": 16,
+   "1": 17,
+   "0": 18
+  },
+  "face_width_eye_row": {
+   "y": 26,
+   "x0": 11,
+   "x1": 27
+  },
+  "eyes": {
+   "near": {
+    "box": [
+     12,
+     22,
+     16,
+     27
+    ],
+    "template": "r1_front_near_radiant",
+    "mirrored": false,
+    "lash_px": 9
+   },
+   "far": {
+    "box": [
+     22,
+     22,
+     26,
+     27
+    ],
+    "template": "r1_front_far_radiant",
+    "mirrored": false,
+    "lash_px": 9
+   }
+  },
+  "gaze": {
+   "dx": -1,
+   "dy": 0,
+   "target": "viewer"
+  },
+  "brows": {
+   "near": [
+    [
+     13,
+     18
+    ],
+    [
+     14,
+     18
+    ],
+    [
+     15,
+     18
+    ],
+    [
+     12,
+     19
+    ]
+   ],
+   "far": [
+    [
+     23,
+     19
+    ],
+    [
+     24,
+     19
+    ],
+    [
+     25,
+     19
+    ]
+   ]
+  },
+  "mouth": {
+   "key": "radiant",
+   "px": [
+    [
+     17,
+     32,
+     "S4"
+    ],
+    [
+     18,
+     32,
+     "W1"
+    ],
+    [
+     19,
+     32,
+     "W1"
+    ],
+    [
+     20,
+     32,
+     "S4"
+    ],
+    [
+     18,
+     33,
+     "SB"
+    ],
+    [
+     19,
+     33,
+     "SB"
+    ]
+   ]
+  },
+  "nose": [
+   [
+    19,
+    30
+   ]
+  ],
+  "blush": {
+   "near": [
+    [
+     16,
+     28
+    ],
+    [
+     15,
+     29
+    ]
+   ],
+   "far": [
+    [
+     24,
+     28
+    ],
+    [
+     23,
+     29
+    ]
+   ]
+  },
+  "centre_line": [
+   [
+    19.0,
+    10.23
+   ],
+   [
+    19.0,
+    11.16
+   ],
+   [
+    19.0,
+    12.1
+   ],
+   [
+    19.0,
+    13.03
+   ],
+   [
+    19.0,
+    13.97
+   ],
+   [
+    19.0,
+    14.9
+   ],
+   [
+    19.0,
+    15.83
+   ],
+   [
+    19.0,
+    16.77
+   ],
+   [
+    19.0,
+    17.7
+   ],
+   [
+    19.0,
+    18.64
+   ],
+   [
+    19.0,
+    19.57
+   ],
+   [
+    19.0,
+    20.51
+   ],
+   [
+    19.0,
+    21.44
+   ],
+   [
+    19.0,
+    22.37
+   ],
+   [
+    19.0,
+    23.31
+   ],
+   [
+    19.0,
+    24.24
+   ],
+   [
+    19.0,
+    25.18
+   ],
+   [
+    19.0,
+    26.11
+   ],
+   [
+    19.0,
+    27.05
+   ],
+   [
+    19.0,
+    27.98
+   ],
+   [
+    19.0,
+    28.91
+   ],
+   [
+    19.0,
+    29.85
+   ],
+   [
+    19.0,
+    30.78
+   ],
+   [
+    19.0,
+    31.72
+   ],
+   [
+    19.0,
+    32.65
+   ],
+   [
+    20.0,
+    36.0
+   ]
+  ]
+ },
+ "rows": [
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "...............OOOOOOOOO..............",
+  "............OOOnllkkkkklOOO...........",
+  "..........OOnnllkkkkkkkkkklOO.........",
+  "........OOdnnlllkkkkkkkkkkkklOO.......",
+  ".......OdnnlljjjlljjjlljjjljjklO......",
+  "......OdnnllljllllllllllllljkkklO.....",
+  ".....OdnnnllllllnlllllllnllkkkllO.....",
+  "....OddnnnlllllnllllnllllnlllkkllO....",
+  "....OddnnnllllllnlllnlllnllllllllO....",
+  "...OddnnnllllllnllllnllllnllllllllO...",
+  "...OddnllnllkkdnlkkdnlkkdnllkklkkllO..",
+  "..OdnlnllnlnlkdnlnkdnlnkdnlnlklkkllnO.",
+  "..OnnlnllnltnOnOltntntnlsnltnlkkllknO.",
+  "..OdnlnllnltOlsnttntntnnnOttnlkkllknO.",
+  "..OdnlnllnlssnssssnsnssssnssnlkklllnO.",
+  "..OnnlnllnltsnssssnsnsssssssnlkklllnO.",
+  "..OdnlnlnlltssssssssssssssssnlkkllknO.",
+  "..OdnlnlnlltsOOOsssssssOOOssnlkkllknO.",
+  "..OnnlnllnltOOsOOsssssOOsOOsnllklllnO.",
+  "..OdnlnllnlOOsssssssssssssOOnllklllnO.",
+  "..OdnlnlllntssssssssssssssssnlklllknO.",
+  "..OnnlnlnlltssssssssssssssssnlklllknO.",
+  "..Odnlnlnllntssspsssssssp11nnllklllnO.",
+  "..OdnlnllnlnttspssssssspsssnnlkklllnO.",
+  "..OnnlnllnlnnttsssstssssssnnnlkkllknO.",
+  "..OdnlnlnllnnnttsssssssssnnnnllkllknO.",
+  "..OdnlnlnllnnnntsmwwmsssnnnnnlkllllnO.",
+  "..OnnlnllnlnnnntssppssssnnnnnlkllllnO.",
+  "..OdnlnllnlnnnnnsssssssnnnnnnllkllknO.",
+  "..OdnlnlnllnnnnntsttsstnnnnnnllkllknO.",
+  "..OnnlnnlnlnnnnnttsssttnnnnnnllknllnO.",
+  "..OdnlnzxxvnnnnntmmmmmsnnnnnzxxvnllnO.",
+  "..OdnlnnlnlnnnnnttmmsssnnnnnnlknnlknO.",
+  "..OnnlnnlnlnnnnnttsssssnnnnnnlknnlknO.",
+  "..OdnlnbbbnnnnnnttsssssnnnnnnbbbnllnO.",
+  "..OdnlnnbcnnnnnnttsssssnnnnnncbnnllnO.",
+  "..OnnlnncnnnnnnnttsssssnnnnnnncnnlknO.",
+  "..OdnlnnnnnnnnnnttsssssnnnnnnnnnnlknO.",
+  "..OdnlnnnnnnnnnnttsssssnnnnnnnnnnllnO.",
+  "...nnlnnnnnnnnnnttsssssnnnnnnnnnnlln.."
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "_doc": "Constructed fist, 80 px, ROUND 2 variant r3 (author_hands.py template='r3'). Critique round 2: 'at 80 use a 4-5 px fist with one highlight pixel and one knuckle-shadow pixel so the hand survives'. A 3 x 3 skin interior inside an OL ring (5 x 5): the thumb (t, S1) is the only highlight, the knuckle (l, S4) the only dark pixel inside, the rest S2 back / S3 palm side; the wrist (w, S3) one cell out. Same frame and labels as fist_144_r3.json; 'codes' fixes the tones.",
+ "haft_cols": [2, 2],
+ "origin": [2, 2],
+ "codes": {"k": "S3", "l": "S4", "b": "S2", "B": "S3", "t": "S1", "T": "S3", "d": "S3", "w": "S3", "f": "S2", "e": "S3"},
+ "views": {
+  "back": {"rows": [
+    ".OOO..",
+    "ObtbO.",
+    "OlbBw.",
+    "OkdBO.",
+    ".OOO.."
+  ]},
+  "fingers": {"rows": [
+    ".OOO..",
+    "OtTbO.",
+    "OlfBw.",
+    "OkeBO.",
+    ".OOO.."
+  ]},
+  "back_along": {"rows": [
+    ".OOO..",
+    "ObtbO.",
+    "OlbBO.",
+    "OkdwO.",
+    "..ww.."
+  ]},
+  "fingers_along": {"rows": [
+    ".OOO..",
+    "OtTbO.",
+    "OlfBO.",
+    "OkewO.",
+    "..ww.."
+  ]}
+ }
+}

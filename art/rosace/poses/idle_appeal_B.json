@@ -1,0 +1,254 @@
+{
+ "name": "idle_appeal_B",
+ "note": "Figure-pose lane, POSE CONCEPT B 'glaive across the shoulders' (DESIGN 3.5; art-rules/pose.md). Kept sub-variant B5 of B1-B6 (review/rosace/art/figure-pose/explore/B/). The glaive rests behind the neck across both shoulders, riding the shoulder line plus 6 deg (a 22 deg diagonal on screen), blade to her left so it rises over the bust side; both wrists draped over the haft with the hands hanging relaxed in front of it: the far arm open along the haft to the rose disc, the near arm bent with the hand under the haft (the glaive-hands lane redraws the hands; pose only). Weight on the near (right) leg, straight, ankle under the pit of the neck; the hip pushed out on the back contour; the free left leg out and forward on its toe with the knee in (a lambda, heels 36.5 px apart at 144). Pelvis 54 / chest 42 / head 17 deg from the camera, chest lifted and arched 11 deg, shoulders 13 deg against hips 9 deg, head tilted 8.5 deg against the shoulders with the chin down. 3D cheat (PS-P20): the free leg is scaled 1.10 so the wide lambda is reachable with a straight weight leg (without it the heel gap tops out at ~19-27 px). Weapon and wrist numbers were seated on the posed neck and shoulder line by work/B/place.py; if the torso changes, re-seat them.",
+ "camera": {
+  "yaw": 48,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   0
+  ]
+ },
+ "bones": {
+  "J_Bip_L_UpperLeg.scale": 1.1
+ },
+ "feet": {
+  "R": {
+   "pos": [
+    -0.06,
+    0.02,
+    0.105
+   ],
+   "yaw": -8
+  },
+  "L": {
+   "pos": [
+    0.285,
+    -0.405,
+    0.13
+   ],
+   "yaw": 35,
+   "pitch": 40
+  }
+ },
+ "poles": {
+  "leg.L": [
+   -1.1,
+   -0.6,
+   0.6
+  ],
+  "leg.R": [
+   -0.2,
+   -0.6,
+   0.55
+  ],
+  "arm.L": [
+   0.3,
+   0.6,
+   1.9
+  ],
+  "arm.R": [
+   -0.5,
+   0.6,
+   1.9
+  ]
+ },
+ "weapon": {
+  "at": [
+   -0.0477,
+   0.1178,
+   1.537
+  ],
+  "socket": "grip_mid",
+  "dir": [
+   0.9792,
+   -0.0925,
+   0.1804
+  ],
+  "edge": [
+   0,
+   0.3,
+   1
+  ]
+ },
+ "hands": {
+  "L": {
+   "pos": [
+    0.4551,
+    0.0503,
+    1.6646
+   ],
+   "fdir": [
+    0.1,
+    -0.4,
+    -0.9
+   ],
+   "palm": [
+    -0.6,
+    0.7,
+    -0.3
+   ]
+  },
+  "R": {
+   "pos": [
+    -0.4653,
+    0.1373,
+    1.4951
+   ],
+   "fdir": [
+    -0.1,
+    -0.4,
+    -0.9
+   ],
+   "palm": [
+    0.6,
+    0.7,
+    -0.3
+   ]
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.0,
+   0.1,
+   0
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.25,
+    "wind": [
+     -0.3,
+     0.9,
+     0.4
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.2,
+    "wind": [
+     0.4,
+     1.0,
+     0.5
+    ]
+   },
+   "hair_tail": {
+    "g": 0.8
+   },
+   "tabard": {
+    "g": 0.95
+   },
+   "stole_A": {
+    "g": 0.35,
+    "wind": [
+     0.35,
+     1.1,
+     0.25
+    ]
+   },
+   "stole_B": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     1.1,
+     0.25
+    ]
+   }
+  }
+ },
+ "expression": "confident",
+ "figure": {
+  "appeal": true,
+  "joints": {
+   "hips": [
+    8,
+    11.5,
+    8
+   ],
+   "shoulder.L": [
+    0,
+    -8,
+    0
+   ],
+   "shoulder.R": [
+    0,
+    8,
+    0
+   ]
+  },
+  "torso": {
+   "bend": [
+    -8,
+    -17,
+    -12
+   ],
+   "split": [
+    0.7,
+    0.2,
+    0.1
+   ]
+  },
+  "feet": {
+   "L": {
+    "toe": 25
+   }
+  },
+  "weight": {
+   "leg": "R",
+   "knee": 176,
+   "over": "neck",
+   "offset": [
+    0.006,
+    -0.025
+   ]
+  },
+  "fingers": {
+   "L": {
+    "curl": 25,
+    "per": {
+     "Index": 12,
+     "Middle": 28,
+     "Ring": 34,
+     "Little": 22
+    },
+    "spread": 4,
+    "thumb": {
+     "fold": 20,
+     "curl": 10
+    }
+   },
+   "R": {
+    "curl": 30,
+    "per": {
+     "Index": 18,
+     "Middle": 32,
+     "Ring": 38,
+     "Little": 28
+    },
+    "spread": 3,
+    "thumb": {
+     "fold": 25,
+     "curl": 12
+    }
+   }
+  },
+  "look": {
+   "at": "camera",
+   "amount": 0.6,
+   "neck": 0.4,
+   "chin": 6,
+   "tilt": 12
+  }
+ }
+}

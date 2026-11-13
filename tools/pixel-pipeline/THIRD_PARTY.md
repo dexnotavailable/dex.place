@@ -31,13 +31,10 @@ untouched. Zips cached in `...\dexplace-character\blender-extensions\`.
 |---|---|---|---|---|---|---|
 | VRM format (saturday06 / Isamu Mogi) | 4.7.2 | https://extensions.blender.org/add-ons/vrm/ (file: `add-on-vrm-v4.7.2.zip`) | `SPDX:MIT`, `SPDX:GPL-3.0-or-later` (manifest) | 1,643,935 B | `e85588660bfbb4099910a86803fa87dc8348e65541a4ccdcaf40c538f60027dc` | import the VRM base bodies, humanoid bone map, expressions, spring bones |
 | Retarget (KBS-DEV, fork of Expy Kit + AnimAide) | 5.2.0 | https://extensions.blender.org/add-ons/retarget/ (file: `add-on-retarget-v5.2.0.zip`; source https://github.com/KBSBAUDRICE/Retarget) | `SPDX:GPL-3.0-or-later` | 225,631 B | `521ec8ff5c2373893ea8022b3f71d27ed191fb73f3a5634cac31585e0dcb7af3` | bone-map presets (Unreal Mannequin = the UAL/Mesh2Motion rig, Vroid, Rigify metarig = Seed-san, Mixamo, MMD) and bind/bake. Proven headless by `retarget_smoke.py`. |
+| MMD Tools (MMD team / UuuNyaa) | 4.5.14 | https://extensions.blender.org/add-ons/mmd-tools/ (file: `add-on-mmd-tools-v4.5.14.zip`) | `SPDX:GPL-3.0-or-later` (extensions API) | 803,729 B | `ed3b78184ae9862be0df04e2e147803d011ad067edd8c31029c92fb719e19a6f` | PMX/PMD import for the MMD base-body search (`docs/character/BASE-OPTIONS/mmd-search.md`, `base_search.py`). Installed 2026-09-29; `blender_env.py check` passes with it enabled. |
 
-Considered, not installed: **MMD Tools 4.5.14** (https://extensions.blender.org/add-ons/mmd-tools/,
-GPL-3.0-or-later, 803,729 B, sha256
-`ed3b78184ae9862be0df04e2e147803d011ad067edd8c31029c92fb719e19a6f`). It only matters for
-VMD/PMX motion, and nothing in the current batch is VMD/PMX. SMPL output from motion models
-arrives as BVH/FBX/GLB, which Blender imports natively. Add it to `EXTENSIONS` in
-`blender_env.py` if a VMD source is adopted.
+MMD Tools was "considered, not installed" until 2026-09-29, when PMX base bodies became
+candidates. It is now pinned in `EXTENSIONS` like the other two.
 
 ## Base bodies (VRM)
 
@@ -74,6 +71,72 @@ arrives as BVH/FBX/GLB, which Blender imports natively. Add it to `EXTENSIONS` i
 - Local: `...\dexplace-character\vrm\HairSample_Female.vrm`
 - Use: first-choice CC0 anime base body (separate Face/Body/Hair meshes, J_Bip_* rig that
   matches Retarget's Vroid preset).
+
+## Base v2 (BOOTH; Dex's pick 2026-09-29: "take the busty SiroinoSotai body, then swap in the head from the MMD女性素体")
+
+Downloaded by Dex from BOOTH (both free items; a BOOTH order is his to place). Neither is
+pinned in `third_party.json` or fetched by `fetch_third_party.py`: the downloads need his
+BOOTH login. `rosace_v2/sources.py` checks the sha256 of the extracted file before every build.
+Built into `rosace.blend` by `build_rosace_v2.py`: the canonical Rosace base since the Adopt step
+(2026-09-29, PIPELINE.md 3.6e; before it the output was `rosace_v2.blend`, and the retired v1
+base is kept as `build/rosace_v1.blend`). sha256 of both build inputs re-checked 2026-09-29 at Adopt. Search notes and the shortlist:
+`docs/character/BASE-OPTIONS/mmd-search.md` (items 2 and 4 of its shortlist).
+
+### SiroinoSotai v1.0 (しろいの), the body
+
+- Source page: https://booth.pm/ja/items/8268676 (free)
+- Licence, quoted from the shop page (2026-09-29, `mmd-search.md`): 「CC0ライセンスのため、個人・法人、商用・非商用を問わず自由に利用でき、利用報告・許可申請・クレジット表記も必要ありません。」
+  and 「VRChat以外にも、ゲーム、映像、配信、イラストなど、幅広い創作にご利用いただけます。」
+  CC0 1.0 covers the FBX, the .blend and the textures. The zip has no readme or licence file.
+- Two conditions that are not CC0: our work must not be called 「公式」「公認」「認定」「監修」
+  「共同開発」 (official, endorsed, certified, supervised, co-developed) without permission, and
+  the SiroinoSotai **logo is not CC0**: never use it.
+- Credit: not required. We credit anyway (DESIGN.md): "Base body: SiroinoSotai by しろいの (CC0)".
+- Download: `D:\Dex\Inbox\Downloads\SiroinoSotai_1.0.zip`, 202,144,789 B,
+  `c4ec2093659a75ca0c69ff18bed15ccd5f9d1a87136eded2d6c47bed63321c0a`
+- Extracted: `D:\Dex\Projects\dex-place-art\rosace\bases\siroino\SiroinoSotai_1.0\`
+
+| File | Size | sha256 |
+|---|---|---|
+| `SiroinoSotai.blend` (the build input; Blender 5.2 file, opens in 5.1 with a version warning) | 31,594,225 B | `d5bc3c6031d0f095c6ae509b19a71c3e2b33f3f9f1f43fbc4dc5b1132d7dd677` |
+| `SiroinoSotai_PC.fbx` | 3,862,972 B | `73aa62ee0a8805cda3a1649ffffb4a4899412f4da60bd206787602c7c19af0b0` |
+| `SiroinoSotai_Mobile.fbx` | 1,116,076 B | `7102dcfdbfa631d17cab3aa84fcb650f3d890cf3b04cdc2bd5b1a1177ee7c811` |
+| `SiroinoSotai_1.0.unitypackage` | 34,263,129 B | `f88af125d9189d07b5157413ddfa3771342b926df41ba99fc95d9114b47cb816` |
+
+- Use: the body (objects `Armature` + `SiroinoSotai_PC`: 8,421 verts, 57 weight groups, 98 shape keys plus Basis (93 without the divider
+  keys)). The build bakes a set of its own keys (`rosace_v2/body.py` BODY_KEYS; since Adopt Breasts_LL 1.0 +
+  Breasts_LLL 0.5, Hips_01/02_L 1.0, Spine_Slim 1.8, Chest_Slim 0.5, Heels 1.0), stretches the legs,
+  shortens the torso and pinches the waist (`LEG_STRETCH`, `TORSO_K`, `WAIST_PINCH`), restores the
+  quads, renames the Unity Humanoid bones to `J_Bip_*`, cuts the headless neck lower and welds
+  the head on. Textures are not used.
+
+### MMD用女性素体（リグ付き） (射当ユウキ, プリメロ工房), the head
+
+- Source page: https://booth.pm/ja/items/1958825 (free)
+- Licence, quoted from `00_ReadMe.txt` in the zip. Forbidden, and only these:
+  「素体モデルデータの制作者を偽る行為」 (misrepresenting who made the base model: copyright in
+  the base model stays with 射当ユウキ), 「他者を貶める行為への使用」 (using it to demean real
+  people, races, genders or groups), 「違法行為への利用」 (illegal use). Allowed:
+  「商用利用・非商用利用のどちらも可能とします。」「素体モデルを改変して、新たな作品を制作しても大丈夫です。」
+  「MMDモデル以外の使用を目的とした制作（例えばUnityやUnrealEngineなど）にこの素体モデルを使用しても問題ありません。」
+  and 「素体を元に作成した作品に関して素体制作者は著作権を主張しません。」 Reporting use, linking
+  and credit are all optional (「クレジット表記に関して…表記するかは自由とします。」).
+- Credit: optional. We credit (DESIGN.md): "Head base: MMD用女性素体 by 射当ユウキ". Never
+  present the head base as our own model.
+- Download: `D:\Dex\Inbox\Downloads\MMD用女性素体 (1).zip`, 360,964 B,
+  `abde54587a2fdf4a6769f498cd9a8c34e7ff4987a4d87c33875eac6f42352f44`
+- Extracted: `D:\Dex\Projects\dex-place-art\rosace\bases\primero\MMD用女性素体\`
+
+| File | Size | sha256 |
+|---|---|---|
+| `mmdBodyWoman.blend` (the build input; MMD-named rig `00_Rig`, unweighted `01_Body` with a mirror modifier, separate eye/brow/lash/mouth meshes) | 1,534,672 B | `ff62d62fa0e30c2dfc805136cb1b6f942416722c76e325ae3b8ca71073f3609e` |
+| `00_ReadMe.txt` | 3,594 B | `663c973961e1d7359a82bb90bda547b3642af8480d951f86dee1ea4cf5291ec2` |
+
+- Use: the head only. `01_Body` is cut below the chin, scaled to the head target, its neck
+  tapered onto the body's neck ring and welded; the eye sockets and mouth are filled flush (the
+  face is stamped as pixels). The eye, brow, lash and mouth meshes ride along in a never-rendered
+  `head_ref` collection as a placement reference. The `頭` and `左目`/`右目` bones give the head
+  pivot and the eye anchors. The rest of the body mesh is discarded.
 
 ## Motion
 

@@ -3,7 +3,7 @@
 import { createRequire } from "node:module";
 const require = createRequire(new URL("../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
-const [out, query = "go", w = "1920", h = "1080", dpr = "1", wait = "3000", port = process.env.WORLD_PORT ?? "22763"] = process.argv.slice(2);
+const [out, query = "go", w = "1920", h = "1080", dpr = "1", wait = "3000", port = process.env.WORLD_PORT ?? "24001"] = process.argv.slice(2);
 const browser = await chromium.launch({ channel: "msedge", args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"] });
 const page = await browser.newPage({ viewport: { width: +w, height: +h }, deviceScaleFactor: +dpr });
 const logs = [];

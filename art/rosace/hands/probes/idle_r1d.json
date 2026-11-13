@@ -1,0 +1,102 @@
+{
+ "_doc": "glaive-hands round 1: the idle haft IN FRONT of the grip arm (k1's haft stood 0.2 m behind her body plane, so the bell sleeve hung in front of the hand). Solved: a screen lean of 17-18 deg with the grip 8-9 cm nearer the camera than the shoulder and within 0.44-0.46 m of it: the butt forward and out, the top leaning slightly back in depth (no change to the screen angle).",
+ "base": "art/rosace/hands/poses/idle_hero.json",
+ "variants": {
+  "f1_17": {
+   "weapon": {
+    "butt": [
+     -0.31,
+     -0.24,
+     0.0
+    ],
+    "dir": [
+     -0.1762,
+     0.273,
+     0.9457
+    ],
+    "edge": [
+     -0.87,
+     0.5,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "slide": 0.2
+    }
+   }
+  },
+  "f2_17_sleeveback": {
+   "weapon": {
+    "butt": [
+     -0.31,
+     -0.24,
+     0.0
+    ],
+    "dir": [
+     -0.1762,
+     0.273,
+     0.9457
+    ],
+    "edge": [
+     -0.87,
+     0.5,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "slide": 0.2
+    }
+   },
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.55,
+      "wind": [
+       -0.1,
+       0.9,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "f3_18": {
+   "weapon": {
+    "butt": [
+     -0.27,
+     -0.17,
+     0.0
+    ],
+    "dir": [
+     -0.2165,
+     0.2399,
+     0.9463
+    ],
+    "edge": [
+     -0.87,
+     0.5,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "slide": 0.17
+    }
+   },
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.55,
+      "wind": [
+       -0.1,
+       0.9,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

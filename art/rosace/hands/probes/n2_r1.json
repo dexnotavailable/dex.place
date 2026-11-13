@@ -1,0 +1,6 @@
+{"_doc":"glaive-hands round 1: N2 pivot (the back view) grip thumbnails. Control: the main (L) hand 5 cm off the haft, the hands 0.22 L apart (43 px).",
+ "base":"art/rosace/poses/n2_pivot.json","variants":{
+ "p0_control":{},
+ "p1_slide":{"hands":{"L":{"grip":"grip_mid","slide":0.06}}},
+ "p2_slide_close":{"hands":{"L":{"grip":"grip_mid","slide":0.02}}}
+}}

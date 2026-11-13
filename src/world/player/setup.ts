@@ -3,8 +3,9 @@
 //
 // Sprites: a pipeline export at /world/character/manifest.json (80 px) and
 // /world/character-closeup/manifest.json (144 px) when present (same
-// dex.sprite/1 contract as the lab); otherwise the procedural stand-in, baked
-// at both heights. Data (clip timings, boxes, events, effect sizes, tuning)
+// dex.sprite/1 contract as the lab; files in public/world/<dir>/, probed at
+// build time so a missing export costs no request); otherwise the procedural
+// stand-in, baked at both heights. Data (clip timings, boxes, events, effect sizes, tuning)
 // comes from the lab's files, scaled from the 96 px they are authored at.
 
 import clipsRaw from "../../lab/data/player.clips.json?raw";
@@ -19,7 +20,7 @@ import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import { K, K_CLOSE, SCALE } from "../config.ts";
 import type { WorldRenderer } from "../render/renderer.ts";
 import { scaleClipSource, scaleTuning, scaleVfxLibrary } from "./scale.ts";
-import { bakeScaledStandin } from "./standin.ts";
+import { bakeScaledStandin, WORLD_CLIPS } from "./standin.ts";
 
 export interface PlayerAssets {
   /** Exploration sprite (H = 80). The simulation runs on this one. */
@@ -47,10 +48,20 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
+/**
+ * Which exports exist, known when the module is built: an export lands as
+ * public/world/<dir>/manifest.json (served at /world/<dir>/). Only the keys of
+ * the glob are used, so nothing is imported, and a folder with no export is
+ * never fetched: no 404 in the console on every load. The dev server re-runs
+ * the glob when a manifest appears.
+ */
+const EXPORTS = new Set(Object.keys(import.meta.glob("/public/world/*/manifest.json")).map((k) => k.slice("/public".length)));
+
 /** A pipeline export at /world/<dir>/, or null (missing / placeholder) so the stand-in is used. */
 async function loadExport(r: WorldRenderer, dir: string): Promise<RuntimeSprite | null> {
   const base = `/world/${dir}/`;
   const file = `${base}manifest.json`;
+  if (!EXPORTS.has(file)) return null;
   let text: string;
   try {
     const res = await fetch(file, { cache: "no-cache" });
@@ -78,10 +89,12 @@ async function loadExport(r: WorldRenderer, dir: string): Promise<RuntimeSprite 
 
 export async function loadPlayer(r: WorldRenderer): Promise<PlayerAssets> {
   const t0 = performance.now();
-  const src = JSON.parse(clipsRaw) as ClipSource;
+  const lab = JSON.parse(clipsRaw) as ClipSource;
+  // the stand-in also sits (benches): the world's own clips next to the lab's
+  const src: ClipSource = { ...lab, clips: [...lab.clips, ...WORLD_CLIPS] };
   const worldSrc = scaleClipSource(src, K);
-  const lab = JSON.parse(tuningRaw) as Tuning;
-  const tuning: Tuning = { ...lab, player: scaleTuning(lab.player, K) };
+  const labTuning = JSON.parse(tuningRaw) as Tuning;
+  const tuning: Tuning = { ...labTuning, player: scaleTuning(labTuning.player, K) };
   const vfx = validateVfxLibrary(scaleVfxLibrary(JSON.parse(vfxRaw), K));
 
   const heights: { world: number; closeup: number } = { world: SCALE.H, closeup: SCALE.closeupH };

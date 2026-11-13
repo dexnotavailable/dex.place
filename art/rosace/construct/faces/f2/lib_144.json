@@ -1,0 +1,890 @@
+{
+ "_doc": "Face lane F2 glyph library (tools/art-construct/face_f2.py; written by face_f2_lib.py). Authored pixels, facing screen-right (mirrored for screen-left). 'origin' = [col, row] that lands on the construction point: eyes on the projected iris centre, brows/blush at dx/dy from their eye's origin (blush dy counts rows under the eye's bottom row), nose on the nose tip, mouth on the mouth row. O OL, a A2, b A3, c A4, h A5, w W1, e W2, n I3, t S3, l S3 lower lid, m S4, p SB, r I3 brow, 1 S1, k S2 over hair.",
+ "px": 144,
+ "eyes": {
+  "near_open": {
+   "origin": [
+    3,
+    4
+   ],
+   "rows": [
+    "O......",
+    "OO.....",
+    ".OOOOOO",
+    ".Oaahe.",
+    "..anhe.",
+    "..abb..",
+    "..bbb..",
+    ".lhcc.."
+   ]
+  },
+  "near_open_lift": {
+   "origin": [
+    3,
+    4
+   ],
+   "rows": [
+    "O......",
+    "OO.....",
+    ".OOOOOO",
+    ".Oaahe.",
+    "..anhe.",
+    "..abb..",
+    ".lbbb..",
+    "..hcc.."
+   ]
+  },
+  "near_open_thin": {
+   "origin": [
+    2,
+    3
+   ],
+   "rows": [
+    "O.....",
+    ".OOOOO",
+    ".aaheO",
+    ".anae.",
+    ".abb..",
+    "lbcc.."
+   ]
+  },
+  "near_open_heavy": {
+   "origin": [
+    2,
+    3
+   ],
+   "rows": [
+    "OO....",
+    "OOOOOO",
+    ".aaheO",
+    ".anae.",
+    ".abb..",
+    "lbcc.."
+   ]
+  },
+  "near_open_pale": {
+   "origin": [
+    3,
+    4
+   ],
+   "rows": [
+    "O......",
+    ".O.....",
+    "..OOOOO",
+    "..aaheO",
+    "..anbe.",
+    "..bbb..",
+    "..ccc..",
+    "..ll..."
+   ]
+  },
+  "far_open": {
+   "origin": [
+    1,
+    4
+   ],
+   "rows": [
+    ".....O",
+    "....OO",
+    "OOOOO.",
+    "aaheO.",
+    "anhe..",
+    "abb...",
+    "bbb...",
+    "hccl.."
+   ]
+  },
+  "far_open_lift": {
+   "origin": [
+    1,
+    4
+   ],
+   "rows": [
+    ".....O",
+    "....OO",
+    "OOOOO.",
+    "aaheO.",
+    "anhe..",
+    "abb...",
+    "bbbl..",
+    "hcc..."
+   ]
+  },
+  "far_open_s": {
+   "origin": [
+    0,
+    4
+   ],
+   "rows": [
+    "....O",
+    "...OO",
+    "OOOO.",
+    "aheO.",
+    "nhe..",
+    "bb...",
+    "bb...",
+    "hcl.."
+   ]
+  },
+  "near_focused": {
+   "origin": [
+    3,
+    2
+   ],
+   "rows": [
+    "OOOOOO.",
+    ".OaaheO",
+    "..anhe.",
+    "..abb..",
+    ".lhcc.."
+   ]
+  },
+  "far_focused": {
+   "origin": [
+    1,
+    2
+   ],
+   "rows": [
+    "OOOOOO",
+    "aaheO.",
+    "anhe..",
+    "abb...",
+    "hccl.."
+   ]
+  },
+  "far_focused_s": {
+   "origin": [
+    0,
+    2
+   ],
+   "rows": [
+    "OOOOO",
+    "aheO.",
+    "nhe..",
+    "bb...",
+    "hcl.."
+   ]
+  },
+  "near_smile": {
+   "origin": [
+    2,
+    1
+   ],
+   "rows": [
+    "..OO.",
+    ".O..O",
+    "O...."
+   ]
+  },
+  "far_smile": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    ".OO.",
+    "O..O",
+    "....O"
+   ]
+  },
+  "near_smile_open": {
+   "origin": [
+    2,
+    3
+   ],
+   "rows": [
+    "O.....",
+    ".OOOOO",
+    ".aaheO",
+    ".anbe.",
+    ".lll.."
+   ]
+  },
+  "far_smile_open": {
+   "origin": [
+    1,
+    3
+   ],
+   "rows": [
+    "....O",
+    "OOOO.",
+    "aahe.",
+    "anbe.",
+    ".lll."
+   ]
+  },
+  "near_hurt": {
+   "origin": [
+    2,
+    1
+   ],
+   "rows": [
+    "OO...",
+    "..OOO",
+    "OO..."
+   ]
+  },
+  "far_hurt": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "..OO",
+    "OO..",
+    "..OO"
+   ]
+  },
+  "near_serene": {
+   "origin": [
+    2,
+    3
+   ],
+   "rows": [
+    "......",
+    "......",
+    ".OOOOO",
+    "OanbeO",
+    ".ccc..",
+    ".ll..."
+   ]
+  },
+  "far_serene": {
+   "origin": [
+    1,
+    3
+   ],
+   "rows": [
+    ".....",
+    ".....",
+    "OOOO.",
+    "anbeO",
+    "ccc..",
+    "..ll."
+   ]
+  },
+  "near_ignited": {
+   "origin": [
+    2,
+    2
+   ],
+   "rows": [
+    "OOOOO.",
+    ".caaOO",
+    "cahac.",
+    ".ccc..",
+    ".ll..."
+   ]
+  },
+  "far_ignited": {
+   "origin": [
+    1,
+    2
+   ],
+   "rows": [
+    ".OOOO",
+    "OOcac",
+    ".ahc.",
+    "ccc..",
+    "..ll."
+   ]
+  },
+  "near_closed": {
+   "origin": [
+    2,
+    0
+   ],
+   "rows": [
+    "O....",
+    ".OOOO"
+   ]
+  },
+  "far_closed": {
+   "origin": [
+    1,
+    0
+   ],
+   "rows": [
+    "...O",
+    "OOO."
+   ]
+  },
+  "front_far_open": {
+   "origin": [
+    2,
+    4
+   ],
+   "rows": [
+    "......O",
+    ".....OO",
+    "OOOOOO.",
+    ".aaheO.",
+    ".anhe..",
+    ".abb...",
+    ".bbb...",
+    ".hccl.."
+   ]
+  },
+  "front_far_smile": {
+   "origin": [
+    2,
+    1
+   ],
+   "rows": [
+    ".OO..",
+    "O..O.",
+    "....O"
+   ]
+  },
+  "profile_open": {
+   "origin": [
+    3,
+    4
+   ],
+   "rows": [
+    "O....",
+    "OO...",
+    ".OOOO",
+    ".Oaah",
+    "..anh",
+    "..ab.",
+    "..bb.",
+    ".lhc."
+   ]
+  },
+  "profile_focused": {
+   "origin": [
+    3,
+    2
+   ],
+   "rows": [
+    "OOOOO",
+    ".Oaah",
+    "..anh",
+    "..bb.",
+    ".lhc."
+   ]
+  },
+  "profile_smile": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    ".OO.",
+    "O..O",
+    "...."
+   ]
+  },
+  "profile_hurt": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "OO.",
+    "..O",
+    "OO."
+   ]
+  },
+  "profile_closed": {
+   "origin": [
+    1,
+    0
+   ],
+   "rows": [
+    "O...",
+    ".OOO"
+   ]
+  },
+  "profile_serene": {
+   "origin": [
+    1,
+    2
+   ],
+   "rows": [
+    "....",
+    ".OOO",
+    "Oanb",
+    ".cc."
+   ]
+  },
+  "profile_ignited": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "OOOO",
+    ".cah",
+    ".cc.",
+    ".l.."
+   ]
+  }
+ },
+ "brows": {
+  "near_confident": {
+   "origin": [
+    1,
+    1
+   ],
+   "dx": 0,
+   "dy": -6,
+   "rows": [
+    "r..",
+    ".rr"
+   ]
+  },
+  "far_confident": {
+   "origin": [
+    1,
+    1
+   ],
+   "dx": 0,
+   "dy": -6,
+   "rows": [
+    "..r",
+    "rr."
+   ]
+  },
+  "near_focused": {
+   "origin": [
+    1,
+    1
+   ],
+   "dx": 0,
+   "dy": -4,
+   "rows": [
+    "rr.",
+    "..r"
+   ]
+  },
+  "far_focused": {
+   "origin": [
+    1,
+    1
+   ],
+   "dx": 0,
+   "dy": -4,
+   "rows": [
+    "r..",
+    ".rr"
+   ]
+  },
+  "near_smile": {
+   "origin": [
+    1,
+    0
+   ],
+   "dx": 0,
+   "dy": -5,
+   "rows": [
+    ".r.",
+    "r.r"
+   ]
+  },
+  "far_smile": {
+   "origin": [
+    1,
+    0
+   ],
+   "dx": 0,
+   "dy": -5,
+   "rows": [
+    ".r.",
+    "r.r"
+   ]
+  },
+  "near_hurt": {
+   "origin": [
+    1,
+    1
+   ],
+   "dx": 0,
+   "dy": -5,
+   "rows": [
+    "..r",
+    "rr."
+   ]
+  },
+  "far_hurt": {
+   "origin": [
+    1,
+    1
+   ],
+   "dx": 0,
+   "dy": -5,
+   "rows": [
+    "r..",
+    ".rr"
+   ]
+  },
+  "near_serene": {
+   "origin": [
+    1,
+    0
+   ],
+   "dx": 0,
+   "dy": -5,
+   "rows": [
+    "rrr"
+   ]
+  },
+  "far_serene": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": 0,
+   "dy": -5,
+   "rows": [
+    "rr"
+   ]
+  },
+  "profile": {
+   "origin": [
+    1,
+    0
+   ],
+   "dx": 0,
+   "dy": -5,
+   "rows": [
+    "rrr"
+   ]
+  },
+  "profile_focused": {
+   "origin": [
+    1,
+    1
+   ],
+   "dx": 0,
+   "dy": -4,
+   "rows": [
+    "rr.",
+    "..r"
+   ]
+  }
+ },
+ "blush": {
+  "soft_near": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": -2,
+   "dy": 1,
+   "rows": [
+    "ppp"
+   ]
+  },
+  "soft_far": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": 0,
+   "dy": 1,
+   "rows": [
+    "ppp"
+   ]
+  },
+  "broken_near": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": -2,
+   "dy": 1,
+   "rows": [
+    "p.pp"
+   ]
+  },
+  "broken_far": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": 0,
+   "dy": 1,
+   "rows": [
+    "pp.p"
+   ]
+  },
+  "strip_near": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": -2,
+   "dy": 1,
+   "rows": [
+    "ppp"
+   ]
+  },
+  "strip_far": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": 0,
+   "dy": 1,
+   "rows": [
+    "ppp"
+   ]
+  },
+  "wide_near": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": -2,
+   "dy": 1,
+   "rows": [
+    "pppp"
+   ]
+  },
+  "wide_far": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": -1,
+   "dy": 1,
+   "rows": [
+    "pppp"
+   ]
+  },
+  "dither_near": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": -2,
+   "dy": 1,
+   "rows": [
+    ".ppp",
+    "p..."
+   ]
+  },
+  "dither_far": {
+   "origin": [
+    0,
+    0
+   ],
+   "dx": 0,
+   "dy": 1,
+   "rows": [
+    "ppp.",
+    "...p"
+   ]
+  }
+ },
+ "noses": {
+  "q34": {
+   "origin": [
+    0,
+    0
+   ],
+   "rows": [
+    "t"
+   ]
+  },
+  "front": {
+   "origin": [
+    0,
+    0
+   ],
+   "rows": [
+    "t"
+   ]
+  }
+ },
+ "mouths": {
+  "smirk_far": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "...m",
+    "mmm."
+   ]
+  },
+  "smirk_near": {
+   "origin": [
+    2,
+    1
+   ],
+   "rows": [
+    "m...",
+    ".mmm"
+   ]
+  },
+  "smirk_far3": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "..m",
+    "mm."
+   ]
+  },
+  "u4": {
+   "origin": [
+    2,
+    1
+   ],
+   "rows": [
+    "m..m",
+    ".mm."
+   ]
+  },
+  "u3": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "m.m",
+    ".m."
+   ]
+  },
+  "focused": {
+   "origin": [
+    1,
+    0
+   ],
+   "rows": [
+    "mm"
+   ]
+  },
+  "focused3": {
+   "origin": [
+    1,
+    0
+   ],
+   "rows": [
+    "mmm"
+   ]
+  },
+  "open_small": {
+   "origin": [
+    1,
+    0
+   ],
+   "rows": [
+    "mm",
+    "pp"
+   ]
+  },
+  "shout": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "ww",
+    "OO",
+    "mm"
+   ]
+  },
+  "smile": {
+   "origin": [
+    2,
+    1
+   ],
+   "rows": [
+    "m..m",
+    ".pp."
+   ]
+  },
+  "smile_closed": {
+   "origin": [
+    2,
+    1
+   ],
+   "rows": [
+    "m..m",
+    ".mm."
+   ]
+  },
+  "hurt": {
+   "origin": [
+    1,
+    0
+   ],
+   "rows": [
+    "mm.",
+    "..m"
+   ]
+  },
+  "closed": {
+   "origin": [
+    0,
+    0
+   ],
+   "rows": [
+    "mm"
+   ]
+  },
+  "serene": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "..m",
+    "mm."
+   ]
+  },
+  "profile": {
+   "origin": [
+    0,
+    0
+   ],
+   "rows": [
+    "m"
+   ]
+  },
+  "profile_open": {
+   "origin": [
+    0,
+    0
+   ],
+   "rows": [
+    "m",
+    "p"
+   ]
+  },
+  "rose3": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "..p",
+    "mm."
+   ]
+  },
+  "rose3_near": {
+   "origin": [
+    1,
+    1
+   ],
+   "rows": [
+    "p..",
+    ".mm"
+   ]
+  },
+  "rose2": {
+   "origin": [
+    0,
+    0
+   ],
+   "rows": [
+    "mm"
+   ]
+  }
+ }
+}

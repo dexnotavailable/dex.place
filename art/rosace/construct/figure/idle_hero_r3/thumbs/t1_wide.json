@@ -1,0 +1,58 @@
+{
+ "name": "t1_wide",
+ "idea": "a wider stance: the free (near) foot steps 8 px out toward the staff (feet about 32 px apart), its knee bent, the glaive butt moved out with it (refs 07/08/09 stand 44-57 px apart; FG-P15 allows 20-30 only with a bent free knee)",
+ "set": {
+  "head": {
+   "chin_dx": 15
+  },
+  "neck": {
+   "back": 6
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -17,
+     6
+    ],
+    "knee_hint": [
+     -5,
+     40
+    ],
+    "toe": [
+     -13,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -23,
+    0
+   ]
+  }
+ },
+ "score": 12,
+ "gap_area": 332,
+ "width": 100,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P11",
+  "FG-P12",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02",
+  "CL-P05"
+ ],
+ "feet_apart": 32,
+ "failed": [
+  "FG-P10: weight leg 3.7 deg; free knee bend 2 deg; free knee -0.1 px lower"
+ ],
+ "verdict": "dropped (#4, 12/13): FG-P10 (free knee bent 2 deg: a spread heel on the ground straightens the IK leg), and moving the butt 8 px out straightened the grip arm into R2's rejected flag-holder reach [M; visible]",
+ "kept": false,
+ "rank": 4
+}

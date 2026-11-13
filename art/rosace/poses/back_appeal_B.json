@@ -1,0 +1,268 @@
+{
+ "name": "back_appeal_B",
+ "note": "Figure-pose lane, POSE CONCEPT B back view (DESIGN 3.5 item 2 back; PS-P18). Kept sub-variant 6 of back B1-B6. The idle_appeal_B body seen from behind-left (yaw -155): the haft across the shoulders frames the open back with the forearms draped over it; she glances back over her LEFT shoulder, where that arm lies open along the haft to the disc, so the arm doesn't cover the face (glancing over the right shoulder put the near forearm and sleeve across it); the chest twisted 10 deg toward the camera; the back hair and tail swept over her right shoulder so the spine and thong-cut back show; weight leg straight with the hip pushed out, the free hip dropped, the free leg out on its toe.",
+ "camera": {
+  "yaw": -155,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   0
+  ]
+ },
+ "bones": {
+  "J_Bip_L_UpperLeg.scale": 1.1
+ },
+ "feet": {
+  "R": {
+   "pos": [
+    -0.06,
+    0.02,
+    0.105
+   ],
+   "yaw": -8
+  },
+  "L": {
+   "pos": [
+    0.285,
+    -0.405,
+    0.13
+   ],
+   "yaw": 35,
+   "pitch": 40
+  }
+ },
+ "poles": {
+  "leg.L": [
+   -1.1,
+   -0.6,
+   0.6
+  ],
+  "leg.R": [
+   -0.2,
+   -0.6,
+   0.55
+  ],
+  "arm.L": [
+   0.3,
+   0.6,
+   1.9
+  ],
+  "arm.R": [
+   -0.5,
+   0.6,
+   1.9
+  ]
+ },
+ "weapon": {
+  "at": [
+   -0.0829,
+   0.1116,
+   1.5414
+  ],
+  "socket": "grip_mid",
+  "dir": [
+   0.9389,
+   0.2669,
+   0.2173
+  ],
+  "edge": [
+   0,
+   0.3,
+   1
+  ]
+ },
+ "hands": {
+  "L": {
+   "pos": [
+    0.3992,
+    0.2286,
+    1.688
+   ],
+   "fdir": [
+    0.1,
+    -0.4,
+    -0.9
+   ],
+   "palm": [
+    -0.6,
+    0.7,
+    -0.3
+   ]
+  },
+  "R": {
+   "pos": [
+    -0.4833,
+    -0.0222,
+    1.4837
+   ],
+   "fdir": [
+    -0.1,
+    -0.4,
+    -0.9
+   ],
+   "palm": [
+    0.6,
+    0.7,
+    -0.3
+   ]
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.0,
+   0.1,
+   0
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.25,
+    "wind": [
+     -0.3,
+     0.9,
+     0.4
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.2,
+    "wind": [
+     0.4,
+     1.0,
+     0.5
+    ]
+   },
+   "hair_tail": {
+    "g": 0.3,
+    "wind": [
+     -0.95,
+     -0.85,
+     0.0
+    ]
+   },
+   "tabard": {
+    "g": 0.95
+   },
+   "stole_A": {
+    "g": 0.35,
+    "wind": [
+     0.35,
+     1.1,
+     0.25
+    ]
+   },
+   "stole_B": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     1.1,
+     0.25
+    ]
+   },
+   "hair_back": {
+    "g": 0.25,
+    "wind": [
+     -1.0,
+     -0.75,
+     0.1
+    ]
+   }
+  }
+ },
+ "expression": "confident",
+ "figure": {
+  "appeal": true,
+  "joints": {
+   "hips": [
+    8,
+    11.5,
+    8
+   ],
+   "shoulder.L": [
+    0,
+    -8,
+    0
+   ],
+   "shoulder.R": [
+    0,
+    8,
+    0
+   ]
+  },
+  "torso": {
+   "bend": [
+    -8,
+    -17,
+    10
+   ],
+   "split": [
+    0.7,
+    0.2,
+    0.1
+   ]
+  },
+  "feet": {
+   "L": {
+    "toe": 25
+   }
+  },
+  "weight": {
+   "leg": "R",
+   "knee": 176,
+   "over": "neck",
+   "offset": [
+    0.006,
+    -0.025
+   ]
+  },
+  "fingers": {
+   "L": {
+    "curl": 25,
+    "per": {
+     "Index": 12,
+     "Middle": 28,
+     "Ring": 34,
+     "Little": 22
+    },
+    "spread": 4,
+    "thumb": {
+     "fold": 20,
+     "curl": 10
+    }
+   },
+   "R": {
+    "curl": 30,
+    "per": {
+     "Index": 18,
+     "Middle": 32,
+     "Ring": 38,
+     "Little": 28
+    },
+    "spread": 3,
+    "thumb": {
+     "fold": 25,
+     "curl": 12
+    }
+   }
+  },
+  "look": {
+   "at": "camera",
+   "amount": 1.0,
+   "neck": 0.5,
+   "max": 75,
+   "chin": 2,
+   "tilt": 6
+  }
+ }
+}

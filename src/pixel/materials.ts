@@ -181,6 +181,38 @@ defineMaterial("glyph", { ramp: ["#4a2408", "#a85a18", "#f29a3c", "#ffe1a4"], em
 defineMaterial("seal", { ramp: ["#34091a", "#7c1830", "#d23a54", "#ffc2b8"], emissive: true, ink: false, behaviour: "none", hardness: 999, sound: "seal" });
 defineMaterial("water", { ramp: ["#0f1f2c", "#1a3446", "#2c5064", "#5c8a9a"], t: [0.1, 0.4, 0.86], glint: true, ink: false, behaviour: "splash", hardness: 999, sound: "water", spec: { colour: "#b8dde4", thr: 0.96 } });
 defineMaterial("foliage", { ramp: ["#132019", "#1f3326", "#2f4a33", "#476644"], t: [0.14, 0.42, 0.8], behaviour: "tear", hardness: 10, sound: "leaf", debris: 0.6 });
+// --- shared kit (phase 2): outdoors, cloth, lamps, signs, cables -------------
+const T_SOFT: [number, number, number] = [0.12, 0.4, 0.78];
+defineMaterial("earth", { ramp: ["#211a1d", "#382c2a", "#524238", "#6e5c4a"], t: T_STONE, behaviour: "crumble", hardness: 60, sound: "earth", debris: 0.4, bounce: 0.15 });
+defineMaterial("moss", { ramp: ["#172119", "#243526", "#374e33", "#546a44"], t: T_SOFT, behaviour: "tear", hardness: 12, sound: "leaf", debris: 0.5 });
+defineMaterial("grass", { ramp: ["#1b2822", "#2a3d30", "#42593d", "#667a4f"], t: T_SOFT, behaviour: "tear", hardness: 8, sound: "leaf", debris: 0.6 });
+defineMaterial("grassDry", { ramp: ["#2c281e", "#463e28", "#6a5c37", "#8f7e4b"], t: T_SOFT, behaviour: "tear", hardness: 8, sound: "leaf", debris: 0.6 });
+defineMaterial("flowerRose", { ramp: ["#3c1a24", "#662a34", "#94484a", "#b87766"], t: T_SOFT, behaviour: "tear", hardness: 6, sound: "leaf", debris: 0.7 });
+defineMaterial("flowerPale", { ramp: ["#46425a", "#747088", "#a8a2b2", "#d2cac8"], t: T_SOFT, behaviour: "tear", hardness: 6, sound: "leaf", debris: 0.7 });
+defineMaterial("flowerGold", { ramp: ["#463214", "#735520", "#a88436", "#cfb064"], t: T_SOFT, behaviour: "tear", hardness: 6, sound: "leaf", debris: 0.7 });
+defineMaterial("straw", { ramp: ["#3b2c16", "#654e25", "#94773a", "#bca05c"], t: T_SOFT, behaviour: "tear", hardness: 20, sound: "straw", debris: 0.6 });
+defineMaterial("burlap", { ramp: ["#2e2420", "#4a3a2e", "#6a5642", "#8a745a"], t: T_SOFT, behaviour: "tear", hardness: 28, sound: "cloth", debris: 0.2 });
+defineMaterial("canvas", { ramp: ["#37322f", "#554c45", "#7b7066", "#a29484"], t: T_SOFT, behaviour: "tear", hardness: 30, sound: "cloth", debris: 0.15 });
+defineMaterial("clothPale", { ramp: ["#48424f", "#6c6672", "#968f98", "#bdb4b4"], t: T_SOFT, behaviour: "tear", hardness: 30, sound: "cloth", debris: 0.15 });
+defineMaterial("clothGold", { ramp: ["#382711", "#5b401b", "#835d29", "#a6803f"], t: T_SOFT, behaviour: "tear", hardness: 30, sound: "cloth", debris: 0.15 });
+defineMaterial("clothTeal", { ramp: ["#11252a", "#1d3a3f", "#2c5857", "#477771"], t: T_SOFT, behaviour: "tear", hardness: 30, sound: "cloth", debris: 0.15 });
+defineMaterial("leather", { ramp: ["#281512", "#42231b", "#633828", "#855238"], t: [0.14, 0.42, 0.8], behaviour: "tear", hardness: 70, sound: "cloth", debris: 0.1, bounce: 0.2 });
+defineMaterial("leatherDark", { ramp: ["#1a1014", "#2b1a1c", "#402624", "#5a3830"], t: [0.14, 0.42, 0.8], behaviour: "tear", hardness: 70, sound: "cloth", debris: 0.1, bounce: 0.2 });
+defineMaterial("rust", { ramp: ["#281512", "#472417", "#6c3e28", "#8f5c3c"], t: T_METAL, behaviour: "dent", hardness: 200, sound: "metal", bounce: 0.3, debris: 0.1 });
+defineMaterial("copper", { ramp: ["#2b1a14", "#522e21", "#865032", "#b87a4d"], t: T_METAL, behaviour: "dent", hardness: 220, sound: "metal", glint: true, spec: { colour: "#e6b890", thr: 0.96 }, bounce: 0.35, debris: 0.05 });
+defineMaterial("verdigris", { ramp: ["#182a29", "#284641", "#416b64", "#6a9387"], t: T_METAL, behaviour: "dent", hardness: 240, sound: "metal", bounce: 0.3, debris: 0.05 });
+defineMaterial("cable", { ramp: ["#0d0d11", "#17171e", "#23232d", "#353542"], t: T_METAL, behaviour: "tear", hardness: 60, sound: "metal", debris: 0.05 });
+defineMaterial("lampGlass", { ramp: ["#3e2a18", "#7a5428", "#c49248", "#f0d392"], t: [0.1, 0.35, 0.9], glow: 0.9, glint: true, behaviour: "shatter", hardness: 12, sound: "glass", ink: false, spec: { colour: "#fff0c8", thr: 0.97 }, bounce: 0.3, debris: 0.5 });
+defineMaterial("paperLamp", { ramp: ["#4a3a2a", "#86684a", "#c8a676", "#f0dcaa"], t: [0.1, 0.35, 0.9], glow: 0.8, behaviour: "tear", hardness: 18, sound: "cloth", debris: 0.3 });
+defineMaterial("neonRose", { ramp: ["#3a0e1c", "#86203a", "#d64c62", "#ffc2c2"], emissive: true, ink: false, behaviour: "none", hardness: 999, sound: "glass" });
+defineMaterial("neonTeal", { ramp: ["#0a2a2a", "#156660", "#3cb8aa", "#c4f6e8"], emissive: true, ink: false, behaviour: "none", hardness: 999, sound: "glass" });
+defineMaterial("neonTube", { ramp: ["#1c1a22", "#2c2a34", "#3e3c48", "#57555f"], t: T_METAL, glint: true, behaviour: "none", hardness: 999, sound: "glass" });
+defineMaterial("bone", { ramp: ["#4a4238", "#716656", "#a09480", "#c8bca4"], t: T_STONE, behaviour: "crumble", hardness: 120, sound: "stone", debris: 0.3 });
+defineMaterial("puddleDay", { ramp: ["#141f2a", "#243848", "#3e5e70", "#8cb4bc"], t: [0.1, 0.4, 0.86], glint: true, ink: false, behaviour: "splash", hardness: 999, sound: "water", spec: { colour: "#d8eef0", thr: 0.95 } });
+defineMaterial("puddleDusk", { ramp: ["#221824", "#40283a", "#7a4a50", "#e0a07a"], t: [0.1, 0.4, 0.86], glint: true, ink: false, behaviour: "splash", hardness: 999, sound: "water", spec: { colour: "#ffe0b8", thr: 0.95 } });
+defineMaterial("puddleStorm", { ramp: ["#0c0f18", "#161c2a", "#27324a", "#5a6c8c"], t: [0.1, 0.4, 0.86], glint: true, ink: false, behaviour: "splash", hardness: 999, sound: "water", spec: { colour: "#b8c8e8", thr: 0.95 } });
+defineMaterial("moth", { ramp: ["#6e6660", "#9a9088", "#c8beb2", "#e8dfd2"], emissive: true, ink: false, behaviour: "none", hardness: 1, sound: "leaf" });
+
 defineMaterial("soot", { ramp: ["#0c0b10", "#141219", "#1c1a22", "#25222c"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 40, sound: "stone", ink: false });
 
 // Rosace's own materials, straight from art/rosace/palette.json (scale gauge).

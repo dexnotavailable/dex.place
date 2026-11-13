@@ -5,13 +5,18 @@ There are no image files. This page is the recipe format for prop lanes and the 
 that places props in the world. If this page and the code disagree, the code wins and this page
 gets fixed in the same change.
 
-Status: **proven** in the `/props/` sandbox with six proof props (map banner, boss terminal,
-donation box and donor plaque, stained-glass window, candelabra, destructible floor) plus a font
-(for ripples). Captures live in `review/world/props/` (git-ignored).
+Status: **proven** in the `/props/` sandbox: the six proof props (map banner, boss terminal,
+donation box and donor plaque, stained-glass window, candelabra, destructible floor), the font,
+and the **shared kit** for phase 2 (26 more recipes, see "The shared kit" below). Every recipe
+is recorded through its states by `src/pixel/tools/kit.mjs`; phase 2 captures live in
+`review/world/phase2/P0/` (git-ignored). Proven 2026-09-29 by lane P0.
 
 ## Scale (locked)
 
-One source of truth: `src/pixel/scale.ts`.
+One source of truth: `src/scenes/engine/scale.ts`, the locked scale the scene engine and the
+world runtime read. `src/pixel/scale.ts` only renames its numbers for this engine (`SCALE.H`,
+`closeupH`, `present.integerCover`) and calls its `presentRect` for the presentation rule, so
+the two can't drift apart; it adds `hu` and `physics`. Nudge a number in the scenes file.
 
 | Setting | Value |
 |---|---|
@@ -27,11 +32,15 @@ pixels). The sandbox's H toggle rebuilds the same recipes at 144 to prove it.
 ## Run it
 
 ```
-npm run dev -- --port 22417 --strictPort --host 127.0.0.1     # then open /props/
+npx vite --port 24100 --strictPort --host 127.0.0.1     # then open /props/ (P0's ports: 24100-24199)
 ```
 
 `/props/` is dev-only (not in the build inputs). URL options: `?h=144`, `?lab` (lab lighting
-instead of the chapel's), `?manual` (no RAF loop; drive it from `window.__pixel`).
+instead of the chapel's), `?manual` (no RAF loop; drive it from `window.__pixel`),
+`?prop=<id>` (one registered recipe on its stage, with its variants and companions), `?kit`
+(every registered recipe in one lineup: the kit, then each region folder), `?indoor` (the
+chapel wall behind a stage), `?nave` (a sway-only room), `?reduced` (reduced motion),
+`?wind=<px/s²>`. The panel's "open a stage" list has every registered recipe.
 
 | Input | Does |
 |---|---|
@@ -46,11 +55,18 @@ The panel has the prop picker (reason, state buttons, use, hit, restore, and the
 dissolve, reveal, assemble, disintegrate, glint), layer toggles, slow motion (1x, 0.25x, 0.1x),
 the draggable light, lighting (chapel / lab), placeholder sound and live stats.
 
-Captures: `node src/pixel/tools/capture.mjs --port 22418 [--only banner,terminal,...]` against a
-capture-only server (`npx vite --config src/pixel/tools/vite.capture.config.mjs --port 22418
---strictPort --host 127.0.0.1`; restart it with `src/pixel/tools/restart-capture-server.sh` after
-edits). That server has HMR and file watching off, so other lanes' edits can't reload the page
-mid-recording. Frames come from the 1280 x 720 target and are only ever upscaled nearest.
+Captures run against a capture-only server with HMR and file watching off, so other lanes'
+edits can't reload the page mid-recording: `bash src/pixel/tools/restart-capture-server.sh`
+(`PORT=24101` by default; run it again after every edit). Frames come from the 1280 x 720
+target and are only ever upscaled nearest.
+
+| Tool | What it records |
+|---|---|
+| `node src/pixel/tools/kit.mjs [--only a,b] [--out dir]` | every registered recipe on its stage through its `demo.script`: a GIF, a still after each step, and `summary.json` (states seen, size against the plan's standard, breakage class, cues, idle cost, flash starts, console errors) |
+| `node src/pixel/tools/lineup.mjs [--angle d3d11 or swiftshader]` | the `?kit` lineup through the real presenter at 1080p (1.5x sharp-bilinear), 1440p (2x), phone landscape and portrait, plus the 1x frames and the frame cost |
+| `node src/pixel/tools/policy.mjs` | the breakage policy in a normal and a sway-only room (every move from both sides; cells, cloth, ropes, the floor, and `form` for code-drawn plants), healing, and the particle, chunk and ambient caps and flash gate under 17 s of spam (normal and reduced motion) |
+| `node src/pixel/tools/shot.mjs "<query>" out.png [--scale 2] [--crop x,y,w,h]` | one frame |
+| `node src/pixel/tools/capture.mjs` | the phase 1 proof-room captures |
 
 ## Cells
 
@@ -160,6 +176,18 @@ export const lantern = defineRecipe<{ chain: number }, Refs>({
 A state with no `hit` handler applies `c.damage(hit)` automatically. A hit handler receives the
 overlap before any damage (which parts, how many cells, contact point) and decides.
 
+### Fields every phase 2 recipe sets
+
+| Field | Required | What it does |
+|---|---|---|
+| `breakage` | yes | `never`, `heal`, `cut` or `floor` (see "Breakage policy"). The type requires it; at runtime a recipe without one is treated as `heal` and warns |
+| `demo` | for the kit and region lanes | how the sandbox stages it (`at` H above the floor, `params`, `w`, `indoor`, `variants`, `with` companions such as a lamp for the moths) and its capture `script` (steps: `go`, `use`, `hit` + `from`/`face`, `act` + `arg`, `walk`, `wind`, `on` a companion, `wait` seconds) |
+| `actions` | no | named host actions (`prop.act("ring")`): a bell's `ring`, a lamp post's `light` with a delay, a door's `open`, `close` and `release`, the banner's `shrines` |
+| `cues` | no | sound cues emitted from code; state `sound` cues are collected automatically (`soundCues(recipe)` in the registry lists both, for the sound lane) |
+| `standard` | where the plan gives a size | `{ w, h, parts }` in H from WORLD-PLAN section 1; `w` is the drawn width, `h` how far the top sits above the origin. `kit.mjs` checks it within 1 px |
+| `feel` | no | hits within this many H reach the hit handler even when they touch no cell (grass bows from a swing, paper lifts in a dash) |
+| `form` | when a part is drawn in code (dynamic) and can be cut | `(c) => number`: how much of the prop is there (grass: total blade height; vines: strand points). `policy.mjs` holds it exactly in a sway-only room and wants it back at the built value after healing, since cell counts cannot see dynamic parts |
+
 ### Drawing (PartBuilder, `builder.ts`)
 
 Shapes, each with `{ mat, profile, r, depth, z, piece, tone, toneFn, paint, noInk, mode, hp, flags }`:
@@ -264,6 +292,19 @@ across metal and glass), `Ripples` (1D damped waves for a water surface; see `pr
 
 ## Game hooks
 
+**In the world runtime (proven by lane W0, 2026-09-29):** `src/world/pixel/adapter.ts` runs one
+`PixelWorld` per room and uses every hook below: hits from Rosace's moves as `presetHit` shapes,
+E through `nearestUsable`, the `panel` / `sound` / `shake` / `summon` / `state` events and the
+kit's `door` / `lever` / `rest` / `sit` / `stand` host events, colliders (as platform tops: pixel
+matter never blocks the way), lights both ways, `blow` from the dash, `saveData` mirrored into the
+world save (`cut` becomes `cut:<id>`), `releaseWorld` on room teardown, and `solidAt` extended with
+the room's terrain so cords and debris rest on it. Recipes are looked up through
+`src/pixel/registry.ts`. **Ask:** the adapter draws through `PixelRenderer`'s private per-layer
+calls (`useCell`, `drawPart`, `drawGlows`, `drawParticles`) into the world's bound target; a
+public "draw these layers into the bound target, no clear" call would remove that seam. Also:
+`fg` / `far` parallax is computed from absolute room x, which shifts props in rooms wider than a
+screen. See `docs/world/RUNTIME.md`, "Props".
+
 | Hook | API |
 |---|---|
 | Hits | `world.hit(hit)` -> per prop reports; loose rubble gets knocked around |
@@ -277,6 +318,14 @@ across metal and glass), `Ripples` (1D damped waves for a water surface; see `pr
 | Save | `world.saveData[propId]` holds each prop's `persist` keys (the banner's cut); pass it back when rebuilding a room |
 | Room teardown | `renderer.releaseWorld(world)` before dropping a world (room transition, rebuild, H change): frees every texture its parts and debris hold. Chunks that leave the world during play (landed home, evicted, cleared, `world.remove(prop)`) are retired and freed on the renderer's next frame automatically |
 | Reason | `recipe.reason` is required; `defineRecipe` throws without it |
+| Recipes by id | `findRecipe("map-banner")` / `recipe(id)` / `allRecipes()` from `src/pixel/registry.ts` (any spelling: kebab, camel, snake) |
+| Host actions | `prop.act(name, arg)`: `shrineLantern` `light` / `douse`, `lampPost` `light` (arg: delay in s, for the chain of lamps after a shrine) / `off` / `flicker` / `gust`, `door` `open` / `close` / `release`, `hangingBell` `ring`, `mapBanner` `shrines` (arg: lit shrine numbers), `lever` `set`, `dust` `sift` (a far footfall), `rubble` `shake`, `cable` `shake`, `clothHanging` `gust`, `sign` `on` / `off` / `flicker`, `bench` `stand`, `candles` `light` / `snuff`, `hangingLantern` `on` / `off` / `nudge` |
+| Story events | `{ type: "rest" }` (shrine lantern: save point, light the next lamps), `{ type: "sit", x, y }` and `{ type: "stand" }` (bench), `{ type: "door", action: "rattle" \| "unlatch" \| "open" \| "enter" }`, `{ type: "lever", on }`, `{ type: "bell", strength }` |
+| Actors | `world.actors = [{ x, y, vx, h }]` each frame (the player, later mobs): grass parts, vines brush aside, puddles ring under steps, the offering bowl rocks, paper lifts when you hurry past |
+| View | `world.view = { x, y, w, h }` each frame: dynamic parts more than 2 H outside it skip redrawing; ambient emitters spawn only in view |
+| Weather | `world.wind` (steady + gust), `world.rain` (0..1: puddles dot), `world.reduced` (reduced motion: ambient halves, flashes go through the reduced gate) |
+| Flash gate | `world.flashGate` (default: the scene engine's `FlashGate`, 3 starts a second, 1 per 2 s reduced). Every `flashLight` / `flashGlow` and a neon flicker asks it; pass the runtime's global gate so lightning and props share one budget |
+| Room rule | `world.breakage = "sway"` makes a room sway-only (the chapel nave) |
 
 ## Performance and budgets
 
@@ -285,7 +334,7 @@ across metal and glass), `Ripples` (1D damped waves for a water surface; see `pr
 - Ropes, cloth and chunks sleep when still; healing touches only wound rects; dynamic parts
   (flames, cloth, glyph screens) re-upload each step while awake. A chunk counts as touching the
   ground within 1 px above it, is pushed out only by its real (fractional) depth, locks flat to a
-  quarter turn, and sleeps after 0.35 s still (every chunk asleep about 2 s after a Q, and a
+  quarter turn (a long piece always on its long side), and sleeps after 0.35 s still (every chunk asleep about 2 s after a Q, and a
   sleeping chunk never moves again). Asleep, it only re-checks its support five times a second
   and wakes if the ground under it goes or grows into it.
 - GPU memory: textures belong to parts. Retired parts are freed each frame and
@@ -306,26 +355,282 @@ across metal and glass), `Ripples` (1D damped waves for a water surface; see `pr
   (`review/world/props/fix/perf.json`). Normal play is well inside the budget; a mob-heavy fight
   with constant ground hits would need lower chunk and particle budgets. While the banner cloth
   moves it uploads about 1.6 MB per frame; it stops when the cloth sleeps.
+- **Phase 2 (proven 2026-09-29, `review/world/phase2/P0/`):**
+  - *Undisturbed props cost nothing once they have settled* (about 10 s for the map banner's
+    cloth, which still uploads about 13.5 KB a frame at 5 s and 0 from 10 s on;
+    `fix2/idle.json`). After settling every recipe measured 0 uploads and under 0.03 ms of
+    simulation per frame, except live flames, which redraw at 15 Hz (hand-keyed
+    pixel-art timing): about 0.26 uploads and 0.1-0.2 KB per frame per lamp, 2 KB for a full
+    candelabra, plus the font, whose slow drip keeps its surface moving (2.8 KB per frame)
+    (`kit/summary.json`). Ropes and cloth now sleep: their "still" test ignores points
+    lying on the ground, ropes rest on the ground only (not on solid props), and a pennant has a
+    looser threshold.
+  - Dynamic parts upload only the rows they touched: `clearAll` marks the rect that held cells
+    and cloth marks the rect it covers now (before: the whole grid every step).
+  - `part.dynamicEvery` throttles a dynamic part (flames: 4); parts outside `world.view` wait.
+  - Budgets: `world.budget.ambient` (320 motes, halved in reduced motion) on top of 72 chunks,
+    6000 particles and 16 lights. Under 17 s of spam across the whole 36-recipe lineup (13 520 px
+    wide, 66 props): particles peaked at 5998, chunks at 72, ambient at 53; simulation p50 8.3 /
+    p95 11.1 ms; flash starts at most 3 in any second (1 per 2 s in reduced motion) with 207
+    denied by the gate (`policy.json`). That room is far busier than any planned room.
+  - The lineup renders at 1.4 ms a frame on d3d11 (render + 1 px readback, 1280 x 720) and
+    46 ms on SwiftShader (`lineup/report-d3d11.json`, `lineup-swiftshader/`).
 
 ## Proof props (`src/pixel/props/`)
 
 | Prop | States | Breaks / moves |
 |---|---|---|
-| `mapBanner` | rolled -> unrolling -> unrolled (E: map panel); `cut` persists | slash the cord: the roll drops, rows release, the hem swings; hits sway the cloth; the map never tears |
-| `bossTerminal` | dormant -> woken -> summoning -> summoned -> cooldown -> dormant | E wakes, E summons (seal assembles from noise, beam rises, red light); the host calls `cooldown` after the fight; hits dent and spark, glitch the screen, sway the cables; it mends |
-| `donationBox` | idle -> used (E: donate panel, lamp flare, chime, glint) | chips (three times the normal hp) and mends; no payment is ever faked |
-| `donorPlaque` | idle (E: donors panel) | real names only; empty data stays blank engraved rules |
+| `mapBanner` | rolled -> unrolling -> unrolled (E: map panel); `cut` persists | slash the cord: the roll drops, rows release, the hem swings; hits sway the cloth; the map never tears. Rod 1.8 H, cloth 2.4 H (plan sizes). The map is **the real route** from WORLD-PLAN section 3: the W side view (lake and ring, the plain with colossi, the hollow's bowl, the spire with its storm, the fallen ring segment, the chapel), the route as a dotted red line, the sky door's arc from the balcony back to the loft, and the six shrine marks, which show lit for the numbers passed in `shrines` (param or action) |
+| `bossTerminal` | dormant -> woken -> summoning -> summoned -> cooldown -> dormant | E wakes, E summons (seal assembles from noise, beam rises, red light); the host calls `cooldown` after the fight; hits dent and spark, glitch the screen, sway the cables; it mends. 1.4 x 1.0 H (plan size); the screen redraws only when its picture changes |
+| `donationBox` | idle -> used (E: donate panel, lamp flare, chime, glint) | never breaks (policy): hits flash and darken a shade, and that mends; no payment is ever faked. 0.5 H tall (plan size) |
+| `donorPlaque` | idle (E: donors panel) | real names only; empty data stays blank engraved rules. 0.6 x 0.4 H (plan size), three rows |
 | `stainedGlass` | idle -> broken -> restoring -> idle | panes shatter into glinting shards with real colours; light and shafts dim with the glass left; after 4.5 s the shards fly home one by one; the stone frame chips and mends |
 | `candelabra` | lit, guttering, out, relighting (E relights) | wobbles on a spring through pixel-safe rotation; hits and the dash wind gutter flames (smoke); heavy hits crumble candles; flames light and rim the room |
 | `floor` | idle | craters with raised rims, slash scars, cracks down the face, heals |
 | `font` | still | water ripples and splashes on hits and wind |
 | `wall`, `gauge` | | sandbox room and the H-tall scale figure in Rosace's palette |
 
+## Breakage policy (WORLD-PLAN section 4, enforced)
+
+Every recipe declares a class and the engine enforces it in `Prop.damage` and `Prop.cut`
+(`break.ts` `damage(..., { keep })`):
+
+| Class | Who | What hits do |
+|---|---|---|
+| `never` | service and story objects: donation box, donor plaque, the terminal, doors, shrine lantern, bells, lever, cables, the training dummy, dust, moths, puddles, paper | flash, shake, dent and spark; no cell ever leaves, no pane shatters, nothing tears or is cut; darkened cells mend |
+| `heal` | glass outside the chapel, pillars, crates, barrels, benches, candles, plants, cloth, signs, luggage, rubble, lamp posts, lanterns, the offering bowl, the font | break for real; every drawn part mends in the room (the engine tags every static part `heal` by itself) |
+| `cut` | the map banner (and R-B's rope bridge) | the cord cuts for good (`persist`); the rest mends |
+| `floor` | the destructible floor | craters and scars that heal from the bottom up |
+
+A room with `world.breakage = "sway"` (the nave) keeps every cell of every prop: nothing
+fractures, tears or is cut; cloth and ropes are only pushed, grass blades only bend and vine
+strands only swing (a rustle instead of a cut), rubble's `shake` only shudders the heap, and the
+floor takes no crater or scar. Every code path that removes matter asks `prop.keepsCells` first:
+`damage`, `cut`, the floor, pillar toppling, grass and vine cuts, rubble's `shake`.
+
+Grass and vines are drawn in code into dynamic parts that are redrawn every frame, so a cell
+count cannot see a mown blade. A recipe like that declares `form` (`Recipe.form`: grass returns
+its total blade height, vines their strand points), and the policy check holds that number too.
+Checked by `policy.mjs` (2026-09-29, `review/world/phase2/P0/fix2/policy.json`): every move
+(heavy, Q, R, slash, dash wind, and a point at the prop's centre) from both sides of every prop
+in the lineup. 0 cells or form lost by the 27 `never` props; everything whole again 14 s later,
+form included (0 props not whole, 0 chunks left, the floor exact); and in a sway-only room 0
+cells lost, 0 form lost, 0 tears, 0 cuts across all 69 props, with 0 floor cells changed. The
+check catches the old gap: with the grass and vine gates removed it reports 4 sway violations
+(grass 1190 -> 691, vines 85 -> 14; `policy-control-ungated.json`), which the earlier
+static-cells-only check reported as 0.
+
+## The shared kit (`src/pixel/props/*.ts`, lane P0)
+
+Each has a `demo` with a capture script through its states; `kit.mjs` records them all
+(`review/world/phase2/P0/kit/<id>.gif`, stills per step, `summary.json`). Sizes marked "plan"
+are WORLD-PLAN section 1's and are checked within 1 px.
+
+| Recipe | Kinds / params | States, actions | Breaks, moves, feeds |
+|---|---|---|---|
+| `shrineLantern` | `lit`, `ribbon` (the red cloth) | out -> lighting -> lit; E "rest" emits `rest`; `light`, `douse`; `lit` persists | never; hit shakes it and dips the flame; panes dark when out, warm when lit; light 2.8 H. 1.5 H (plan) |
+| `offeringBowl` | `petals` | still; `ripple` | ripples from hits, rests and passing actors; petals drift on the ripples; stone chips and mends |
+| `door` | `ordinary`, `sky` (red mark), `big` (arched double), `gate` (slides), `shutter` (rolls up); `latch` none / far / near; `beyond` dark / none; `frame` stone / timber; `solid` | closed, rattle, unlatching, opening, open, closing; E opens, rattles (latched far side) or releases the rail (near side, saved as `unlatched`) then opens; `open`, `close`, `release`; emits `door` events | never; the leaf swings in perspective (redrawn only while it moves), the gate slides, the shutter rolls; the maintenance rail tips off. 1.4 x 0.7 H / 4 x 2.5 H (plan) |
+| `lampPost` | `lit`, `arm` side | off, lighting (after a delay), on, flicker; `light(delay)`, `off`, `flicker`, `gust` | the lantern swings on its hook (hits, wind, gusts); panes shatter and mend. 2.5 H (plan) |
+| `bench` | `stone`, `wood`, `pew`; `length` | idle, sat (E sits: `sit` / `stand` events); `stand` | seat is a one-way platform; splinters and mends; rocks in a sway room. Seat 0.28 H (plan) |
+| `candles` | `count`, `row` / `cluster`, stand `none` / `rack` / `ledge`, `lit` | lit, guttering, out, relighting (along the row); `light`, `snuff` | wind and hits gutter the flames they reach (smoke); wax crumbles and mends; one light per three candles |
+| `hangingLantern` | `iron` / `paper`, `drop` | on, off (E); `on`, `off`, `nudge` | verlet chain with the lantern's weight: swings and settles; chains don't cut |
+| `hangingBell` | `small` (ferry), `medium` (rib), `large` (chapel); `usable` | rest, swinging; `ring` (the latch rings it by itself) | never; pendulum bell with a lagging clapper: each strike is a `bell.ring` cue sized by the strike, a glint and a faint ring of light |
+| `clothHanging` | `banner`, `tapestry` (the colossi's procession), `pennant` (on a pole, pinned at the hoist); colours | hanging, torn, restoring; `gust` | verlet cloth that keeps its pixels; slashes tear it, it fades, knits and returns; the pennant streams in the storm's wind |
+| `prayerFlags` | `prayer` / `laundry`, `span`, `height`, `posts` | hanging, cut, restoring | flutter grows with the wind; a slash cuts the line and each half hangs from its post, then it restores |
+| `grass` | `grass`, `dry`, `flowers`; width, height, density | growing | blades lean with the wind, part around actors, bow from swings and dashes; cut blades drop to stubs, leaves or petals scatter, they grow back (the step stays awake until every blade is back). In a sway room blades only bend and rustle. `form`: total blade height |
+| `vines` | width, length, strands, `flowers` | growing | hanging strands sway, part when brushed, are cut short and grow back down. In a sway room strands only swing and rustle. `form`: strand points |
+| `rubble` | `stone`, `brick`, `timber` | idle; `shake` | pieces knock off and mend; in a sway room `shake` only shudders the heap |
+| `crate` | size, `stack` 1-3 | idle | solid, splinters along the grain, mends |
+| `barrel` | | standing, tipping (rolls), restoring | a heavy hit, Q or R knocks it over and it rolls, then stands back |
+| `luggage` | `suitcase` (the dock's scale anchor), `trunk`, `bag` | upright, tipping, tipped, righting | tips over about its foot, rights itself after a while. Suitcase 0.6 x 0.42 H plus its handle |
+| `sign` | `board`, `hanging`, `post` (arrow), `neon`; `lines` (real words only) | idle; neon: lit, flicker (through the flash gate), spark, dark; `on`, `off`, `flicker` | boards dent and mend, hanging ones swing; neon sparks when hit and lights its surroundings |
+| `cable` | `cable`, `chain`, `rope`; between two points or hanging free with a hook | hanging; `shake` | never; sags, swings when hit and in wind, settles |
+| `pillar` | `round`, `square`, `broken`; height, width, stone | standing, fallen | chips and cracks; when enough is gone the upper drums fall as rubble, then fly home and it stands again |
+| `trainingDummy` | | idle | never; every hit type has its own reaction (slash rocks it and knocks straw loose, heavy bends it far back, Q bounces it, R shudders it, point twitches it, wind sways it); always springs back |
+| `lever` | `floor` / `wall`, `on` | off, pulling, on (persists); `set` | never; E pulls it over with a clank and emits `lever` |
+| `dust` | `dust`, `ash`, `seeds`, `embers`, `grit`; rect, count, `lit` | drifting; `sift` (grit from a ceiling, in time with a footfall) | ambient motes that wander and ride the wind (the dash parts them), capped per room |
+| `moths` | count, reach | waiting | find the nearest lit warm lamp and flutter round it; drift off when it goes out |
+| `puddle` | width, sky `day` / `dusk` / `storm` | still | a sunk sheet of the sky's colour; footsteps ring it, hits splash it, rain dots it |
+| `paper` | count | lying | wind, a dash or a hurried step lifts the pages; they flutter down showing their face; strays fade home |
+
+Shared helpers for any recipe (`src/pixel/kit.ts`): `addFlame` / `stepFlame` / `snuffFlame` /
+`lightFlame` (live 15 Hz flames with a light and a glow), `puff` (dust, splinters, straw, sparks,
+smoke, water, petals, leaves, paper, ash), `glassTone` (panes dark when their light is out),
+`hitPush`, `hitAt`, `remaining`, `matId`. New materials: earth, moss, grass, grassDry, three
+flower colours, straw, burlap, canvas, clothPale / Gold / Teal, leather, leatherDark, rust,
+copper, verdigris, cable, lampGlass, paperLamp, neonRose / Teal / Tube, bone, puddleDay / Dusk /
+Storm, moth.
+
+## Region recipes (auto-discovery)
+
+Put a recipe in `src/pixel/props/<region>/<name>.ts` (`ringwater`, `plain`, `hollow`, `spire`,
+`chapel`) and export it; that's all. `src/pixel/registry.ts` finds every exported recipe in
+`src/pixel/props/*.ts` and `src/pixel/props/*/**/*.ts` with `import.meta.glob`, so no lane edits
+a shared list (not `props/index.ts`, not the sandbox). It shows up in `/props/?kit`, in the
+panel's stage list, at `/props/?prop=<id>`, and in `kit.mjs --only <id>`. Materials a region
+file defines at module level load with it. Ids must be unique across all folders (duplicates are
+reported in `REGISTRY_ERRORS`, shown in the sandbox panel). Import engine pieces from
+`../../prop.ts`, `../../kit.ts` and so on, or from `../../index.ts`; the registry is not
+re-exported from `index.ts`, so there is no import cycle. Proven with a throwaway folder
+(`review/world/phase2/P0/discovery-proof.txt`).
+
+### Chapel (`src/pixel/props/chapel/`, lane R-E, proven 2026-09-29)
+
+Recorded through their states with `kit.mjs --only <ids> --out review/world/phase2/R-E/kit`
+(undisturbed: 0 uploads and under 0.03 ms of simulation a frame; live flames redraw at 15 Hz like the kit's). Region materials in
+`materials.ts`: `gilt`, `giltDark`, `artBoard`, `limestone`, `oak`, five sunset-backlit rose
+glasses, `stoneware`, `dustBloom`, `broomStraw`, `shawlRose`.
+
+| Recipe | States, actions | Breaks, moves |
+|---|---|---|
+| `artFrame` | idle; E emits `panel gallery <art>` | never; every part unhittable, so a hit passes through with no reaction. `easel` (the work 2.4 x 1.35 H on a 1.02 H tray) or `niche` (hung on a wire, 1.0 H sill). `artRect()` gives the work's rect for the DOM thumbnail |
+| `catalogueLectern` | still, turning (a page lifts and flops back now and then, when you hurry past, or on a slash / dash); E emits `panel gallery all` | never |
+| `roseWindow` | shut, opening (the oak leaves swing back on their hinges), sweeping (the shafts move east; each work's light and floor pool come on as they pass), lit; `open`, `settle`; persists `open` | never; hits knock the shutter. The biggest light: two own lights, a halo, three beams, a light and a pool per work (`targets`). `rest` (E3: 4) = the last works the light comes to rest on: a stronger light and pool there, the shafts settle spread across them, and works the sweep has passed keep a softer glow (45%) |
+| `roseCrank` | closed, opening (the wheel spins, chain dust), open; persists `done` | never; emits the kit's `lever` event (the host sets its `flag`, `rose:open`) and calls the window's `open` |
+| `censer` | hanging (smoke, more while it swings) | never; a chained pendulum on a wall bracket |
+| `broom`, `shawl`, `dustyCup` | leaning / fallen (found leaning again), hanging (cloth pinned at its middle), still (rocks on its saucer, dust lifts) | never (story props) |
+| `chapelDoor` | the kit door plus: one E opens it and it carries you through `auto` s after it stands open; releasing the latch rings `bell` once | never |
+| `naveRule` | sets its world to `breakage = "sway"` | invisible |
+| `pathLamp` | the kit lamp post, dark until the named shrine lantern (same room) is lit, then on after `1.2 + 0.55 * order` s; on at once when the shrine was already lit | heal |
+| `naveBench` | the kit pew / bench without its own E (the room's `sit-spot` sits you) | heal (sway-only in the nave) |
+| `votives` | the kit candles without E; a flame put out relights itself after 5 s | heal (sway-only in the nave) |
+| `naveCandelabra` | the kit candelabra; a flame struck or blown out gutters and relights itself after 5 s (E still relights at once) | heal (sway-only in the nave) |
+
+### Hollow (`src/pixel/props/hollow/`, lane R-C, proven 2026-09-29)
+
+Materials (`materials.ts`, all `hollow*`): pipe red, walkway steel, flagstones, silhouettes,
+the archivist's coat, hair and skin, book spines, the green lamp glass, hearth fire, dials,
+digits, beacons, fluorescent tubes, waiting-room seats, tile, market goods.
+
+| Recipe | What it does | Breakage |
+|---|---|---|
+| `gratingWalk`, `gratingStair` | the market walkway (open grating, channel beams, a rail behind) and its stairs at 0.2 x 0.3 H; draw only (terrain collides) | heal (dents) |
+| `hollowFloor` | flagstone, tile or boards; craters, scars, heals; ground but not a collider | floor |
+| `marketStall` | tools, lamps, cloth, pots or empty; posts, a 1.8 H roof, a striped verlet awning that tears and knits, counter and wares, a stall lamp; `gust` | heal |
+| `marketFigure` | a silhouette at work: hammer (strikes an anvil, sparks), sort, sit (dozes), sweep; flinches when hit | never |
+| `neonGlyph` | glyph tubes that mean nothing, or the archive's book mark; lit, flicker (flash gate), spark, dark | never |
+| `steamVent` | a floor grate: wisps, hiss, burst (`world.blow`, a wind source, no damage) | never |
+| `junctionBox` | sparks and lights the street for a moment (flash gate), settles; a slow lamp | never |
+| `redPipe` | the underground route mark, flanges, brackets, a valve | heal |
+| `hollowRadio` | the radio the muffled theme comes from; the speaker cloth breathes; rocks and crackles | never |
+| `jibCrane` | a crane behind the walkway: the trolley runs now and then, the hook swings when hit | never |
+| `hearthFire` | the Hearth Shrine's fire: flames, embers, one glow, an orange light that rims her | heal |
+| `hollowCable` | a short cable span or a free chain with a hook, in a tight draw box | never |
+| `marketLantern` | paper (under the walkway) or iron (over the archive door): one pendulum part, no chain sim | heal |
+| `hollowFootfalls` | invisible: the far colossus's crossings; each thud sifts grit, sways lamps, shakes 1 px, pulses the backdrop (`pulse.ts`) | never |
+| `archiveShelf` | a product bay with a plain sign; E emits `panel: archive, arg: g-<group>`; sways, rattles, a scroll falls and goes home | never |
+| `archiveLectern` | the index; pages lift when you hurry or dash past; E opens the archive panel; makes its world sway-only | never |
+| `archivist` | reads in her armchair, turns a page now and then; E: a hum and she looks up | never |
+| `archiveLamp`, `hollowRug` | the green reading lamp on its side table; a worn rug | never |
+| `waitingChairs` | a row of joined chairs (E sits, like a bench) | heal |
+| `ticketDisplay` | frozen on one number; a hit drops the digits out once | never |
+| `spireArrowSign` | an up arrow with the spire mark | never |
+| `hollowBeacon` | off; amber and turning while the watched gate opens; `red` for an arena summon | never |
+| `fluorescentStrip` | cold light; a tube stutters now and then (flash gate) | never |
+| `hollowLiftCar` | the car in its shaft, counterweight, cables; parked, called (the gate opening), departing, arriving | never |
+| `operatorBooth`, `operatorChair` | the empty booth and chair | heal |
+
+### Ringwater (`src/pixel/props/ringwater/`, lane R-A, proven 2026-09-29)
+
+Recorded through their states with `kit.mjs --only <ids> --out review/world/phase2/R-A/kit`;
+idle cost 0 uploads except the 15 Hz flames (pier lantern, stove). Region materials in
+`materials.ts`: the keeper's and the ferryman's (`ringSkin`, `ringHairGrey`, `ringDress`,
+`ringShawl`, `ringApron`, `ringCoat`, `ringHat`), `ringGlaze`, `ringGlazeBlue`, `ringBoat`,
+`ringReed`, `ringReedHead`, the lamp board's `ringLampOff` / `ringLampOn`, the speech card's
+`ringSpeech` / `ringSpeechBack`, `ringInk`. Several are the kit's recipes re-dressed by spreading
+the kit recipe and replacing what differs (the pattern R-E uses too).
+
+| Recipe | States, actions | Breaks, moves |
+|---|---|---|
+| `registryCounter` | idle; E rings the bell and emits `panel account` | never; the bell swings and rings on any blow (the keeper named in `keeper` looks up), the ledger's page lifts in a dash. Top 0.55 H (plan) |
+| `keeper` | lodge: working, acknowledging, speaking, away; pier: absent, sitting, speaking. E: her first line once (persists `greeted`), then only a look; at the pier the second line on E or after 1.5 s sitting beside her | never; drawn in cells at 0.92 H, the line on a small unlit card in the 3x5 font |
+| `lampBoard` | idle; `on1` ... `on6` light one lamp each (idempotent) | never; shakes on its nails |
+| `productBoard` | idle; E emits `panel downloads` | never; lists `productLines()`, the real entries of `src/site/data/downloads.ts`; the spire mark's red light blinks slowly (not a flash) |
+| `stove` | lit | never; live fire (light 3.4 H), the kettle steams, hits ring the iron and rattle the lid |
+| `cups` | still | never (story objects); `count` 1 to 3, `dusty` |
+| `ringBench` | the kit bench without its own E (a `ring-seat` stub sits you) | heal |
+| `lodgeShelf` | still | never; sways and rattles |
+| `lodgeDoor` | the kit door plus: one E opens it and the host takes you through; it shuts behind you when nobody is near; `ajar` swings it open and leaves it | never |
+| `skyDoor` | the kit door (`sky`, red mark, `beyond: none`, rail on the far side) plus: E opens it barred onto whatever the backdrop paints behind it, E again rattles the rail, it shuts when you walk away; `free` drops the rail for good (persists `unlatched`), then E goes through | never |
+| `lodgeFacade` | home | never; the lodge from outside: stone footing, logs, eave, a warm window (a light), smoke from the stovepipe |
+| `shrineArch` | idle | heal; stone posts with red cords, the lintel the map banner hangs from |
+| `pierLantern` | on; `gust` | heal; the keeper's lamp: a lantern on a hook that swings and never goes out (hits dip it) |
+| `mooring` | idle; `ripple` | heal; a post in the water with a verlet line to a bobbing float, a slow ring of light at its foot |
+| `bellPost` | idle | heal; a timber post, with a crossbeam for the ferry bell (`reach`) or bare for a plaque (`back`) |
+| `reeds` | growing | heal; the kit grass grown tall with seed heads (same motion, policy and `form`) |
+| `ferryBoat` | asleep, waving (E while asleep), awake, boarding (E: a `door` event, the room's doors table says where); `ripple` | heal; the hull splinters and mends, it bobs and rocks, the ferryman breathes under his hat |
+
+### Spire (`src/pixel/props/spire/`, lane R-D, proven 2026-09-29)
+
+Materials (`materials.ts`): `spireIron` (blue-black plate with a wet sheen), `spireIronDark`
+(girders, undersides), `routeRed` (the route's red paint), `lampAmber` / `lampRed` / `lampOff`
+(beacon lenses), `wardenPlate` (old armour); `bladeIron` (in `edge.ts`: the Blade's iron with a
+gold sheen). `storm.ts` holds no recipe: it is the storm's gust program (`GUST`, `gustAt`, its
+GLSL twin `GUST_GLSL`), the live values the spire's pieces share (`STORM`: the gust from the
+backdrop's clock, lightning, the save's lit shrines, the player, the arena's summoning) and the
+lift's height (`LIFT`). RUNTIME.md, "Region D", has the program.
+
+Recorded through their states with `kit.mjs --only <ids> --out review/world/phase2/R-D/kit`
+(and `kit-3` after the last fix): idle cost 0 uploads and at most 0.01 ms of simulation, except
+`stormBanner` (0.07 to 0.15 ms and 14 KB a frame: it sways all the time, by design); flash starts
+at most 3 in any second. A state's `update` return value is ignored by `Prop.update` (only `hit`
+and `use` returns change state), so timed hand-offs call `c.go()`: the armour settling back to
+`still`, the seals going `spent` to `dark`, the banner `torn` to `knitting` to `hanging` (all three
+had stuck in their first state before; checked in the sandbox, each now completes).
+
+| Recipe | What it does | Breakage |
+|---|---|---|
+| `spireDeck` | catwalk (tread plate, a Warren-truss girder, brackets), landing or arena floor (deep plate in courses); an optional 0.3 H lip with the route's red (its own small part); dents and sparks, heavy hits buckle a crater; draw only (terrain collides) | floor |
+| `spireStair` | a flight of the climb: two 0.8 H machine housings, 22 steps of 0.2 x 0.3 H on a closed stringer with a lit beam, support posts, a handrail behind; built from small parts (an open stair is mostly air); flip for a flight that climbs left | floor |
+| `stormDirector` | invisible: plays the gust program on the kit (pennants snap through the tell and stream in the gust, lamp posts swing, chains shake), lights the lamp posts named for a shrine in order, keeps cloth cheap (20 Hz redraw, cloth well out of view sleeps), and hands the player, view and rain to the pixel world; `still` mode for air without gusts | never |
+| `warningLight` | a caged beacon (floor, wall or hanging): `blink` (quicker through a gust's tell), `turning` (a band sweeps the lens), `red` (or red on its own while the arena summons, `arena: true`), `off`; a hit sparks and dims it for a moment, stepped, never a strobe | never |
+| `brokenArmour` | a warden's helm, pauldron, greave: a hit or a dash knocks them hopping and skidding (inside `slide`), they settle flat and stay where they land | never |
+| `counterweight` | stacked weights in a yoke on two cables: `hang` (sways in the gusts) or `ride` (moves opposite the lift's car by its published height: they pass halfway) | never |
+| `stormAlcove` | the storm alcove's recess: a back wall of warm-lit plates, cut jambs, a heavy lintel in front of her that drips rain; a warm fill light | floor |
+| `stormWindow` | the alcove's small stained-glass window: an iron pointed arch, leaded storm-blue quarries and a warm rose; `cracked` (an overlay), `shattered`, `reassembling`, `whole`; rain runs down it (15 Hz); dark with the storm behind it, lit from behind by lightning (the world's flash), throwing its colours into the alcove | heal |
+| `spirePortal` | an iron portal over a kit big door (lift gate, arena shutter), red chevrons on its lintel; between the kit frame and the leaf, so the gate still slides and the shutter still rolls | never |
+| `arenaSeals` | five seals in the arena floor's face, a ring 10 H across: dark, glowing (woken), forming (one after another, red columns), held, spent (smoke); follows the terminal and rolls the arena shutters down and up | never |
+| `terminalRoster` | the terminal's screen while woken: the real products from `src/site/data/downloads.ts` (DEXCLIENT with a steady caret, DEXCODE dimmed; the ones with a download first, and the rows page every 3 s if the list outgrows the screen, so nothing is dropped); while it cools down, SITE BELOW and an arrow | never |
+| `stormBanner` | a long banner that sways by row shear from its design at 15 Hz (no cloth sim: with it the Crown's pixel simulation fell from 6.1 to 0.6 ms a frame; the kit banner costs about 0.9 ms awake); a slash tears it where it lands, the lower part drops and fades, then knits back | heal |
+| `bladeEdge` | the Blade's knife edge: lapped iron plates on a steady slope with rivets and a fringe of broken spikes, in 4 H parts; gold-lit by the dusk key once the storm has broken | floor |
+
+### Shore and Plain (`src/pixel/props/plain/`, lane R-B, proven 2026-09-29)
+
+Recorded through their states with `kit.mjs --only <ids> --out review/world/phase2/R-B/kit`;
+idle cost 0 uploads and at most 0.01 ms of simulation for every one. Region materials in
+`materials.ts` (cooler and greyer than the kit's: weathered, wet, under a white sky):
+`plainWood`, `plainWoodDark`, `plainRope`, `plainStone`, `plainStoneDark`, `plainStoneWarm`,
+`plainLichen`, `reedStem`, `reedDry`, `reedHead`, `plainBone`, `plainBoneDark`, `plainIron`,
+`plainPaint`, `plainConcrete`, `plainGlass`, `plainSignFace`, `plainBrass`. No words anywhere:
+the ferry board (the kit `sign` with `lines: []`), the route sign and the shelter's timetable are
+blank, their numbers worn off. `bus.ts` is the region's controller channel (not a recipe).
+
+| Recipe | States, actions | Breaks, moves |
+|---|---|---|
+| `ropeBridge` | raised, falling, lowered; persists `cut` (the room mirrors it to `cut:rope-bridge`, S1) | cut; a plank deck hinged on the east bank stands hauled up at 0.9 rad over the channel, its haul line over the tall mast's pulley and down to a cleat at hand height. Only a hit that lands east of the mast and parts the tail line counts (a slash from the channel does nothing); the deck swings down with rod physics (3g/2L), slams onto the west post (1 px shake, splash), bounces and lies there, a platform only when down; the haul line runs free and trails from the deck. Wood splinters and mends |
+| `reedBed` | growing | heal; tall stems standing in water, some with cattail heads and long leaves: lean with the wind, part around the player (`world.actors`, fed by `plainRumble`), bow from swings and dashes and all together when the colossus's ring washes in; cut short, they grow back. `form`: total stem height. `layer` mid (behind) or fg (low, in front) |
+| `markerPost` | standing, torn, restoring | heal; a leaning post in a cairn with a strip of the route's red cloth (verlet, pinned at the hoist) streaming in the wind; slashes tear the strip, which knits back |
+| `standingStone` | standing | heal; a lichened menhir (domed polygon), chips and cracks, never falls; `flat` for the Stonetop stones whose tops are ledges |
+| `ribArch` | resting | heal; a spine arching over the road with ribs curving into the flats, two level broken ribs (the room's one-way platforms), two near rib tips in front at the feet |
+| `busShelter` | standing | heal; concrete roof slab, steel posts, a back wall of steel-framed glass (two panes cracked; the glass shatters and mends), a blank timetable frame, a kerb. The roof's collision is the room's |
+| `routeSign` | idle | heal; a pole with a round plate on a bracket (it swings on a pendulum when hit) and a blank timetable board |
+| `craneFrame` | idle, running | never; lattice mast, jib and counter-jib, head sheave, counterweight, winch house. The hook (the room's carrier) signals `running` / `idle`: the drum turns, the head lamp glows amber (a steady light, never a flash) |
+| `culvertGate` | closed (E rattles), lifting, open (E: a `door` event, `enter`); persists `open`; action `open` | never; an iron portcullis in the culvert's arch that retracts up into its housing (redrawn by rows as it lifts); the brass horn on the arch blows once (`culvert.horn`, smoke, 1 px shake); the lake's light appears at the tunnel's end. Lifted by the kit `lever` (placement `flag: lever:culvert`, `target`, `msg: lifting`) |
+| `callLever` | up, pulling, return | never; a post box with a red-gripped handle that springs back; each pull emits `lever` with `on: false`, so the host signals the placement's `target` with its `msg` (the hook's `call:0` / `call:1`) |
+| `plainRumble` | idle | never; invisible. Drains the room keeper's events (`bus.ts`): the footfall's `shake` event, the ring's wash (a broad gust through `world.blow`), a breeze from the west that rises toward the room's east end (`breeze`); and it keeps `world.actors` on the player |
+
 ## Known limits
 
-- Rosace is not in the sandbox; the H gauge stands in for her scale and palette.
-- The unrolled banner's map is a placeholder drawing of the Procession route, to be replaced by
-  the real world map.
-- The sound is placeholder synth.
-- Dynamic parts (flames, cloth, glyph screens) re-upload their whole grid each step while awake:
-  cheap at these sizes, but a room with many of them awake at once needs its own budget.
+- Rosace is not in the sandbox: there is no sprite export yet (`/world/character/` is empty),
+  so the H gauge in her palette stands in for her scale and colours.
+- ~~The sound is placeholder synth~~: every material family (`<family>.hit` / `.break`) and every
+  per-state cue now has a file in `src/world/sound/tables.ts` (S1, 2026-09-29; checked by
+  `src/world/sound/verify.mjs`, which reads the ids from the source). A new cue id needs a line there.
+- Flame, cloth and glyph parts still re-rasterise on the CPU while awake (now only the rows they
+  touch upload, and flames only at 15 Hz).
+- The spam test in the whole-kit lineup reaches 8-11 ms of simulation: fine for a stress case,
+  but a real fight in a crowded room should lower `world.budget.chunks` and `particles`.
+- The critic pass looked at every recipe's stills at game size and fixed what read badly (the
+  pew's back, vine leaves, grass height, the pennant in wind, puddles, moths, dust, paper faces,
+  splinters landing on end); motion was judged from the capture stills, not by Dex.

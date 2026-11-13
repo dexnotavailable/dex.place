@@ -28,8 +28,12 @@ test("code fences: label bar, copy button without prompts, escaped and coloured"
   assert.match(html, /<span class="t-k">Get-FileHash<\/span>/);
   assert.match(html, /<span class="t-f">-Algorithm<\/span>/);
   assert.match(html, /<span class="t-c"># &lt;hash&gt;<\/span>/);
-  assert.match(html, /<pre tabindex="0"/);
+  // Focusable (it scrolls), so a named region: aria-label on a bare <pre> is not allowed.
+  assert.match(html, /<pre tabindex="0" role="region" aria-label="Check it"><code>/);
   assert.doesNotMatch(html, /<hash>/);
+  // Without a title: the language names it; without a language, plain "Code".
+  assert.match(renderMarkdown("```ts\nconst a = 1\n```\n").html, /<pre tabindex="0" role="region" aria-label="TypeScript code">/);
+  assert.match(renderMarkdown("```\nplain\n```\n").html, /<pre tabindex="0" role="region" aria-label="Code">/);
 });
 
 test("highlight: unknown languages are only escaped; keywords match whole words", () => {

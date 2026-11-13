@@ -18,8 +18,167 @@ only drawn where the form turns toward the light:
   * peaks get the brighter tone (A4 at half, A4 + inner A5 at full); shoulders of forms A3;
   * falloff: nothing below the knee line (the boots take no rim unless 'legs' is set);
   * the head gets at most `head_run` pixels per run: a glint on the crown, never a cap.
+
+Shading lane round 2 (opt-in, `ROSACE_RIM_STYLE` = a JSON policy file, e.g.
+art/rosace/overrides/global/rim_r2.json; unset = everything above, unchanged): the round-1 shading
+critique found the idle's cyan outline rim a "sticker cutout halo" (a cyan-plus-OL double outline on
+every material, A4 = 208 px in N1) and the refs use none: any rim sits inside the line, tinted by the
+material, broken. So for the world rim (level half) the policy's style "inner" keeps the silhouette
+line and recolours the first pixel inside it, only where that pixel is on the side away from the key
+light (a shadow tone of its material), in the material's own light tone (hair I1, white W1, skin S1,
+stocking I2, gold G0 ...), as runs of 2..run_max px with a 1 px break, and at most max_share of the
+silhouette ring (PX-P19: <= 3%). Level "full" (the Illumination / effect light) keeps the cyan outline,
+unless the policy sets full_as_world: a baked still with no effect layer composited shows no source for
+that light, so its "full" frames take the world rim too (the round-1 critic: A4 = 208 px on N1's ring
+read as a sticker cutout).
+
+Shading lane round 3 (the round-2 critique, param 17: "no rim light" on the round-2 pick; a pasted
+white halo on the control): the inner rim's colour is a per-frame input. $ROSACE_RIM_FAMILY (or the
+spec's "family") picks a tint map from the policy's "tint_family" (cool = the world rim: pale
+blue-lavender on hair, cream on skin, violet on the stockings; warm = a gold light, the attack frames'
+spark), laid over "tint". Below the policy's "small_px" sprite height (the 80 px world render) only the
+head keeps a rim (the hair crown).
 """
+import json
+import os
+
 import numpy as np
+
+STYLE_ENV = "ROSACE_RIM_STYLE"
+
+_POLICY = {}
+
+
+def policy():
+    """the rim policy JSON named by $ROSACE_RIM_STYLE, or None"""
+    f = os.environ.get(STYLE_ENV)
+    if not f:
+        return None
+    if f not in _POLICY:
+        _POLICY[f] = json.load(open(f, encoding="utf-8"))
+    return _POLICY[f]
+
+
+def _lum(rgb):
+    c = np.asarray(rgb, float) / 255.0
+    c = np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+    return float(0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2])
+
+
+def inner_rim(img, mat, pal, code_of, spec, pol, mat_names=None, head_box=None, knee_y=None):
+    """round-2 world rim inside the line (see the module doc). Returns [(x, y, code, kind)]."""
+    H, W = mat.shape
+    a = img[..., 3] > 0
+    d = np.array(spec.get("dir", [-0.62, -0.78]), float)
+    d /= np.linalg.norm(d)
+    thr = pol.get("thr", 0.45)
+    tint = dict(pol.get("tint", {}))
+    fam = os.environ.get("ROSACE_RIM_FAMILY") or spec.get("family", "cool")
+    tint.update(pol.get("tint_family", {}).get(fam, {}))
+    px_est = (head_box[2] - head_box[0]) / 0.26 if head_box is not None else None
+    head_only = px_est is not None and px_est < pol.get("small_px", 0)
+    shadow = {m: set(c) for m, c in pol.get("shadow_codes", {}).items()}
+    af = a.astype(float)
+    pad = np.pad(af, 2)
+    gx = np.zeros_like(af)
+    gy = np.zeros_like(af)
+    for dy in range(-2, 3):
+        for dx in range(-2, 3):
+            v = pad[2 + dy:2 + dy + H, 2 + dx:2 + dx + W]
+            gx -= dx * v
+            gy -= dy * v
+    pad4 = np.pad(af, 4)
+    cnt = np.zeros_like(af)
+    for dy in range(-4, 5):
+        for dx in range(-4, 5):
+            cnt += pad4[4 + dy:4 + dy + H, 4 + dx:4 + dx + W]
+    ring = [(y, x) for y, x in zip(*np.nonzero(a))
+            if mat[y, x] == 0 and any(not (0 <= y + dy < H and 0 <= x + dx < W) or not a[y + dy, x + dx] for dy, dx in N4)]
+    ringset = set(ring)
+    cand = {}
+    for y, x in zip(*np.nonzero(a & (mat > 0))):
+        # a figure pixel just inside the silhouette line
+        if not any((y + dy, x + dx) in ringset for dy, dx in N4):
+            continue
+        n = np.array([gx[y, x], gy[y, x]])
+        ln = np.linalg.norm(n)
+        if ln < 1e-6:
+            continue
+        n /= ln
+        in_head = head_box is not None and head_box[0] <= x <= head_box[2] and head_box[1] <= y <= head_box[3]
+        if n @ d < (pol.get("head_thr", 0.8) if in_head else thr) or cnt[y, x] > pol.get("convex_max", 52):
+            continue
+        if head_only and not in_head:
+            continue
+        if knee_y is not None and y > knee_y and not pol.get("legs", True):
+            continue
+        name = (mat_names or {}).get(int(mat[y, x]))
+        tc = tint.get(name)
+        cur = code_of.get(tuple(int(v) for v in img[y, x, :3]))
+        if not tc or cur is None or cur == tc:
+            continue
+        if name in shadow and cur not in shadow[name]:
+            continue                      # only on the side the key light leaves in shadow
+        lo, hi = sorted((_lum(pal[tc]), _lum(img[y, x, :3])))
+        if (hi + 0.05) / (lo + 0.05) < pol.get("min_step", 1.3):
+            continue
+        cand[(x, y)] = (float(n @ d), int(mat[y, x]), tc, in_head)
+    # runs along the edge, one material each
+    seen, runs = set(), []
+    for st in sorted(cand, key=lambda p: (p[1], p[0])):
+        if st in seen:
+            continue
+        m0 = cand[st][1]
+        run, stack = [], [st]
+        seen.add(st)
+        while stack:
+            p = stack.pop()
+            run.append(p)
+            for dy, dx in N8:
+                q = (p[0] + dx, p[1] + dy)
+                if q in cand and q not in seen and cand[q][1] == m0:
+                    seen.add(q)
+                    stack.append(q)
+        runs.append(_order(run))
+    # break every run_max px (1 px gap), drop pieces under run_min, then spend the budget on the pieces
+    # that face the rim light most squarely
+    rmax, rmin = pol.get("run_max", 5), pol.get("run_min", 2)
+    pieces = []
+    for run in runs:
+        i = 0
+        while i < len(run):
+            pc = run[i:i + rmax]
+            if cand[pc[0]][3]:
+                pc = pc[:pol.get("head_run", 3)]
+            if len(pc) >= rmin:
+                pieces.append(pc)
+            i += rmax + 1
+    budget = pol.get("max_share", 0.03) * len(ring)
+    pieces.sort(key=lambda pc: -np.mean([cand[p][0] for p in pc]))
+    out, used = [], 0
+    for pc in pieces:
+        if used + len(pc) > budget:
+            continue
+        for p in pc:
+            out.append((p[0], p[1], cand[p][2], "rim"))
+        used += len(pc)
+    return out
+
+
+def _order(run):
+    """the pixels of an 8-connected run in order along it, from an end"""
+    left = set(run)
+    start = min(run, key=lambda p: (sum(1 for dy, dx in N8 if (p[0] + dx, p[1] + dy) in left), p[1], p[0]))
+    order, cur = [start], start
+    left.discard(start)
+    while left:
+        nxt = [q for q in ((cur[0] + dx, cur[1] + dy) for dy, dx in N8) if q in left]
+        if not nxt:
+            nxt = [min(left, key=lambda q: (q[0] - cur[0]) ** 2 + (q[1] - cur[1]) ** 2)]
+        cur = nxt[0]
+        order.append(cur)
+        left.discard(cur)
+    return order
 
 N4 = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 N8 = N4 + [(-1, -1), (-1, 1), (1, -1), (1, 1)]
@@ -72,6 +231,9 @@ def rim_pixels(img, mat, pal, code_of, spec, knee_y=None, head_box=None, mat_nam
     material under the edge changes and each piece shorter than MIN_RUN is dropped. No
     periodic breaks any more ('max_run' / 'head_run' are ignored). 'full' (skill / VFX frames,
     when the glaive glow motivates it) also lights the pixel just inside on broad shapes."""
+    pol = policy()
+    if pol and pol.get("style") == "inner" and (spec.get("level", "half") != "full" or pol.get("full_as_world")):
+        return inner_rim(img, mat, pal, code_of, spec, pol, mat_names, head_box, knee_y)
     H, W = mat.shape
     a = img[..., 3] > 0
     d = np.array(spec.get("dir", [-0.62, -0.78]), float)

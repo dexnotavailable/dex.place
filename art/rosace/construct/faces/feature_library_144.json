@@ -1,0 +1,656 @@
+{
+ "_doc": "Rosace face feature library at 144 px (head 25 px skull top to chin). Authored pixel data, one character per pixel; tools/art-construct/face_construct.py places these on the construction grid (docs/character/ART-RULES.md section 6) and tunes them with parameters (gaze, eye row, brow raise, mouth corner, highlight placement). Eye symbols: O = upper lash (OL), '~' = eye opening (the tool fills it with the iris and the white from the gaze parameter), L = lower-lash dot (I3), G = Ignited glow (A4), '.' = leave the skin. Brow symbols: '#' = brow pixel (the tool draws OL where it lands on hair, I3 on skin). Mouth, blush and nose grids use the palette KEY in tools/art-construct/artlib.py (m = S4, t = S3, p = SB, w = W1). Facing: authored for a head turned screen-right (three-quarter), so the near eye is on the left with its outer end on the left, and the far eye is on the right with its outer end on the right. Front view: 'front' is the screen-left eye; the screen-right eye is its mirrored shape, then the iris, white and highlight are redone by the tool (ART-RULES FC-N02). Rows run top to bottom; 'row0' is the first row's height above the lash-top row (the lash-top row = 0). 'box' = [first column, width] of the eye box inside the grid (the flick may sit outside it). Every grid is [I]: a first authored value, checked by rules_check.py and changed through the learning log.",
+ "size": 144,
+ "eyes": {
+  "q34_near": {
+   "row0": 1,
+   "box": [
+    1,
+    6
+   ],
+   "confident": [
+    "O......",
+    ".OOOOO.",
+    ".OOOO~O",
+    "..~~~~~",
+    "..~~~~~",
+    ".L~~~~."
+   ],
+   "focused": [
+    ".......",
+    ".......",
+    ".OOOOOO",
+    ".OOOOO~",
+    "..~~~~~",
+    ".LLL~~."
+   ],
+   "radiant": [
+    ".......",
+    ".......",
+    "...OOO.",
+    "..O...O",
+    ".O.....",
+    "......."
+   ],
+   "radiant_open": [
+    "O......",
+    ".OOOOO.",
+    ".OOOO~O",
+    "..~~~~~",
+    ".LLL~~.",
+    "......."
+   ],
+   "serene": [
+    ".......",
+    ".......",
+    "OOOOOO.",
+    ".OOOOOO",
+    "..~~~~~",
+    ".L~~~~."
+   ],
+   "ignited": [
+    ".......",
+    ".......",
+    ".OOOOOO",
+    ".OOOOO~",
+    "G.~~~~~",
+    ".LLL~~."
+   ],
+   "hurt": [
+    ".......",
+    ".......",
+    ".......",
+    "..OOOOO",
+    ".O.....",
+    "......."
+   ]
+  },
+  "q34_far": {
+   "row0": 1,
+   "box": [
+    0,
+    4
+   ],
+   "confident": [
+    "....O",
+    ".OOO.",
+    "OOOOO",
+    "~~~~.",
+    "~~~~.",
+    ".~~L."
+   ],
+   "focused": [
+    ".....",
+    ".....",
+    "OOOOO",
+    "~OOOO",
+    "~~~~.",
+    ".~LLL"
+   ],
+   "radiant": [
+    ".....",
+    ".....",
+    ".OO..",
+    "O..O.",
+    "....O",
+    "....."
+   ],
+   "radiant_open": [
+    "....O",
+    ".OOO.",
+    "OOOOO",
+    "~~~~.",
+    "~~LL.",
+    "....."
+   ],
+   "serene": [
+    ".....",
+    ".....",
+    ".OOOO",
+    "OOOOO",
+    "~~~~.",
+    ".~~L."
+   ],
+   "ignited": [
+    ".....",
+    ".....",
+    "OOOOO",
+    "~OOOO",
+    "~~~~G",
+    ".~LLL"
+   ],
+   "hurt": [
+    ".....",
+    ".....",
+    ".....",
+    "OOOO.",
+    "....O",
+    "....."
+   ]
+  },
+  "front": {
+   "row0": 1,
+   "box": [
+    1,
+    5
+   ],
+   "confident": [
+    "O.....",
+    ".OOOO.",
+    ".OOO~O",
+    "..~~~~",
+    "..~~~~",
+    ".L~~~."
+   ],
+   "focused": [
+    "......",
+    "......",
+    ".OOOOO",
+    ".OOOO~",
+    "..~~~~",
+    ".LL~~."
+   ],
+   "radiant": [
+    "......",
+    "......",
+    "...OO.",
+    "..O..O",
+    ".O....",
+    "......"
+   ],
+   "radiant_open": [
+    "O.....",
+    ".OOOO.",
+    ".OOO~O",
+    "..~~~~",
+    ".LL~~.",
+    "......"
+   ],
+   "serene": [
+    "......",
+    "......",
+    "OOOOO.",
+    ".OOOOO",
+    "..~~~~",
+    ".L~~~."
+   ],
+   "ignited": [
+    "......",
+    "......",
+    ".OOOOO",
+    ".OOOO~",
+    "G.~~~~",
+    ".LL~~."
+   ],
+   "hurt": [
+    "......",
+    "......",
+    "......",
+    "..OOOO",
+    ".O....",
+    "......"
+   ]
+  },
+  "profile": {
+   "row0": 1,
+   "box": [
+    1,
+    4
+   ],
+   "confident": [
+    "O....",
+    ".OOO.",
+    ".OO~O",
+    "..~~.",
+    ".L~.."
+   ],
+   "focused": [
+    ".....",
+    ".....",
+    ".OOOO",
+    ".OO~.",
+    ".LL.."
+   ],
+   "radiant": [
+    ".....",
+    ".....",
+    "..OO.",
+    ".O..O",
+    "....."
+   ],
+   "radiant_open": [
+    "O....",
+    ".OOO.",
+    ".OO~O",
+    ".LL~.",
+    "....."
+   ],
+   "serene": [
+    ".....",
+    ".....",
+    "OOOO.",
+    ".OOOO",
+    ".L~.."
+   ],
+   "ignited": [
+    ".....",
+    ".....",
+    ".OOOO",
+    "GOO~.",
+    ".LL.."
+   ],
+   "hurt": [
+    ".....",
+    ".....",
+    ".....",
+    ".OOOO",
+    "O...."
+   ]
+  }
+ },
+ "iris": {
+  "_doc": "iris tones by iris row, top to bottom, for a 3 px iris (2 px irises drop the middle column; 4 px repeat it). The lit column (key light side) of the top row becomes the highlight h (A5) unless the highlight parameter moves it. n = I3 depth tone. 'ignited' replaces the whole iris.",
+  "normal": [
+   "aaa",
+   "abb",
+   "bcb"
+  ],
+  "ignited": [
+   "bcc",
+   "ccc",
+   "chc"
+  ]
+ },
+ "whites": {
+  "_doc": "white pixel in the first open row under the lash = W2 (lid shadow); lower rows W1; the white beside the highlight = W2 so the A5 highlight keeps its edge (A5/W1 is 1.03:1)",
+  "top": "e",
+  "rest": "w",
+  "beside_highlight": "e"
+ },
+ "brows": {
+  "_doc": "rows run from lash top + 4 down to lash top + 1. 'dx' = column offset from the eye box's first column. Near brow 4 px, far brow 3 px shifted outward (ART-RULES FC-P15).",
+  "near": {
+   "dx": 1,
+   "confident": [
+    ".#..",
+    "#.##",
+    "....",
+    "...."
+   ],
+   "focused": [
+    "....",
+    "#...",
+    ".##.",
+    "...#"
+   ],
+   "radiant": [
+    ".#..",
+    "#.##",
+    "....",
+    "...."
+   ],
+   "serene": [
+    "....",
+    "....",
+    "####",
+    "...."
+   ],
+   "ignited": [
+    "....",
+    "#...",
+    ".##.",
+    "...#"
+   ],
+   "hurt": [
+    "....",
+    "...#",
+    ".##.",
+    "#..."
+   ],
+   "radiant_open": [
+    ".#..",
+    "#.##",
+    "....",
+    "...."
+   ]
+  },
+  "far": {
+   "dx": 1,
+   "confident": [
+    "...",
+    "##.",
+    "..#",
+    "..."
+   ],
+   "focused": [
+    "...",
+    "..#",
+    ".#.",
+    "#.."
+   ],
+   "radiant": [
+    "...",
+    "##.",
+    "..#",
+    "..."
+   ],
+   "serene": [
+    "...",
+    "...",
+    "###",
+    "..."
+   ],
+   "ignited": [
+    "...",
+    "..#",
+    ".#.",
+    "#.."
+   ],
+   "hurt": [
+    "...",
+    "#..",
+    ".#.",
+    "..#"
+   ],
+   "radiant_open": [
+    "...",
+    "##.",
+    "..#",
+    "..."
+   ]
+  }
+ },
+ "mouths": {
+  "_doc": "rows run from 4 rows above the chin down to row 1; 'ax' = the grid column placed on the mouth anchor (centre line + mouth_dx). m = S4 lip line, t = S3 soft corner, p = SB, w = W1 tooth. Mirrored when the head faces screen-left.",
+  "confident": {
+   "ax": 1,
+   "rows": [
+    "...",
+    "t..",
+    ".mm",
+    "..."
+   ]
+  },
+  "focused": {
+   "ax": 0,
+   "rows": [
+    "..",
+    "..",
+    "mm",
+    ".."
+   ]
+  },
+  "shout": {
+   "ax": 0,
+   "rows": [
+    "..",
+    "..",
+    "wm",
+    "pp"
+   ]
+  },
+  "radiant": {
+   "ax": 1,
+   "rows": [
+    "....",
+    "m..m",
+    ".mm.",
+    "...."
+   ]
+  },
+  "radiant_open": {
+   "ax": 1,
+   "rows": [
+    "....",
+    "mmmm",
+    ".pp.",
+    "...."
+   ]
+  },
+  "serene": {
+   "ax": 1,
+   "rows": [
+    "..",
+    "t.",
+    ".m",
+    ".."
+   ]
+  },
+  "ignited": {
+   "ax": 0,
+   "rows": [
+    "..",
+    "..",
+    "mm",
+    ".."
+   ]
+  },
+  "hurt": {
+   "ax": 0,
+   "rows": [
+    "...",
+    "...",
+    "mm.",
+    "..m"
+   ]
+  }
+ },
+ "blush": {
+  "_doc": "rows: 1 and 2 rows under the eye bottom. near: dx from the near eye box's first column (under its outer half); far: dx from the far eye box's first column. p = SB. Only lands on S2 (FC-P17).",
+  "near": {
+   "dx": 0,
+   "rows": [
+    "..p",
+    "pp."
+   ]
+  },
+  "far": {
+   "dx": 2,
+   "rows": [
+    ".p",
+    "p."
+   ]
+  }
+ },
+ "bangs": {
+  "_doc": "hair clumps as construction data: root and tip as [dx from the eye-row centre line, rows above the chin], widths at root and tip, bend (px the spine bows to the right at its middle). Three-quarter: the middle clumps point down, the side clumps swing to their own side (ART-RULES HR, ao-hair34). Front: symmetric about the centre line with a parting 1 px off centre.",
+  "q34": [
+   {
+    "name": "near lock",
+    "root": [
+     -9,
+     21
+    ],
+    "tip": [
+     -12,
+     9
+    ],
+    "w": [
+     4,
+     2
+    ],
+    "bend": -1
+   },
+   {
+    "name": "near eye",
+    "root": [
+     -5,
+     23
+    ],
+    "tip": [
+     -5,
+     15
+    ],
+    "w": [
+     5,
+     1.4
+    ],
+    "bend": -1
+   },
+   {
+    "name": "centre",
+    "root": [
+     -1,
+     23
+    ],
+    "tip": [
+     -1,
+     15
+    ],
+    "w": [
+     5,
+     1.4
+    ],
+    "bend": 0
+   },
+   {
+    "name": "far eye",
+    "root": [
+     3,
+     23
+    ],
+    "tip": [
+     3,
+     15
+    ],
+    "w": [
+     5,
+     1.4
+    ],
+    "bend": 1
+   },
+   {
+    "name": "far lock",
+    "root": [
+     6,
+     22
+    ],
+    "tip": [
+     9,
+     12
+    ],
+    "w": [
+     3,
+     1.4
+    ],
+    "bend": 1
+   }
+  ],
+  "front": [
+   {
+    "name": "left lock",
+    "root": [
+     -7,
+     21
+    ],
+    "tip": [
+     -10,
+     10
+    ],
+    "w": [
+     4,
+     1
+    ],
+    "bend": -1
+   },
+   {
+    "name": "left eye",
+    "root": [
+     -4,
+     23
+    ],
+    "tip": [
+     -5,
+     16
+    ],
+    "w": [
+     5,
+     1
+    ],
+    "bend": -1
+   },
+   {
+    "name": "centre",
+    "root": [
+     1,
+     23
+    ],
+    "tip": [
+     0,
+     15
+    ],
+    "w": [
+     4,
+     1
+    ],
+    "bend": 0
+   },
+   {
+    "name": "right eye",
+    "root": [
+     5,
+     23
+    ],
+    "tip": [
+     6,
+     16
+    ],
+    "w": [
+     4,
+     1
+    ],
+    "bend": 1
+   },
+   {
+    "name": "right lock",
+    "root": [
+     8,
+     21
+    ],
+    "tip": [
+     11,
+     10
+    ],
+    "w": [
+     4,
+     1
+    ],
+    "bend": 1
+   }
+  ],
+  "profile": [
+   {
+    "name": "front lock",
+    "root": [
+     -2,
+     23
+    ],
+    "tip": [
+     0,
+     16
+    ],
+    "w": [
+     5,
+     1
+    ],
+    "bend": 1
+   },
+   {
+    "name": "temple",
+    "root": [
+     -6,
+     22
+    ],
+    "tip": [
+     -6,
+     13
+    ],
+    "w": [
+     4,
+     1
+    ],
+    "bend": 0
+   }
+  ]
+ }
+}

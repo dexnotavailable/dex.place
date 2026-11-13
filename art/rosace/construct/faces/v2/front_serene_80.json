@@ -1,0 +1,21 @@
+{
+ "_doc": "front serene at 80 px: glyph names from lib_80.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "front",
+ "expr": "serene",
+ "px": 80,
+ "eye_near": "near_serene",
+ "eye_far": "far_serene",
+ "brow_near": null,
+ "brow_far": null,
+ "blush": "soft",
+ "mouth": "serene",
+ "gaze": "lowered (prayer)",
+ "nose": null,
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": 1
+ }
+}

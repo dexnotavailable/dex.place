@@ -1,0 +1,1062 @@
+{
+ "_doc": "Round R1 painted head, three-quarter view facing screen-right, 144 px sprite (h = skull top to chin 26 rows; ART-RULES 6.2). Layers are drawn back to front: back (hair cap, back hair, far sidelock, neck behind the jaw), skin (the face plane, the neck under the chin), front (bang clumps, near sidelock). Expression overlays sit at anchors on the FC-P01 grid. Format: tools/art-construct/head_paint.py docstring. Every number is [I] until the learning log (ART-RULES 10, round R1) records it.",
+ "view": "q34",
+ "gaze": [
+  -1,
+  0
+ ],
+ "gaze_target": "viewer",
+ "roll": 0,
+ "rows": {
+  "mouth": 2,
+  "nose": 6,
+  "eye_bottom": 10,
+  "lash_top": 14,
+  "brow": 16,
+  "hairline": 20,
+  "skull_top": 26,
+  "hair_top": 29
+ },
+ "anchors": {
+  "c0": 21,
+  "chin": [
+   22,
+   36
+  ],
+  "eye_near": [
+   13,
+   22,
+   6,
+   6
+  ],
+  "eye_far": [
+   22,
+   22,
+   5,
+   6
+  ]
+ },
+ "layers": {
+  "back": [
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   ".............nlkkkkk..................",
+   "..........nnlkkkkkkkkkl...............",
+   "........nnlllkkkkkkkkkkkl.............",
+   "......dnnlljjjjljjjljjkkkkl...........",
+   ".....dnnlljjlllnlllnllnkkkkl..........",
+   "....ddnnnlllllnllllnllnkkknll.........",
+   "...ddnnnnlllllnlllnnlllnlllnll........",
+   "...ddnnnllllllnllllnllllnllllnll......",
+   "..ddnnnnllllllnllllnllllnllllnll......",
+   "..ddnnnnlllllllllllllllllllllllll.....",
+   "..nnkknnnnnnnnddd...........nllk......",
+   "..dnkknnnnnnnnddd...........nllk......",
+   "..nnkknnnnnnnnddd...........nllk......",
+   "..nnlkknnnnnnnddd...........nllk......",
+   "..dnnlknnnnnnnddd...........nllk......",
+   "..ndnllnnnnnnnddd...........nlk.......",
+   ".nnnnnlnnnnnnnnd............nlk.......",
+   ".dnnnllnnnnnnnnd............nlk.......",
+   ".nnnnlnnnnnnnnnd............nlk.......",
+   ".nnnnlnnnnnnnnnd............nlk.......",
+   ".dnlnnnnnnnnnnnd............nlk.......",
+   ".nnlnnnnnnnnnnnd............nlk.......",
+   ".nnnlnnnnnnnlnnd............nlk.......",
+   ".dnklnnnnnnnnlnd............nlk.......",
+   ".nnkldnnnnnnllddd..........nlk........",
+   ".nnlldnnnnnnllddd..........nlk........",
+   ".dnllnnnnnnnll.tt..........nbb........",
+   ".nnlnlnnnnnnll.ttt..........bc........",
+   ".ndnnlnnnnnnnd.tttt.........c.........",
+   ".dnnnlnnnnnnln.tttttt.................",
+   ".nnnllnnnnnnll........................",
+   "..nnllnnnnnnlll.......................",
+   "..dnlnnnnnnnlll.......................",
+   "..nnlnnnnnnndl........................",
+   "..ndlnnnnnnnll........................",
+   ".ddnlnnnnnnnln........................",
+   ".nnnlnnnnnnnld........................",
+   ".nnnlnnnnnnnll........................",
+   ".dnnlnnnnnnnnll......................."
+  ],
+  "skin": [
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "12:tttttttttttttttt",
+   "12:tttttttttttttttt",
+   "12:ttsttttttttttttt",
+   "12:tttttttttttttttt",
+   "12:sssttsssssssttss",
+   "12:sssssssssttsssss",
+   "12:tsssssttssssssss",
+   "12:tsssssssssssssss",
+   "12:tsssssssssssssss",
+   "12:tsssssssssssssss",
+   "12:tssssssssssssssss",
+   "12:tsssssssssssssss",
+   "13:tssssssssssss11",
+   "13:ttssssssssssst",
+   "14:ttsssssssssst",
+   "15:ttssssssssss",
+   "16:ttssssssss",
+   "17:sssssssss",
+   "18:sssssss",
+   "19:sstts",
+   "21:sss",
+   "16:tmmmmm",
+   "16:ttmmms",
+   "16:tttsss",
+   "16:ttssss",
+   "16:ttssss",
+   "16:ttssss",
+   "16:ttssss",
+   "16:ttssss",
+   "16:ttssss"
+  ],
+  "front": [
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   ".....nllnnllkkdnllkkdnllkkdnllkk......",
+   ".....nllnnlnlkdnlnlkdnlnlkdnlnlk......",
+   ".....nllnnl.nl.nl.nl.nl.nl.nl.nl......",
+   ".....nlln.n.nl..n.nl..n..n..n.nl......",
+   ".....nlln.n..n.....n..n.....n..n......",
+   "......nlln...n.....n........n..n......",
+   ".......nlllk...................n......",
+   ".......nlllk..........................",
+   ".......nllnk..........................",
+   ".......nllnk..........................",
+   ".......nlnnk..........................",
+   ".......nlnlk..........................",
+   ".......nlnll..........................",
+   ".......nlnll..........................",
+   ".......nlnll..........................",
+   ".......nlnll..........................",
+   ".......nlnll..........................",
+   "........nlnl..........................",
+   "........nlnl..........................",
+   "........nlnl..........................",
+   "........nlnl..........................",
+   "........zxxv..........................",
+   "........nlnl..........................",
+   "........nlnl..........................",
+   "........nbbl..........................",
+   "........bbb...........................",
+   ".........bc...........................",
+   ".........c............................",
+   "",
+   ""
+  ]
+ },
+ "expressions": {
+  "confident": {
+   "_doc": "default face (DESIGN 5, ART-RULES 6.5): open eyes at the viewer, outer flick up, near brow 1 px higher, a smirk with the near corner up",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     "OO.....",
+     ".OOOOO.",
+     ".OOOOOO",
+     ".Onnhe.",
+     "..aaaw.",
+     "..abb..",
+     ".nn...."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "....OO",
+     ".OOOO.",
+     "OOOOO.",
+     "nnheO.",
+     "aaaw..",
+     "abb...",
+     "...nn."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     13,
+     19
+    ],
+    "rows": [
+     ".###",
+     "#..."
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     20
+    ],
+    "rows": [
+     "###"
+    ]
+   },
+   "nose": {
+    "at": [
+     22,
+     29
+    ],
+    "rows": [
+     "t",
+     "t"
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     33
+    ],
+    "rows": [
+     "t..",
+     ".mm"
+    ]
+   },
+   "blush_near": {
+    "at": [
+     16,
+     28
+    ],
+    "rows": [
+     ".p",
+     "p."
+    ]
+   },
+   "blush_far": {
+    "at": [
+     24,
+     28
+    ],
+    "rows": [
+     ".p",
+     "p."
+    ]
+   }
+  },
+  "focused": {
+   "_doc": "attacks (ART-RULES 6.5): brows inner ends down and 1 px closer; lash a flat 2-row bar 1 px lower on the iris; lower lid up 1 px (2 iris rows); eyes on the enemy (screen-right, the facing side); an open shout with a tooth pixel",
+   "gaze": [
+    1,
+    0
+   ],
+   "gaze_target": "enemy",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     ".......",
+     "OO.....",
+     ".OOOOOO",
+     ".OOOOOO",
+     ".Oennh.",
+     "..waaa.",
+     ".nnnnn."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "....OO",
+     "OOOOO.",
+     "OOOOO.",
+     "ennhO.",
+     "waaa..",
+     "nnnnn."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     "#...",
+     ".##.",
+     "...#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     19
+    ],
+    "rows": [
+     "..#",
+     ".#.",
+     "#.."
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     33
+    ],
+    "rows": [
+     "mw.",
+     "mpm"
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null,
+   "skin_fix": {
+    "_doc": "the moved brows leave fringe-shadow pixels alone; the painter lifts them to S2 (FC-N15)",
+    "at": [
+     15,
+     19
+    ],
+    "rows": [
+     "s.........",
+     "..........s"
+    ]
+   }
+  },
+  "radiant": {
+   "_doc": "wins and happy beats (ART-RULES 6.5): brows up 1 px and relaxed; eyes closed into arcs curving up in the middle with the lash tail down at the outer corner; an open U smile (teeth row and SB tongue); blush kept",
+   "gaze": [
+    -1,
+    0
+   ],
+   "gaze_target": "viewer",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     ".......",
+     ".......",
+     "..OOOO.",
+     ".OO..OO",
+     "OO.....",
+     ".......",
+     "......."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     ".OOO..",
+     "OO.OO.",
+     "....OO",
+     "......",
+     "......"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     13,
+     18
+    ],
+    "rows": [
+     ".###",
+     "#..."
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     19
+    ],
+    "rows": [
+     "###"
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     33
+    ],
+    "rows": [
+     "mwwm",
+     ".pp."
+    ]
+   },
+   "skin_fix": {
+    "_doc": "as Focused: fringe-shadow pixels orphaned by the raised far brow go to S2 (FC-N15)",
+    "at": [
+     26,
+     18
+    ],
+    "rows": [
+     "s.",
+     ".s"
+    ]
+   }
+  },
+  "serene": {
+   "_doc": "prayer beats only (ART-RULES 6.5, FC-N22): the half-lid (2 iris rows), a soft flat flick, level relaxed brows, a small closed smile with the far corner up",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     ".......",
+     ".......",
+     "OOOOOO.",
+     ".OOOOOO",
+     ".Onnhe.",
+     "..aaaw.",
+     ".nn...."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     "OOOOOO",
+     "OOOOO.",
+     "nnheO.",
+     "aaaw..",
+     "...nn."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     13,
+     20
+    ],
+    "rows": [
+     "####"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     20
+    ],
+    "rows": [
+     "###"
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     33
+    ],
+    "rows": [
+     "..t",
+     "mm."
+    ]
+   },
+   "skin_fix": {
+    "_doc": "the lowered lash leaves one side-plane S3 px; lifted to S2 (FC-N15)",
+    "at": [
+     12,
+     22
+    ],
+    "rows": [
+     "s"
+    ]
+   }
+  },
+  "ignited": {
+   "_doc": "R and Illumination (ART-RULES 6.5): Focused with the iris lit A4 and a 1 px A4 glow beside each eye's outer corner",
+   "gaze": [
+    1,
+    0
+   ],
+   "gaze_target": "enemy",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     ".......",
+     "OO.....",
+     ".OOOOOO",
+     ".OOOOOO",
+     ".Oeccc.",
+     "..wccc.",
+     ".nnnnn."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "....OO",
+     "OOOOO.",
+     "OOOOO.",
+     "ecccO.",
+     "wccc..",
+     "nnnnn."
+    ]
+   },
+   "brow_near": {
+    "at": [
+     14,
+     19
+    ],
+    "rows": [
+     "#...",
+     ".##.",
+     "...#"
+    ]
+   },
+   "brow_far": {
+    "at": [
+     23,
+     19
+    ],
+    "rows": [
+     "..#",
+     ".#.",
+     "#.."
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     33
+    ],
+    "rows": [
+     "mw.",
+     "mpm"
+    ]
+   },
+   "blush_near": null,
+   "blush_far": null,
+   "skin_fix": {
+    "_doc": "the moved brows leave fringe-shadow pixels alone; the painter lifts them to S2 (FC-N15)",
+    "at": [
+     15,
+     19
+    ],
+    "rows": [
+     "s.........",
+     "..........s"
+    ]
+   },
+   "extra": [
+    {
+     "at": [
+      11,
+      25
+     ],
+     "rows": [
+      "c"
+     ]
+    },
+    {
+     "at": [
+      27,
+      25
+     ],
+     "rows": [
+      "c"
+     ]
+    }
+   ]
+  },
+  "hurt": {
+   "_doc": "hit reactions (ART-RULES 6.5): brows up at the inner ends, eyes squeezed to a 1 px line with the outer end down, a 2 px mouth with one corner down",
+   "gaze": [
+    -1,
+    0
+   ],
+   "gaze_target": "viewer",
+   "eye_near": {
+    "at": [
+     12,
+     21
+    ],
+    "box": [
+     1,
+     1,
+     6,
+     6
+    ],
+    "rows": [
+     ".......",
+     ".......",
+     ".......",
+     ".OOOOO.",
+     "O......",
+     ".......",
+     "......."
+    ]
+   },
+   "eye_far": {
+    "at": [
+     22,
+     21
+    ],
+    "box": [
+     0,
+     1,
+     5,
+     6
+    ],
+    "rows": [
+     "......",
+     "......",
+     "......",
+     "OOOO..",
+     "....O.",
+     "......",
+     "......"
+    ]
+   },
+   "brow_near": {
+    "at": [
+     13,
+     19
+    ],
+    "rows": [
+     "...#",
+     ".##.",
+     "#..."
+    ]
+   },
+   "brow_far": {
+    "at": [
+     24,
+     19
+    ],
+    "rows": [
+     "#..",
+     ".#.",
+     "..#"
+    ]
+   },
+   "mouth": {
+    "at": [
+     20,
+     33
+    ],
+    "rows": [
+     "mm.",
+     "..t"
+    ]
+   },
+   "skin_fix": {
+    "_doc": "fringe-shadow px orphaned by the worried brows go to S2 (FC-N15)",
+    "at": [
+     16,
+     20
+    ],
+    "rows": [
+     "s.......s"
+    ]
+   }
+  }
+ },
+ "variants_a": {
+  "framing_lock": {
+   "axis": "hair framing the near cheek",
+   "idea": "a lock from the near temple clump falls along the near cheek to the jaw, so less flat skin shows (refs 07/08 frame the face with locks)",
+   "layers": {
+    "front": {
+     "25": "7:nllnln",
+     "26": "7:nllnln",
+     "27": "7:nlnlln",
+     "28": "7:nlnlln",
+     "29": "7:nlnllnl",
+     "30": "7:nlnllnl",
+     "31": "7:nlnllnn",
+     "32": "8:nlnllnn"
+    }
+   },
+   "kept": false,
+   "verdict": "marginal at x6: the lock reads as more sidelock, not as framing, and leaves a stray S3 px on the jaw (FC-N15). Rejected; the near side plane shadow does the job"
+  },
+  "crown_breaks": {
+   "axis": "hair silhouette",
+   "idea": "clump tips break the crown and back-of-head silhouette (a 2 px cowlick, three back tips) so the hair is clumps, not a helmet shell (HR-N01 spirit)",
+   "layers": {
+    "back": {
+     "5": "18:n",
+     "6": "16:nkn",
+     "11": "4:n 5:dnnlljjlllnlllnllnkkkkl",
+     "12": "3:nd 4:ddnnnlllllnllllnllnkkknll",
+     "14": "1:dn 3:ddnnllllllnllllnllllnllllnll 30:n",
+     "15": "0:dn 2:ddnnllllllllnllllnllllnllllnll 31:n",
+     "16": "1:n 2:ddnnlllllllllllllllllllllllllll 31:dn",
+     "18": "1:n 2:dnkknnnnnnnnddd 28:nllk"
+    }
+   },
+   "kept": false,
+   "verdict": "the 2 px cowlick reads as an antenna and lifts the hair top to row 31 (FC-P01 29-30, HR-P02 2-3); the back tips barely show at x6. Rejected"
+  },
+  "eye7": {
+   "axis": "near eye width 7 (O-4)",
+   "idea": "bigger near eye: 7 px wide, the outer corner and flick one column out",
+   "anchors": {
+    "eye_near": [
+     12,
+     22,
+     7,
+     5
+    ]
+   },
+   "expressions": {
+    "confident": {
+     "eye_near": {
+      "at": [
+       11,
+       21
+      ],
+      "box": [
+       1,
+       1,
+       7,
+       5
+      ],
+      "rows": [
+       "O.......",
+       ".OOOOOO.",
+       ".OOOOOee",
+       ".Oaaahew",
+       "..aabbwe",
+       ".nbbcc.."
+      ]
+     }
+    }
+   },
+   "kept": false,
+   "verdict": "a 7 px near eye fails FC-P04 and makes a 4 px iris (FC-P10) for no visible gain at x6; at face width 16 with a 3 px gap there is no room. Rejected; O-4 answered for q34: 6"
+  },
+  "lash_heavy": {
+   "axis": "eye design: heavier outer lash, taller iris",
+   "idea": "a 2 px flick, full-width top lash, lash wrap down the outer corner, iris 4 rows (eye 6 tall, eye bottom row 9), 2 px lower lash: the dark eye mass of refs 07/08",
+   "expressions": {
+    "confident": {
+     "eye_near": {
+      "at": [
+       12,
+       21
+      ],
+      "box": [
+       1,
+       1,
+       6,
+       6
+      ],
+      "rows": [
+       "OO.....",
+       ".OOOOOO",
+       ".OOOOOe",
+       ".Oaahew",
+       ".naabwe",
+       "..bbcw.",
+       ".nnbc.."
+      ]
+     },
+     "eye_far": {
+      "at": [
+       22,
+       21
+      ],
+      "box": [
+       0,
+       1,
+       5,
+       6
+      ],
+      "rows": [
+       "....OO",
+       "OOOOO.",
+       "OOOOO.",
+       "aahew.",
+       "aabwe.",
+       "bbcw..",
+       "bcnn.."
+      ]
+     },
+     "blush_near": {
+      "at": [
+       15,
+       28
+      ],
+      "rows": [
+       ".p.p",
+       "p..."
+      ]
+     },
+     "blush_far": {
+      "at": [
+       24,
+       28
+      ],
+      "rows": [
+       ".p",
+       "p."
+      ]
+     }
+    }
+   },
+   "kept": false,
+   "verdict": "darker eye mass reads closer to 07/08, but the 2-column whites still read startled; superseded by eye_dark"
+  },
+  "skin_render": {
+   "axis": "skin modelling density",
+   "idea": "designed skin shapes: a 2x2 S1 light on the far cheekbone, an S3 lip shadow under the mouth, the fringe cast shadow as a 2-row wedge under each clump (motomura-ggxrd designed shadows)",
+   "layers": {
+    "skin": {
+     "20": "12:ssstsssttssssts",
+     "27": "12:tssssssssssss11s",
+     "28": "13:tsssssssssss11s",
+     "35": "19:sstts"
+    }
+   },
+   "kept": true,
+   "verdict": "small but real: the lip shadow and the S1 cheek light give the lower face form without noise. Kept"
+  },
+  "eye_dark": {
+   "axis": "eye design: dark iris top, one white column",
+   "idea": "lash_heavy's lash with the iris dark on top (I3, the eye table's 'I3 for depth'), 3 iris tones (I3, A2, A3) + A5, and the white cut to one column beside the highlight so the eye reads sharp, not startled",
+   "expressions": {
+    "confident": {
+     "eye_near": {
+      "at": [
+       12,
+       21
+      ],
+      "box": [
+       1,
+       1,
+       6,
+       6
+      ],
+      "rows": [
+       "OO.....",
+       ".OOOOO.",
+       ".OOOOOO",
+       ".Onnhe.",
+       "..aaaw.",
+       "..abb..",
+       ".nn...."
+      ]
+     },
+     "eye_far": {
+      "at": [
+       22,
+       21
+      ],
+      "box": [
+       0,
+       1,
+       5,
+       6
+      ],
+      "rows": [
+       "....OO",
+       ".OOOO.",
+       "OOOOO.",
+       "nnheO.",
+       "aaaw..",
+       "abb...",
+       "...nn."
+      ]
+     },
+     "blush_near": {
+      "at": [
+       16,
+       28
+      ],
+      "rows": [
+       ".p",
+       "p."
+      ]
+     },
+     "blush_far": {
+      "at": [
+       24,
+       28
+      ],
+      "rows": [
+       ".p",
+       "p."
+      ]
+     }
+    }
+   },
+   "kept": true,
+   "verdict": "the clear winner beside 07/08/09: an I3 iris top under the lash and one white column make the eye sharp and aimed instead of startled. Kept as the base eye"
+  }
+ },
+ "base_verdict": "round a base: construction and rules fine (48/51 auto), but beside the refs the eyes read startled (2-column whites) and the hair reads as blocks",
+ "variants_b": {
+  "bangs_split": {
+   "axis": "bang construction",
+   "idea": "four root clumps (HR-P03 at the hairline) that each split into two 2 px sub-clumps with different tip lengths, pointed 1 px tips (ao-hair34: big clumps first, then split; refs 07/08 show many thin tips)",
+   "layers": {
+    "front": {
+     "16": "5:nlln 9:nllkkdnllkkdnllkkdnllkk",
+     "17": "5:nlln 9:nlnlkdnlnlkdnlnlkdnlnlk",
+     "18": "5:nlln 9:nl 12:nl 15:nl 18:nl 21:nl 24:nl 27:nl 30:nl",
+     "19": "5:nlln 10:n 12:nl 16:n 18:nl 22:n 25:n 28:n 30:nl",
+     "20": "5:nlln 10:n 13:n 19:n 22:n 28:n 31:n",
+     "21": "6:nlln 19:n 28:n 31:n",
+     "22": "7:nlllk 31:n"
+    }
+   },
+   "kept": true,
+   "verdict": "kept: the split tips read as hair, not blocks, and match the thin pointed tips of 07/08. Its fails were construction slips fixed in the merge: the near sub-clump tip hid under the brow (HR-P04 read 3 rows) and the fringe shadow between thin tips broke into single px (FC-N15); the merge extends that tip 1 row and makes the fringe shadow a full 4-row band with 2 px wedges under each tip"
+  },
+  "hair_value": {
+   "axis": "hair value (darker mass)",
+   "idea": "push the back hair and the crown's shadow side one step darker (more I3, I4 only as clump lines) so the head reads as a dark value at the top (DESIGN 1 value structure) like the refs' dark hair, keeping I1+I2 >= 1/3 (HR-P07)",
+   "layers": {
+    "back": {
+     "13": "3:ddnnnnlllllnlllnllllnlllnll",
+     "14": "3:ddnnnllllllnllllnllllnllllnll",
+     "15": "2:ddnnnnllllllnllllnllllnllllnll",
+     "16": "2:ddnnnnlllllllllllllllllllllllll",
+     "23": "1:dnnnnlnnnnnnnnd 28:nlk",
+     "24": "1:dnnnllnnnnnnnnd 28:nlk",
+     "25": "1:dnnnlnnnnnnnnnd 28:nlk",
+     "26": "1:dnnnlnnnnnnnnnd 28:nlk",
+     "27": "1:dnlnnnnnnnnnnnd 28:nlk",
+     "28": "1:dnlnnnnnnnnnnnd 28:nlk",
+     "29": "1:dnnlnnnnnnnnnnd 28:nlk",
+     "30": "1:dnnlnnnnnnnnnnd 28:nlk"
+    }
+   },
+   "kept": true,
+   "verdict": "kept: the back hair and the crown's shadow side step down one tone; the head now reads as a darker top value (DESIGN 1) with I1+I2 still over a third"
+  },
+  "neck_slim": {
+   "axis": "neck width",
+   "idea": "a 6 px neck set further back under the skull (FG-P06 wants 8-10 at 144; refs' necks read thin under a big head)",
+   "layers": {
+    "skin": {
+     "37": "16:tmmmmm",
+     "38": "16:ttmmms",
+     "39": "16:tttsss",
+     "40": "16:ttssss",
+     "41": "16:ttssss",
+     "42": "16:ttssss",
+     "43": "16:ttssss",
+     "44": "16:ttssss",
+     "45": "16:ttssss"
+    }
+   },
+   "kept": true,
+   "verdict": "kept: a 6 px neck under the jaw reads slimmer and less like a column (the collar covers it on the figure anyway)"
+  }
+ },
+ "base_verdict_b": "round b base = round a base + eye_dark + skin_render"
+}

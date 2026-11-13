@@ -1,0 +1,17 @@
+{
+ "_doc": "Constructed hands for the idle hero (glaive-hands lane, author_hands.py apply). The near (R) hand closes on the haft at chest height, back of the hand to the viewer.",
+ "hands": [
+  {
+   "side": "R",
+   "kind": "fist",
+   "edge": "OL",
+   "edge_on": [
+    "skin",
+    "white",
+    "beige",
+    "veil"
+   ],
+   "_note": "edge OL against the white bell sleeve: S4 over W2 left the fist a pale smudge at x3 (round 1 A/B, idle_edge.png)"
+  }
+ ]
+}

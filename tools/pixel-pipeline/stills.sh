@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Key stills for a review round: rebuild rosace.blend from scripts, render the four key poses
+# Key stills for a review round: rebuild rosace.blend from scripts (build_rosace_v2.py since the Adopt step), render the four key poses
 # at 96/128/144, pixel post-process (no face), then face stamp + override layer + rim.
 #   sh tools/pixel-pipeline/stills.sh --round r2 [--no-build] [--no-render] [--px 96,128,144]
 # Output (not in the repo): $ROSACE_BUILD/renders/<round>/<still>/px<N>/{noface,still}.png
@@ -30,7 +30,7 @@ while [ $# -gt 0 ]; do
 done
 out="$build/renders/$round"
 if [ $do_build = 1 ]; then
-  sh "$here/blender.sh" --python "$here/build_rosace.py"
+  sh "$here/blender.sh" --python "$here/build_rosace_v2.py"
 fi
 # still name | pose file | extra render args
 stills="idle_hero:idle_hero:

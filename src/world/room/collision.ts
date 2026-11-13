@@ -12,7 +12,8 @@
 import type { Body } from "../../lab/game/world.ts";
 import { PHYSICS, SCALE } from "../config.ts";
 
-export type Surface = "stone" | "wood" | "metal" | "earth" | "water";
+/** Footstep surfaces (WORLD-PLAN section 9): wood, stone, packed earth, shallow water, metal grating, wet metal, tile, rug. */
+export type Surface = "stone" | "wood" | "metal" | "earth" | "water" | "grating" | "wet-metal" | "tile" | "rug";
 
 export interface Solid {
   x: number;
@@ -35,6 +36,14 @@ export interface OneWay {
   mover?: { dx: number; dy: number };
   off?: boolean;
   id?: string;
+  /**
+   * A stair tread you can walk under (a loft stair over a ground floor, a
+   * market walkway stair over the street). Standing on a tread, you walk up
+   * the next one (up to PHYSICS.stepUp) and stick to them going down; from
+   * the floor you take the stair with a small jump onto any tread, so walking
+   * past underneath never climbs by accident.
+   */
+  stair?: boolean;
 }
 
 export class Collision {
@@ -42,8 +51,8 @@ export class Collision {
   readonly height: number;
   solids: Solid[] = [];
   oneWays: OneWay[] = [];
-  /** Sides with an exit: the body may walk past the edge (the room then transitions). */
-  open = { left: false, right: false };
+  /** Edge bands with an exit (room-y ranges): the body may walk past the edge there (the room then transitions). */
+  open: { left: [number, number][]; right: [number, number][] } = { left: [], right: [] };
   /** Surface under the last body that landed (footsteps). */
   lastSurface: Surface = "stone";
   /** What the last grounded body stands on (a lift carries it). */
@@ -54,6 +63,11 @@ export class Collision {
   constructor(width: number, height: number) {
     this.width = width;
     this.height = height;
+  }
+
+  /** Is the edge open at feet height y (an exit band)? */
+  isOpen(side: "left" | "right", y: number): boolean {
+    return this.open[side].some(([y0, y1]) => y >= y0 && y <= y1);
   }
 
   bounds(): [number, number, number, number] {
@@ -118,8 +132,21 @@ export class Collision {
           b.vx = 0;
         }
       }
-      const minX = this.open.left ? -SCALE.H : half + 2;
-      const maxX = this.open.right ? this.width + SCALE.H : this.width - half - 2;
+      // on a stair: walk up the next tread
+      const on = this.standingOn;
+      if (wasGrounded && on && "stair" in on && on.stair) {
+        let best: OneWay | null = null;
+        for (const p of this.oneWays) {
+          if (p.off || !p.stair || p === on) continue;
+          const rise = b.y - p.y;
+          if (rise <= 0.01 || rise > this.stepUp) continue;
+          if (!this.overlapsX(b, p.x, p.x + p.w, nx)) continue;
+          if (!best || p.y < best.y) best = p;
+        }
+        if (best && !this.blocking(b, nx, best.y)) b.y = best.y;
+      }
+      const minX = this.isOpen("left", b.y) ? -SCALE.H : half + 2;
+      const maxX = this.isOpen("right", b.y) ? this.width + SCALE.H : this.width - half - 2;
       b.x = Math.min(Math.max(nx, minX), maxX);
     }
     // --- vertical
@@ -153,13 +180,22 @@ export class Collision {
         ny = best;
         landed = true;
       } else if (wasGrounded && dy < this.stepDown) {
-        // stick to stairs going down
+        // stick to stairs going down (solid steps, and stair treads)
         let snap = Infinity;
         for (const s of this.solids) {
           if (s.off || !this.overlapsX(b, s.x, s.x + s.w)) continue;
           if (s.y > ny && s.y - ny <= this.stepDown && s.y < snap) {
             snap = s.y;
             on = s;
+          }
+        }
+        if (b.dropThrough <= 0) {
+          for (const p of this.oneWays) {
+            if (p.off || !p.stair || !this.overlapsX(b, p.x, p.x + p.w)) continue;
+            if (p.y > ny && p.y - ny <= this.stepDown && p.y < snap) {
+              snap = p.y;
+              on = p;
+            }
           }
         }
         if (snap < Infinity && !this.blocking(b, b.x, snap)) {

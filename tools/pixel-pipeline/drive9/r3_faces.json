@@ -1,0 +1,213 @@
+{
+ "_doc": "Drive 9 round 3 face spec (d9_post.py; merged over wh2.json + faces_f2 'eyes_big' like r2_faces.json, which it replaces for round 3). Same stamp grammar (authored for a face turned toward +x: the near eye on the left with its outer corner at the left end; mirrored for -x). Legend: '.' keep, O lash (OL), a iris dark / top band (A2), c iris mid (A3), d iris light (A4), w catchlight (A5), W eye white (W2), K pupil (I4), k lash taper (I3), m brow (I2), 1-4 skin S1-S4. Round-2 face critic: 'eyes are oversaturated cyan discs with a thin lash line and no dark upper-lid mass; build the upper lid as a 2-3 px dark wedge with an outer flick, a dark pupil and a top shadow band on the iris, lower saturation; one face model across every shot; soften the n1/Q brows and mouths'. So: a lash wedge two rows deep (three with the flick), an A2 band under it, a 2x2 pupil, the catchlight on the same side in both eyes, a desaturated blue ramp; every shot takes the open eye (n1 and Q no longer use the lowered 'focus' or slanted 'fierce' lids), n1 a closed line mouth, Q a small symmetric open mouth; the stamp blush is off because r3_post draws its own; brows in a mid hair tone and none on a profile head.",
+ "stamps": {
+  "144": {
+   "eye_near_open": {
+    "c": [
+     3.5,
+     3.5
+    ],
+    "rows": [
+     "O.......",
+     ".OOOOOk.",
+     ".OOaaaaW",
+     "..wKKaW.",
+     "..cKKc..",
+     "..cddc..",
+     "...44..."
+    ]
+   },
+   "eye_far_open": {
+    "c": [
+     2.5,
+     3.5
+    ],
+    "rows": [
+     "......O",
+     ".kOOOOO",
+     "WaaaaOO",
+     ".wKKa..",
+     ".cKKc..",
+     ".cddc..",
+     "..44..."
+    ]
+   },
+   "eye_profile": {
+    "c": [
+     2.0,
+     3.5
+    ],
+    "rows": [
+     "O....",
+     ".OOOO",
+     ".OOaa",
+     ".wKa.",
+     ".cKc.",
+     ".cd..",
+     "..4.."
+    ]
+   },
+   "mouth_smirk": {
+    "c": [
+     1.5,
+     1.0
+    ],
+    "rows": [
+     "4...",
+     ".444"
+    ]
+   },
+   "mouth_line": {
+    "c": [
+     1.0,
+     0.0
+    ],
+    "rows": [
+     "444"
+    ]
+   },
+   "mouth_open": {
+    "c": [
+     1.5,
+     0.5
+    ],
+    "rows": [
+     "4OO4",
+     ".44."
+    ]
+   },
+   "brow_near": {
+    "c": [
+     1.5,
+     1.0
+    ],
+    "dy": -7,
+    "dx": 0,
+    "rows": [
+     ".mmm",
+     "m..."
+    ]
+   },
+   "brow_far": {
+    "c": [
+     1.5,
+     1.0
+    ],
+    "dy": -7,
+    "dx": 0,
+    "rows": [
+     "mmm.",
+     "...m"
+    ]
+   }
+  },
+  "80": {
+   "eye_near_open": {
+    "c": [
+     1.5,
+     1.5
+    ],
+    "rows": [
+     "OOO",
+     "wKa",
+     ".cc"
+    ]
+   },
+   "eye_far_open": {
+    "c": [
+     0.5,
+     1.5
+    ],
+    "rows": [
+     "OOO",
+     "wKa",
+     "cc."
+    ]
+   },
+   "eye_profile": {
+    "c": [
+     1.0,
+     1.5
+    ],
+    "rows": [
+     "OO",
+     "wK",
+     "c."
+    ]
+   },
+   "mouth_smirk": {
+    "c": [
+     1.0,
+     0.5
+    ],
+    "rows": [
+     "4..",
+     ".44"
+    ]
+   },
+   "mouth_line": {
+    "c": [
+     0.5,
+     0.0
+    ],
+    "rows": [
+     "44"
+    ]
+   },
+   "mouth_open": {
+    "c": [
+     0.5,
+     0.0
+    ],
+    "rows": [
+     "4O"
+    ]
+   }
+  }
+ },
+ "expressions": {
+  "idle_appeal": {
+   "eyes": "open",
+   "mouth": "smirk",
+   "blush": false,
+   "note": "the knowing smirk (round-2 critic: lock the smirk as the default)"
+  },
+  "back_appeal": {
+   "eyes": "open",
+   "mouth": "smirk",
+   "blush": false,
+   "note": "the same face turned: two eyes when the far eye faces the camera enough, else the profile eye"
+  },
+  "n1_contact": {
+   "eyes": "open",
+   "mouth": "line",
+   "blush": false,
+   "note": "focused, not scowling: the open eye with a set mouth"
+  },
+  "q_stamp": {
+   "eyes": "open",
+   "mouth": "open",
+   "blush": false,
+   "note": "the stamp's shout, small and symmetric"
+  }
+ },
+ "rgb": {
+  "OL": "#231629",
+  "A2": "#3a4c92",
+  "A3": "#5f84c2",
+  "A4": "#a8c6e4",
+  "A5": "#f4f8fc",
+  "W2": "#e6dfe0",
+  "SB": "#e3898a",
+  "S4": "#8e4a56"
+ },
+ "brow_rank": 0.5,
+ "brows_profile": false,
+ "profile_below": 0.3,
+ "paint": {
+  "fringe_shadow_t": 0.3,
+  "fringe_shadow2_k": 0.35,
+  "far_cheek_t": 0.3,
+  "hair_aa_k": 0.35
+ }
+}

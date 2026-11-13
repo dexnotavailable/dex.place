@@ -370,11 +370,11 @@ class MapBanner extends StubProp {
 recipe("map-banner", "the map", MapBanner);
 
 // ======================================================================================
-// Bench: a rest place. E sits (checkpoint, full health).
+// Bench: a place to sit and look. E sits (the camera holds, the UI hides).
 // ======================================================================================
 class Bench extends StubProp {
   readonly recipe = "bench";
-  readonly reason = "A place to sit and look; resting here is your checkpoint.";
+  readonly reason = "A place to sit and look.";
   readonly states = ["idle", "sitting"] as const;
   constructor(p: PropParams, tex: TextureFactory) {
     super(p, tex, "idle");
@@ -394,7 +394,8 @@ class Bench extends StubProp {
     return { x: this.x - this.H * 0.45, y: this.y - this.H * 0.3, w: this.H * 0.9, h: this.H * 0.3 };
   }
   interaction(): Interaction {
-    return { radius: this.H * 0.8, label: "", use: (w) => w.openPanel("rest", this.id) };
+    // E sits: the camera holds on the view, the UI hides, the music dips (game.ts "sit")
+    return { radius: this.H * 0.8, label: "", use: (w) => w.openPanel("sit", this.id) };
   }
 }
 recipe("bench", "rest", Bench);
@@ -423,8 +424,9 @@ class Door extends StubProp {
     // latch: the save flag that unlocks this door; latchSide: this is the side you release it from
     this.latch = (p.latch as string) ?? null;
     this.latchSide = !!p.latchSide;
-    const dw = n(H, 0.62);
-    const dh = n(H, 1.3);
+    // ordinary door 1.4 x 0.7 H; big doors (chapel, lift gate, arena shutter) pass w / h in H
+    const dw = n(H, Number(p.w ?? 0.7));
+    const dh = n(H, Number(p.h ?? 1.4));
     this.dw = dw;
     this.dh = dh;
     const style = (p.variant as string) ?? "wood";
@@ -459,7 +461,7 @@ class Door extends StubProp {
   interaction(): Interaction | null {
     if (this.state === "opening" || this.state === "open") return null;
     return {
-      radius: this.H * 0.6,
+      radius: Math.max(this.H * 0.8, this.dw * 0.7),
       label: "",
       use: (w) => {
         this.refresh(w);
@@ -503,8 +505,13 @@ class Door extends StubProp {
       l.opacity = 1;
     }
   }
+  /**
+   * Shut again (on room entry, or behind a panel). A latched door seen from the
+   * barred side goes back to "locked"; refresh() unlocks it on the next update
+   * only if its latch flag is already in the save.
+   */
   close(): void {
-    this.state = this.latch && !this.latchSide ? "closed" : "closed";
+    this.state = this.latch && !this.latchSide ? "locked" : "closed";
     this.open = 0;
   }
   protected drawPart(c: PropCanvas, p: Part): void {
@@ -968,8 +975,12 @@ class Lectern extends StubProp {
   readonly reason = "The archive's reading desk: real documentation, clearly separate from lore.";
   readonly states = ["idle"] as const;
   private page: Part[];
+  private readonly panel: string;
+  private readonly arg: string | undefined;
   constructor(p: PropParams, tex: TextureFactory) {
     super(p, tex, "idle");
+    this.panel = (p.panel as string) ?? "archive";
+    this.arg = p.arg as string | undefined;
     const H = this.H;
     const c = new Cells(n(H, 0.5), n(H, 0.72));
     c.rect(n(H, 0.21), n(H, 0.2), n(H, 0.08), n(H, 0.5), "wood", { profile: "cylinder", tone: -1 });
@@ -990,7 +1001,8 @@ class Lectern extends StubProp {
     return { x: this.x - this.H * 0.25, y: this.y - this.H * 0.72, w: this.H * 0.5, h: this.H * 0.72 };
   }
   interaction(): Interaction {
-    return { radius: this.H * 0.8, label: "", use: (w) => { w.sound("paper-open", 0.8, [this.x, this.y]); w.openPanel("archive"); } };
+    // the archive's docs index by default; the chapel's lectern opens the catalogue (panel "gallery", arg "all")
+    return { radius: this.H * 0.8, label: "", use: (w) => { w.sound("paper-open", 0.8, [this.x, this.y]); w.openPanel(this.panel, this.arg); } };
   }
   update(w: PropWorld): void {
     super.update(w);
@@ -1274,8 +1286,9 @@ class ArtworkFrame extends StubProp {
     super(p, tex, "idle");
     const H = this.H;
     this.art = (p.art as string) ?? "01";
-    const fw = n(H, 1.1);
-    const fh = n(H, 0.64);
+    // standard sizes (WORLD-PLAN section 1): landscape 2.4 x 1.35 H, portrait 1.6 x 2.4 or 1.35 x 2.4
+    const fw = n(H, Number(p.w ?? 1.1));
+    const fh = n(H, Number(p.h ?? 0.64));
     this.fw = fw;
     this.fh = fh;
     // the piece itself is never drawn into the world (display only): the frame holds a

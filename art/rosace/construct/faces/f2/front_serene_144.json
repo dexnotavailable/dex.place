@@ -1,0 +1,38 @@
+{
+ "_doc": "F2 front serene at 144 px: glyph names from lib_144.json; params tune the placement (face_f2.py). Written by face_f2_lib.py.",
+ "facing": "front",
+ "expr": "serene",
+ "px": 144,
+ "eye_near": "near_serene",
+ "eye_far": "far_serene",
+ "brow_near": "near_serene",
+ "brow_far": "far_serene",
+ "blush": "soft",
+ "mouth": "serene",
+ "nose": "front",
+ "gaze": "lowered (prayer)",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "gap": null,
+  "chin_len": 2,
+  "chin_far": 1,
+  "chin_w": [
+   1,
+   1
+  ],
+  "taper": true,
+  "jaw_min": 1,
+  "chin_contact": "S3",
+  "lash_gap": 0,
+  "jaw_pow": 1.6,
+  "lash_clip": 1,
+  "form": true,
+  "form_lit": [
+   2,
+   1
+  ],
+  "brow_over": true,
+  "brow_ch": "O"
+ }
+}

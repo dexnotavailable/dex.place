@@ -24,6 +24,8 @@ const wood = ["#120c08", "#1f150d", "#2d1f14", "#3f2c1c", "#58402a"];
 export const house: RoomDef = {
   id: "house",
   title: "house: indoors, two floors",
+  region: "test",
+  stormPasses: "plain",
   w: W,
   h: HT,
   backdrop: {

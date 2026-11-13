@@ -1,0 +1,67 @@
+{
+ "name": "t6_control",
+ "idea": "control: level shoulders and hips, both knees straight (the mannequin); must score last",
+ "set": {
+  "shoulders": {
+   "tilt_deg": 0
+  },
+  "pelvis": {
+   "tilt_deg": 0,
+   "dx": 8
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -6,
+     1
+    ],
+    "knee_hint": [
+     -4,
+     40
+    ],
+    "toe": [
+     0,
+     0
+    ]
+   }
+  },
+  "arms": {
+   "far": {
+    "pose": "collar",
+    "hand": [
+     14,
+     103
+    ],
+    "elbow_hint": [
+     40,
+     96
+    ],
+    "foreshorten": [
+     0.62,
+     0.95
+    ]
+   }
+  }
+ },
+ "score": 7,
+ "gap_area": 146,
+ "width": 89,
+ "passed": [
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [
+  "FG-P08: -0.0 deg (0.0 px drop)",
+  "FG-P09: -0.0 deg vs shoulders -0.0",
+  "FG-P10: weight leg 2.3 deg; free knee bend 2 deg; free knee -0.2 px lower",
+  "FG-N04: arms without a gap: far"
+ ],
+ "verdict": "control, last (#6, 7/11): level shoulders and hips, locked knees: FG-P08/P09/P10 and FG-N04 fail as they should",
+ "rank": 6,
+ "kept": false
+}

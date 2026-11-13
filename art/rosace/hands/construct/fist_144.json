@@ -1,0 +1,59 @@
+{
+ "_doc": "Constructed fist, 144 px (glaive-hands lane round 1; author_hands.py). The construction at pixel scale, in the canonical frame: the haft vertical through the marked columns (tip up), the thumb end at the top, the knuckles on the LEFT, the forearm entering from the RIGHT, the back of the hand to the viewer ('back') or the curled fingers to the viewer ('fingers'). Labels are planes and construction parts, not colours: author_hands.py orients the grid on the real haft (a flip, a transpose, and a shear that follows the haft's slope row by row, so runs stay whole) and then colours each plane by the ONE key light (HD-P05): b back of the hand = S2; u thumb-end plane = S1 lit / S3 shade; d pinky-end plane = S2 lit / S3 shade; k finger strip beyond the knuckles = S2 lit / S3 shade; r knuckle ridge (catches light) = S1 if the knuckle side or the thumb end is lit, else S2; l the knuckle line = S3 under a lit finger strip, S4 under a shaded one (HD-P02: 1 px, curved, the middle knuckle highest: it steps 1 px toward the knuckle edge in the middle); n finger separation (<= 2, HD-N02) = S3/S4 as l; t thumb = S1 if the thumb end is lit, else S2; T thumb underside = S3; c the thumb crease = S4; w wrist: skin that runs on into the forearm (the 1 px wrist step is the notch between the 'w' rows and the palm box, HD-P01); O outline (OL against the ground and dark materials, S4 as a contact line against light ones, none where the wrist meets the forearm). HD-P07: the thumb stays inside the fist's outline; the fist is 9 across x 7 along (the wrist 3-4 px: 'w'; round 1 cut one row: 8 rows sheared on a 17-27 deg haft measured 10-11 px along it, HD-P02), 3 px of haft band in the middle. The *_along views are for a forearm running along the haft (within ~45 deg of it: the front hand of a thrust, a wind-up over the shoulder): the wrist leaves the fist at the pinky end's back corner instead of the side, so the wrist stays inside HD-P06 (round 1: the side wrist on those hands bent the 2D wrist 79-104 deg).",
+ "haft_cols": [
+  3,
+  5
+ ],
+ "views": {
+  "back": {
+   "rows": [
+    "..OOOO....",
+    ".OrrtuO...",
+    "OkkrttTOO.",
+    "OnnlbbbbTw",
+    "Okklbbbbbw",
+    "Onnldddddw",
+    ".OOOOOOOO."
+   ]
+  },
+  "fingers": {
+   "rows": [
+    "..OOOO....",
+    ".OuuuuuO..",
+    "OTtttttcOw",
+    "Oknnnnnnbw",
+    "Okbbbbbbbw",
+    "OkddddddOw",
+    ".OOOOOOO.."
+   ]
+  },
+  "back_along": {
+   "rows": [
+    "..OOOO....",
+    ".OrrtuO...",
+    "OkkrttTO..",
+    "OnnlbbbbO.",
+    "OkklbbbbO.",
+    "Onnlddddw.",
+    ".OOddwwww.",
+    "....wwww.."
+   ]
+  },
+  "fingers_along": {
+   "rows": [
+    "..OOOO....",
+    ".OuuuuuO..",
+    "OTtttttcO.",
+    "OknnnnnnO.",
+    "Okbbbbbbw.",
+    ".Okddddww.",
+    "..OOOwwww.",
+    "....wwww.."
+   ]
+  }
+ },
+ "origin": [
+  4,
+  3
+ ]
+}

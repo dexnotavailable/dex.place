@@ -26,7 +26,18 @@ function craterPoint(hit: Hit): [number, number] | null {
 
 export const floor = defineRecipe<FloorParams, { head: number }>({
   id: "floor",
+  breakage: "floor",
   reason: "The ground every room stands on; it shows the weight of her hits (craters, scars) and heals so rooms reset.",
+  demo: {
+    w: 6,
+    script: [
+      { label: "flagstones", wait: 0.5 },
+      { label: "slash: a scar", hit: "slash", from: -1.5, wait: 1 },
+      { label: "heavy: crater with a raised rim", hit: "heavy", from: -1.2, wait: 1.5 },
+      { label: "Q: a crater and rubble", hit: "q", from: 0.6, wait: 2 },
+      { label: "heals from the bottom up", wait: 9 },
+    ],
+  },
   defaults: { width: 1280, depth: 1.5, stone: "stone" },
   build(b, p) {
     const head = 10; // rows above the surface for crater rims and rubble
@@ -57,6 +68,8 @@ export const floor = defineRecipe<FloorParams, { head: number }>({
       hit(c, h) {
         const part = c.part("floor");
         const hit = h.hit;
+        // a sway-only room (the nave) takes no craters or scars
+        if (c.keepsCells) return;
         if (hit.crater) {
           const at = craterPoint(hit);
           if (at) crater(c.world, part, at[0], at[1], hit.crater.rx, hit.crater.ry, hit.crater.rim, hit);

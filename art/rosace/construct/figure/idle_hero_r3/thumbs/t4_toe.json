@@ -1,0 +1,58 @@
+{
+ "name": "t4_toe",
+ "idea": "the free heel lifted 3 px more and the knee bent further (the toe pointed): the cute idle beat",
+ "set": {
+  "head": {
+   "chin_dx": 15
+  },
+  "neck": {
+   "back": 6
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -8,
+     10
+    ],
+    "knee_hint": [
+     4,
+     41
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ]
+  }
+ },
+ "score": 12,
+ "gap_area": 359,
+ "width": 92,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P11",
+  "FG-P12",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02",
+  "CL-P05"
+ ],
+ "feet_apart": 23,
+ "failed": [
+  "FG-P10: weight leg 3.7 deg; free knee bend 41 deg; free knee +1.6 px lower"
+ ],
+ "verdict": "dropped (#3, 12/13): FG-P10, the free knee bends 41 deg (over 30): at x3 a coy knee-in, not the priestess [M; visible]",
+ "kept": false,
+ "rank": 3
+}

@@ -1,0 +1,54 @@
+{
+ "_doc": "The q34 expression set at 144 (ART-RULES 6.5). Build: python tools/art-construct/face_construct.py --batch art/rosace/construct/faces/set_q34_144.json --sheet. 'base' applies to every face; each entry overrides it. Confident is the default face (Dex); Serene is the only half-lid.",
+ "base": {
+  "yaw": "q34",
+  "facing": "right",
+  "head_px": 26,
+  "gaze": [
+   -1,
+   0
+  ],
+  "gaze_target": "viewer",
+  "roll": 1
+ },
+ "faces": {
+  "q34_confident_144": {
+   "expression": "confident"
+  },
+  "q34_focused_144": {
+   "expression": "focused",
+   "gaze_target": "enemy",
+   "gaze": [
+    1,
+    0
+   ],
+   "roll": 1
+  },
+  "q34_radiant_144": {
+   "expression": "radiant",
+   "blush": true
+  },
+  "q34_serene_144": {
+   "expression": "serene",
+   "gaze_target": "blade",
+   "gaze": [
+    0,
+    0
+   ]
+  },
+  "q34_ignited_144": {
+   "expression": "ignited",
+   "gaze_target": "enemy",
+   "gaze": [
+    1,
+    0
+   ],
+   "roll": 1
+  },
+  "q34_hurt_144": {
+   "expression": "hurt",
+   "gaze_target": "attacker",
+   "roll": -1
+  }
+ }
+}

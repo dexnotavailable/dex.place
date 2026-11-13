@@ -1,0 +1,386 @@
+{
+ "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 back view at 144 px: the glance over the shoulder. Hand-placed on the R4u underlay; STALE if it changes. The head is tilted about 23 deg (from the eye landmarks), so the eyes are drawn stair-stepped in screen space (a rotated upright stamp broke the lash lines into loose pixels).",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    74,
+    66
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: a clean, lit face plane under the glance before the features go on (FC-P35).",
+   "rows": [
+    "22222211112222",
+    "32222211111222",
+    "32222211111122",
+    "33222221111122",
+    "33222222111122",
+    "33322222211122",
+    "43322222221122",
+    "44332222222223",
+    "44433222222233",
+    "44443322222333",
+    "44444332223334",
+    "44444433333444"
+   ]
+  },
+  {
+   "name": "fringe_gaps",
+   "kind": "px",
+   "over": [
+    "hair"
+   ],
+   "why": "Head and hair 4: 'split the fringe into tapered clumps with 1 px dark gaps'. On the glance a full repaint of the fringe (5 locks) read as a dark visor over the forehead, so only the gaps are cut into the render's own lit fringe.",
+   "pts": [
+    [
+     76,
+     63,
+     "g0"
+    ],
+    [
+     76,
+     64,
+     "g1"
+    ],
+    [
+     79,
+     62,
+     "g0"
+    ],
+    [
+     79,
+     63,
+     "g1"
+    ],
+    [
+     82,
+     61,
+     "g0"
+    ],
+    [
+     82,
+     62,
+     "g1"
+    ],
+    [
+     85,
+     60,
+     "g1"
+    ]
+   ]
+  },
+  {
+   "name": "eye_near",
+   "kind": "stamp",
+   "at": [
+    74,
+    69
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2/3: 'keep the head turned to camera over the shoulder in back views'; the idle's eye (lash mass with flick, dark-to-light iris, catchlight, cool white) drawn along the tilted eye line.",
+   "rows": [
+    "....KKK",
+    "K.KKKKk",
+    ".KKAAw.",
+    "..CBHw.",
+    "...DD..",
+    "..L...."
+   ]
+  },
+  {
+   "name": "eye_far",
+   "kind": "stamp",
+   "at": [
+    82,
+    66
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "as eye_near, foreshortened",
+   "rows": [
+    "....K",
+    "..KKK",
+    "kKKK.",
+    "wAAK.",
+    "wBH..",
+    ".DD..",
+    "...L."
+   ]
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: the 2-tone blush.",
+   "pts": [
+    [
+     76,
+     75,
+     "r"
+    ],
+    [
+     77,
+     75,
+     "R"
+    ],
+    [
+     78,
+     75,
+     "r"
+    ],
+    [
+     85,
+     72,
+     "R"
+    ],
+    [
+     86,
+     72,
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Attractiveness 3: the asymmetric closed smile, the far corner lifted.",
+   "pts": [
+    [
+     83,
+     77,
+     "m"
+    ],
+    [
+     84,
+     77,
+     "m"
+    ],
+    [
+     85,
+     76,
+     "M"
+    ]
+   ]
+  },
+  {
+   "name": "strands_out",
+   "kind": "line",
+   "pts": [
+    [
+     92,
+     64
+    ],
+    [
+     95,
+     67
+    ],
+    [
+     96,
+     71
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "Head and hair 4: loose strands breaking the outline."
+  },
+  {
+   "name": "bell_folds",
+   "kind": "line",
+   "pts": [
+    [
+     89,
+     91
+    ],
+    [
+     87,
+     104
+    ],
+    [
+     88,
+     117
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "bell_folds_lit",
+   "kind": "line",
+   "pts": [
+    [
+     90,
+     91
+    ],
+    [
+     88,
+     104
+    ],
+    [
+     89,
+     117
+    ]
+   ],
+   "key": "f3",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "bell_folds2",
+   "kind": "line",
+   "pts": [
+    [
+     95,
+     93
+    ],
+    [
+     95,
+     113
+    ]
+   ],
+   "key": "f2",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "far_bell_folds",
+   "kind": "line",
+   "pts": [
+    [
+     49,
+     80
+    ],
+    [
+     47,
+     96
+    ],
+    [
+     48,
+     110
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "far_bell_folds_lit",
+   "kind": "line",
+   "pts": [
+    [
+     50,
+     80
+    ],
+    [
+     48,
+     96
+    ],
+    [
+     49,
+     110
+    ]
+   ],
+   "key": "f3",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "spine",
+   "kind": "line",
+   "pts": [
+    [
+     69,
+     100
+    ],
+    [
+     70,
+     112
+    ],
+    [
+     69,
+     124
+    ]
+   ],
+   "key": "3",
+   "over": [
+    "skin"
+   ],
+   "why": "DESIGN 3.5 back view: 'the spine curve and the thong-cut back are visible'; body critic: 'the chest lift and back arch do not read'. A soft spine valley in the skin's mid tone."
+  }
+ ],
+ "authored_on": {
+  "still_sha1": "500310495af490d94f928a6caca8affb30b788d7",
+  "canvas": [
+   112,
+   205
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R4/back/px144/R4u"
+ }
+}

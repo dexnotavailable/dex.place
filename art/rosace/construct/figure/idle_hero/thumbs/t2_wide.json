@@ -1,0 +1,58 @@
+{
+ "name": "t2_wide",
+ "idea": "wider stance, hip thrust one more px",
+ "set": {
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   },
+   "near": {
+    "heel": [
+     -9,
+     7
+    ],
+    "knee_hint": [
+     3,
+     40
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "pelvis": {
+   "dx": 13
+  }
+ },
+ "score": 11,
+ "gap_area": 161,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [],
+ "rank": 3,
+ "kept": false,
+ "_doc": "thumbnail t2_wide (wider stance, hip thrust one more px): 11/11 silhouette rules pass, gap area 161 px2. dropped: fails "
+}

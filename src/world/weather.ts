@@ -207,8 +207,14 @@ export class Weather {
       .map((s) => ({ x: s.x - camX, y: 60, radius: 900, intensity: s.level * 0.9, colour: [0.82, 0.84, 1] as [number, number, number] }));
   }
 
-  /** Sprite lighting for the room under this weather and time. */
-  lighting(base: Lighting): Lighting {
+  /**
+   * Sprite lighting for the room under this weather and time. `subject` is the
+   * player: lightning lights the world (props, terrain, the backdrop) but not
+   * her, so she stays readable through a strike: no key or ambient surge,
+   * only a faint cool edge on the rim (at most +0.12, a quarter of the way to
+   * the strike's colour).
+   */
+  lighting(base: Lighting, subject = false): Lighting {
     const p = this.p;
     const tod = this.time === "dusk" ? 0.85 : this.time === "night" ? 0.6 : 1;
     const inside = this.interior ? 0.35 : 1;
@@ -217,6 +223,16 @@ export class Weather {
     const storm: RGB = [0.78, 0.84, 1];
     const tint = (c: RGB): RGB => [lerp(c[0], c[0] * storm[0], dark), lerp(c[1], c[1] * storm[1], dark), lerp(c[2], c[2] * storm[2], dark)];
     const fl = this.flash * (this.interior ? 0.35 : 1);
+    if (subject) {
+      const e = fl * 0.25;
+      return {
+        ...base,
+        ambient: tint(mul(base.ambient, (1 - dark * 0.3) * tod)),
+        keyColour: tint(mul(base.keyColour, (1 - dark * 0.7 - p.overcast * 0.15 * inside) * tod)),
+        rimColour: e > 0 ? [lerp(base.rimColour[0], 0.9, e), lerp(base.rimColour[1], 0.92, e), lerp(base.rimColour[2], 1, e)] : base.rimColour,
+        rimIntensity: base.rimIntensity * (1 - dark * 0.3) + fl * 0.12,
+      };
+    }
     return {
       ...base,
       ambient: tint(mul(base.ambient, (1 - dark * 0.3) * tod + fl * 0.5)),

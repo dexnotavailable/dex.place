@@ -1,0 +1,21 @@
+{
+ "_doc": "front smile at 144 px: glyph names from lib_144.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "front",
+ "expr": "smile",
+ "px": 144,
+ "eye_near": "near_smile",
+ "eye_far": "far_smile",
+ "brow_near": "near_smile_flat",
+ "brow_far": "far_smile_flat",
+ "blush": "soft",
+ "mouth": "smile",
+ "gaze": "closed",
+ "nose": "q34",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": null
+ }
+}

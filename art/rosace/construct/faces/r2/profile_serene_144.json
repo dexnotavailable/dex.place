@@ -1,0 +1,334 @@
+{
+ "_doc": "Painted face stamp, round R2 (tools/art-construct/head_paint.py from art/rosace/construct/faces/r2/head_profile.json (painted by tools/art-construct/heads_r2.py)). rows use the KEY in tools/art-construct/artlib.py; origin = [column, row] of the chin point; landmarks follow the face.json schema in docs/character/art-rules/checklist.json inputs and are measured from the painted pixels.",
+ "name": "profile_serene_144",
+ "params": {
+  "yaw": "profile",
+  "expression": "serene",
+  "gaze": [
+   1,
+   1
+  ],
+  "roll": 0,
+  "pitch": 0,
+  "eye_row": 0,
+  "pupil": false,
+  "gaze_target": "blade",
+  "facing": "right",
+  "route": "r2 painted strokes",
+  "bangs": []
+ },
+ "landmarks": {
+  "facing": "right",
+  "yaw": "profile",
+  "yaw_deg": 90,
+  "expression": "serene",
+  "head_px": 26,
+  "chin_y": 36,
+  "rows_above_chin": {
+   "mouth": 2,
+   "nose": 6,
+   "eye_bottom": 10,
+   "lash_top": 14,
+   "brow": 16,
+   "hairline": 20,
+   "skull_top": 26,
+   "hair_top": 29
+  },
+  "skull_top_row": 26,
+  "hair_top_row": 29,
+  "centre_line_x_at_eye_row": 25,
+  "gaze_target": "blade",
+  "light": [
+   0.6,
+   -0.8
+  ],
+  "origin": [
+   23,
+   36
+  ],
+  "hair_top_measured": 29,
+  "far_edge": {
+   "20": 24,
+   "19": 25,
+   "18": 25,
+   "17": 26,
+   "16": 26,
+   "15": 25,
+   "14": 25,
+   "13": 25,
+   "12": 25,
+   "11": 26,
+   "10": 26,
+   "9": 27,
+   "8": 27,
+   "7": 29,
+   "6": 28,
+   "5": 26,
+   "4": 26,
+   "3": 27,
+   "2": 26,
+   "1": 26,
+   "0": 24
+  },
+  "near_edge": {
+   "20": 17,
+   "19": 17,
+   "18": 17,
+   "17": 17,
+   "16": 17,
+   "15": 17,
+   "14": 17,
+   "13": 17,
+   "12": 17,
+   "11": 17,
+   "10": 17,
+   "9": 17,
+   "8": 17,
+   "7": 18,
+   "6": 18,
+   "5": 19,
+   "4": 19,
+   "3": 20,
+   "2": 21,
+   "1": 22,
+   "0": 23
+  },
+  "face_width_eye_row": {
+   "y": 26,
+   "x0": 17,
+   "x1": 26
+  },
+  "eyes": {
+   "near": {
+    "box": [
+     18,
+     22,
+     21,
+     27
+    ],
+    "template": "r1_profile_near_serene",
+    "mirrored": false,
+    "lash_px": 11,
+    "iris_cols": [
+     19,
+     20,
+     21
+    ],
+    "iris_rows": [
+     25,
+     26
+    ],
+    "iris_w": 3,
+    "highlight": [
+     21,
+     25
+    ],
+    "whites": [],
+    "white_side": null
+   }
+  },
+  "gaze": {
+   "dx": 1,
+   "dy": 1,
+   "target": "blade"
+  },
+  "brows": {
+   "near": [
+    [
+     19,
+     19
+    ],
+    [
+     20,
+     19
+    ],
+    [
+     21,
+     19
+    ]
+   ]
+  },
+  "mouth": {
+   "key": "serene",
+   "px": [
+    [
+     24,
+     33,
+     "S4"
+    ],
+    [
+     25,
+     34,
+     "S4"
+    ]
+   ]
+  },
+  "nose": [],
+  "blush": {
+   "near": [
+    [
+     21,
+     28
+    ],
+    [
+     22,
+     28
+    ]
+   ]
+  },
+  "centre_line": [
+   [
+    25.0,
+    10.23
+   ],
+   [
+    25.0,
+    11.16
+   ],
+   [
+    25.0,
+    12.1
+   ],
+   [
+    25.0,
+    13.03
+   ],
+   [
+    25.0,
+    13.97
+   ],
+   [
+    25.0,
+    14.9
+   ],
+   [
+    25.0,
+    15.83
+   ],
+   [
+    25.0,
+    16.77
+   ],
+   [
+    25.0,
+    17.7
+   ],
+   [
+    25.0,
+    18.64
+   ],
+   [
+    25.0,
+    19.57
+   ],
+   [
+    25.0,
+    20.51
+   ],
+   [
+    25.0,
+    21.44
+   ],
+   [
+    25.0,
+    22.37
+   ],
+   [
+    25.0,
+    23.31
+   ],
+   [
+    25.0,
+    24.24
+   ],
+   [
+    25.0,
+    25.18
+   ],
+   [
+    25.0,
+    26.11
+   ],
+   [
+    25.0,
+    27.05
+   ],
+   [
+    25.0,
+    27.98
+   ],
+   [
+    25.0,
+    28.91
+   ],
+   [
+    25.0,
+    29.85
+   ],
+   [
+    25.0,
+    30.78
+   ],
+   [
+    25.0,
+    31.72
+   ],
+   [
+    25.0,
+    32.65
+   ],
+   [
+    26.0,
+    36.0
+   ]
+  ]
+ },
+ "rows": [
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "......................................",
+  "..........OOOOOOOOOO..................",
+  ".......OOOlllkkkkkkkOOO...............",
+  ".....OOlllllllkkkkkkkkkOO.............",
+  "....OdnnlllllnllkjjkkkkkkO............",
+  "...OdnnlllllnjjlnllkkkkkkkO...........",
+  "..OdnnnllkknlllnllllkjjkkkkO..........",
+  ".OdnnnlllllnlllnlllllkkkkkkO..........",
+  ".OdnnnllllnlllnlllllllkkkkkkO.........",
+  "OdnnnllllnllllnllllllllkkkkkO.........",
+  "OdnnnllllnlllnllllllllllkkkkO.........",
+  "OnnnnlllnllllnlllnlllnkkkkklO.........",
+  "OnndnnnlnnnnnnnnnnllldllkdkklO........",
+  "OnndnnnlknndnnnnnsnsslnlllkklO........",
+  "OnndnnnlknndnlllkslnnnttnlllO.........",
+  "OndnnnlnnnndnlnlksnssssssnllO.........",
+  "OndnnnlnnnddnlnlksssssssssnlO.........",
+  "OndnnnlnnndnllnknsssssssssOnO.........",
+  "OnndnnnlnndnlnlknsOOOOssss.O..........",
+  "OnndnlnlnndnlnlknOOOOOOsssO...........",
+  "OnndnlnlnnndnnllksOaahsssssO..........",
+  "OndnnlnnlnndnlnlkssbcbsssssO..........",
+  "OndnlnnnlnndnlnlksssssssssssO.........",
+  "OndnlnnnlnnndnnllksssppsssssOO........",
+  "Onndlnnlnnnndnlnlksssssssss11sO.......",
+  "OnndnlnlnnnddnlnlkssssssssttsO........",
+  "OnndnlnlnnndnllnknOtsssssssOO.........",
+  "OndnnllnnnndnlllknOttssssssO..........",
+  "Ondnnnlnnnddnlllkn.OssssmsssO.........",
+  "OndnnnlnnndnlllknnO.OssssmsO..........",
+  "OnndnnnlnndnlllknnO..OsssssO..........",
+  "OnndnnnlnndnlllknnOOO.OssOO...........",
+  "OnndnnnlnnndzxxvntsmmmmmO.............",
+  "OndnnnnnlnndnllkntssmmmO..............",
+  "OndnnnnnlnndnllkntsssssO..............",
+  "OndnnnnnlnndbbbbtssssssO..............",
+  "OnndnnnnnnndnccbtsssssO...............",
+  "OdndnnnnnnnnnncntsssssO...............",
+  "OdndnnnnnnnnnnnntsssssO...............",
+  "OdnnnnnnnnnnnnntssssssO...............",
+  ".ddnnnnnnnnnnnntsssss................."
+ ]
+}

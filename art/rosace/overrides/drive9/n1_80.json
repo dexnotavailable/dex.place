@@ -1,0 +1,122 @@
+{
+ "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 N1 contact at 80 px (profile), placed by hand on the 80 px R4u underlay; STALE if it changes.",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    51,
+    20
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "a clean face plane first (FC-P35)",
+   "rows": [
+    "222211",
+    "322221",
+    "322221",
+    "332222",
+    "333222",
+    "433222",
+    "443322",
+    "444332"
+   ]
+  },
+  {
+   "name": "eye",
+   "kind": "stamp",
+   "at": [
+    50,
+    20
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2/3: 'the face must read as two eyes plus blush at 80 px; judge the face first at 80, where the donation read happens'. Placed by hand on the 80 px underlay, not scaled from 144. In profile: one lash with the flick back, a 1x2 iris with a catchlight.",
+   "rows": [
+    "K...",
+    ".KKK",
+    "..BH",
+    "..D."
+   ]
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: the blush at 80.",
+   "pts": [
+    [
+     54,
+     25,
+     "R"
+    ]
+   ]
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "MOVESET N1: the set mouth.",
+   "pts": [
+    [
+     54,
+     26,
+     "M"
+    ]
+   ]
+  }
+ ],
+ "authored_on": {
+  "still_sha1": "39b082de6113c238282760312c63cd6e0caa5ba9",
+  "canvas": [
+   143,
+   82
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R4/n1/px80/R4u"
+ }
+}

@@ -1,0 +1,74 @@
+{
+ "_doc": "Shading lane painted override (rosace_shade.paint): key-frame shapes in tone space over the automatic shading of idle_hero at 144. Tones: deep / shadow / lit / hi of the material named. Authored on the render below; STALE (skipped) if the canvas, anchor or pose change.",
+ "authored_on": {
+  "canvas": [
+   86,
+   205
+  ],
+  "anchor": [
+   51,
+   195
+  ],
+  "pose_sha1": "cdac99efdacf"
+ },
+ "strokes": [
+  {
+   "note": "the tabard casts onto the far thigh (PX-P03): a wedge that widens as the tabard hangs off the leg",
+   "mat": "skin",
+   "tone": "shadow",
+   "polys": [
+    [
+     [
+      43,
+      110
+     ],
+     [
+      46,
+      110
+     ],
+     [
+      46,
+      131
+     ],
+     [
+      40,
+      131
+     ]
+    ]
+   ]
+  },
+  {
+   "note": "the bodice hem casts a band on the belly, 2 px, thinning to the lit side (PX-P03, PX-P13)",
+   "mat": "skin",
+   "tone": "shadow",
+   "polys": [
+    [
+     [
+      38,
+      100
+     ],
+     [
+      50,
+      100
+     ],
+     [
+      56,
+      101
+     ],
+     [
+      56,
+      101
+     ],
+     [
+      50,
+      102
+     ],
+     [
+      38,
+      103
+     ]
+    ]
+   ]
+  }
+ ]
+}

@@ -6,7 +6,9 @@
 // texture, small things chunkier. Colours come from a 5-step ramp per room so
 // the ground sits in the backdrop's value family.
 
-export type TerrainArt = "stone" | "rock" | "wood" | "earth" | "plaster" | "none";
+// "block" is the grey-box: flat grey with a grid line every H (and ticks every
+// half H on the lip), so a blockout room reads as measured geometry, not art.
+export type TerrainArt = "stone" | "rock" | "wood" | "earth" | "plaster" | "block" | "none";
 
 export interface TexPair {
   w: number;
@@ -27,6 +29,7 @@ export const TERRAIN_RAMPS: Record<Exclude<TerrainArt, "none">, string[]> = {
   wood: ["#140e0b", "#23180f", "#342417", "#4a3421", "#6a4c31"],
   earth: ["#120d0c", "#1e1614", "#2c201c", "#3d2d26", "#574134"],
   plaster: ["#2a2622", "#3b3530", "#4f4841", "#665d54", "#857a6d"],
+  block: ["#1c1d21", "#2a2c31", "#3a3c42", "#4d5057", "#6c6f77"],
 };
 
 function hash(x: number, y: number, s: number): number {
@@ -93,6 +96,12 @@ export function terrainTexture(w: number, h: number, art: Exclude<TerrainArt, "n
       // rough ground (rock, earth) keeps its lip nearly face-on so the rim light doesn't
       // trace its jagged top as one bright line; cut stone and planks keep a crisp lit edge
       const rough = art === "rock" || art === "earth";
+      if (art === "block" && d <= 1) {
+        // the lip, with a darker tick every half H so gaps and ledges read in H
+        const tick = (x + (seed >>> 16)) % Math.max(2, Math.round(H / 2)) === 0;
+        put(x, y, d === 0 ? (tick ? n - 3 : n - 1) : n - 2, [0, -1, 0.4]);
+        continue;
+      }
       if (d === 0) { band = rough ? n - 3 + (hash(x, 1, seed) > 0.7 ? 1 : 0) : n - 1; nrm = rough ? [0, -0.15, 1] : [0, -1, 0.4]; }
       else if (d === 1) { band = rough ? n - 3 : n - 2; nrm = rough ? [0, -0.1, 1] : [0, -0.8, 0.6]; }
       else if (d === 2 && art !== "wood") { band = n - 3; nrm = [0, -0.4, 0.9]; }
@@ -120,6 +129,11 @@ export function terrainTexture(w: number, h: number, art: Exclude<TerrainArt, "n
           band = n - 3 + (hash(plank, Math.floor(d / course), seed) > 0.6 ? 1 : 0) - (d % course === 0 ? 1 : 0);
           if (seam) { band = 0; nrm = [0.6, 0, 0.8]; }
           if (d > course * 1.5) band -= 1;
+        } else if (art === "block") {
+          // grey-box: world-aligned grid lines every H (x from the piece's world x via seed offset)
+          const gx = (x + (seed >>> 16)) % H;
+          band = n - 3;
+          if (gx === 0 || d % H === 0) band = n - 4;
         } else if (art === "earth") {
           band = n - 3 + (g > 0.6 ? 1 : g < 0.3 ? -1 : 0);
           if (d < 4 && hash(x, 3, seed) > 0.6) band = n - 2; // grass edge

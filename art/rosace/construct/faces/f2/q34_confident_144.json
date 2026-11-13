@@ -1,0 +1,41 @@
+{
+ "_doc": "F2 q34 confident at 144 px: glyph names from lib_144.json; params tune the placement (face_f2.py). Written by face_f2_lib.py.",
+ "facing": "q34",
+ "expr": "confident",
+ "px": 144,
+ "eye_near": "near_open",
+ "eye_far": "far_open_lift",
+ "eye_far_strong": "far_open_s",
+ "brow_near": "near_confident",
+ "brow_far": "far_confident",
+ "blush": "soft",
+ "mouth": "smirk_far3",
+ "nose": "q34",
+ "gaze": "viewer",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "gap": null,
+  "chin_len": 2,
+  "chin_far": 1,
+  "chin_w": [
+   1,
+   1
+  ],
+  "taper": true,
+  "jaw_min": 1,
+  "chin_contact": "S3",
+  "lash_gap": 0,
+  "jaw_pow": 1.6,
+  "lash_clip": 1,
+  "form": true,
+  "form_lit": [
+   2,
+   1
+  ],
+  "brow_over": true,
+  "brow_ch": "O",
+  "smirk_side": "far",
+  "smirk_lift": 1
+ }
+}

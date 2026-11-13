@@ -1,0 +1,25 @@
+{
+ "_doc": "glaive-hands round 1: GR-N02 on N2 (the near forearm 8 deg off the haft). The near arm's pole drops the elbow.",
+ "base": "art/rosace/hands/poses/n2_pivot.json",
+ "variants": {
+  "p1": {},
+  "p3_elbow_low": {
+   "poles": {
+    "arm.R": [
+     -0.5,
+     -0.1,
+     0.35
+    ]
+   }
+  },
+  "p4_elbow_out": {
+   "poles": {
+    "arm.R": [
+     -0.8,
+     0.2,
+     0.7
+    ]
+   }
+  }
+ }
+}

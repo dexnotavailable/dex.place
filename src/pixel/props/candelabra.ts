@@ -93,7 +93,20 @@ function countOrig(p: Part): number {
 
 export const candelabra = defineRecipe<CandelabraParams, Refs>({
   id: "candelabra",
+  breakage: "heal",
   reason: "Standing lights along the chapel and shrines: they light the way (and Rosace), and show a room is tended.",
+  demo: {
+    w: 4, indoor: true,
+    variants: [{ label: "three candles", params: { candles: 3, height: 1.15 }, dx: 1.4 }],
+    script: [
+      { label: "lit", wait: 0.8 },
+      { label: "dash wind: flames gutter", hit: "wind", from: -1.5, wait: 1.5 },
+      { label: "E: relight", use: true, from: -0.5, wait: 1.5 },
+      { label: "slash: it rocks, flames go out", hit: "slash", from: -0.8, wait: 1.5 },
+      { label: "heavy: candles crumble", hit: "heavy", from: -1.0, wait: 2 },
+      { label: "mends", wait: 6 },
+    ],
+  },
   defaults: { candles: 5, height: 1.35 },
   use: { reach: 0.9, prompt: "light" },
   build(b, p) {
@@ -158,6 +171,9 @@ export const candelabra = defineRecipe<CandelabraParams, Refs>({
     const refs: Refs = { body: b.get("body"), wobble: new Spring(70, 3.2), flames };
     for (const f of flames) {
 
+      // hand-keyed flame timing: 15 Hz, a quarter of the uploads
+      f.part.dynamicEvery = 4;
+      f.part.dynamicPhase = flames.indexOf(f) % 4;
       f.part.dynamic = () => drawFlame(f, f.part.prop?.world.time ?? 0);
     }
     return refs;

@@ -1,0 +1,33 @@
+{
+ "_doc": "glaive-hands round 1: GR-N02 on N2: the near forearm runs 8 deg off the haft (12% under it). Tilt the haft so the forearm crosses it.",
+ "base": "art/rosace/hands/poses/n2_pivot.json",
+ "variants": {
+  "p7_steeper": {
+   "weapon": {
+    "dir": [
+     0.8,
+     -0.03,
+     0.6
+    ]
+   }
+  },
+  "p8_flatter": {
+   "weapon": {
+    "dir": [
+     0.96,
+     -0.03,
+     0.25
+    ]
+   }
+  },
+  "p9_steep_in": {
+   "weapon": {
+    "dir": [
+     0.78,
+     0.15,
+     0.6
+    ]
+   }
+  }
+ }
+}

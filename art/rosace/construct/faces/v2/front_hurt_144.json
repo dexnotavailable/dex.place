@@ -1,0 +1,20 @@
+{
+ "_doc": "front hurt at 144 px: glyph names from lib_144.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "front",
+ "expr": "hurt",
+ "px": 144,
+ "eye_near": "near_hurt",
+ "eye_far": "far_hurt",
+ "brow_near": "near_hurt",
+ "brow_far": "far_hurt",
+ "mouth": "hurt",
+ "gaze": "closed",
+ "nose": "q34",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": null
+ }
+}

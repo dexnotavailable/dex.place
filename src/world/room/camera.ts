@@ -1,15 +1,25 @@
 // World camera. Follows the player like the old site did, at the new scale:
 // a look-ahead toward the way she faces (she sits a little behind centre),
-// feet low in the frame with the sky above (CAMERA.anchorY), a vertical dead
-// zone so small hops don't bob the view, clamped to the room. Framing zones
-// take over for vistas (a fixed composition, extra bars). Shake and the zoom
-// punch behave like the lab's camera (same calls, so the lab's Feel and
-// contract events drive it); the close-up zoom eases in for combat and hands
-// the player to the 144 px render path (game.ts).
+// feet low in the frame with the sky above, a vertical dead zone so small
+// hops don't bob the view, clamped to the room. The camera never zooms while
+// exploring; the view is always 16 x 9 H.
+//
+// Modes (WORLD-PLAN section 1), per room and per area:
+//   locked  the room (or area) fits one screen and the view doesn't move
+//   rail    follows x only (an optional vertical slack for rooms with a walkway)
+//   free    follows both axes, with look-ahead (vertical rooms)
+// plus framing zones (fixed compositions with extra bars), vista holds (a
+// zone that takes over only after you've stood still for `hold` seconds, easing
+// in whole pixels), the arena clamp (the view stays on the arena floor while
+// the terminal summons) and an override (sitting: the camera holds on a view).
+// Shake and the zoom punch behave like the lab's camera (same calls, so the
+// lab's Feel and contract events drive it); the close-up zoom eases in for
+// combat and hands the player to the 144 px render path (game.ts).
 //
 // Its position is float; what the renderer sees is whole pixels.
 
 import { CAMERA, CLOSEUP_ZOOM, PRESENT, SCALE } from "../config.ts";
+import type { RoomCamera } from "./types.ts";
 
 export interface FramingZone {
   /** Room-space trigger box (the player's feet inside it). */
@@ -26,12 +36,15 @@ export interface FramingZone {
   weight?: number;
   /** Feather in px at the zone's x edges (default 1.5 H). */
   feather?: number;
+  /** Vista hold: the zone only takes over after the player has stood still this many seconds (2 in the plan). */
+  hold?: number;
 }
 
 export class WorldCamera {
   x = 0;
   y = 0;
   private look = 0;
+  private lookV = 0;
   private shakeAmp = 0;
   private shakeLeft = 0;
   private shakeTotal = 1;
@@ -50,20 +63,58 @@ export class WorldCamera {
   /** Extra bars requested by the game (cut-ins, scroll to site). */
   extraBars = 0;
   zones: FramingZone[] = [];
+  /** The mode in force (room or area), set by the game each tick. */
+  mode: RoomCamera = { mode: "free" };
+  /** Seconds the player has stood still (vista holds). */
+  still = 0;
+  /** The arena clamp is active (the terminal is summoning). */
+  arenaActive = false;
+  /** Sitting and other holds: the view centres here (room px). */
+  override: { cx: number; cy?: number; bars?: number } | null = null;
+  /** The rail row for the current room (set on snap unless the room gives one). */
+  private railRow: number | null = null;
   private vw = SCALE.viewW;
   private vh = SCALE.viewH;
 
-  private target(tx: number, ty: number, facing: number, bounds: [number, number, number, number]): [number, number] {
-    const gx = tx + this.look - this.vw / 2;
-    let gy = ty - this.vh * CAMERA.anchorY;
-    // zones
+  get anchor(): number {
+    return this.mode.anchor ?? CAMERA.anchorY;
+  }
+
+  /** Forget the rail row (a new room). */
+  resetRail(): void {
+    this.railRow = null;
+  }
+
+  private target(tx: number, ty: number, bounds: [number, number, number, number]): [number, number] {
+    const m = this.mode;
+    let gx = tx + this.look - this.vw / 2;
+    let gy = ty - this.vh * this.anchor + this.lookV;
+    if (m.mode === "locked") {
+      const [x0, y0, x1, y1] = bounds;
+      gx = m.at ? m.at[0] : (x0 + x1 - this.vw) / 2;
+      gy = m.at ? m.at[1] : y1 - y0 <= this.vh ? (y0 + y1 - this.vh) / 2 : ty - this.vh * this.anchor;
+    } else if (m.mode === "rail") {
+      if (m.railY !== undefined) this.railRow = m.railY;
+      if (this.railRow === null) this.railRow = ty - this.vh * this.anchor;
+      // with slack, the row follows only once the feet leave anchor +- slack (and keeps where it moved to)
+      const slack = (m.slack ?? 0) * SCALE.H;
+      const want = ty - this.vh * this.anchor;
+      if (slack > 0) {
+        const d = want - this.railRow;
+        if (Math.abs(d) > slack) this.railRow += d - Math.sign(d) * slack;
+      }
+      gy = this.railRow;
+    }
+    // zones (framing, vista holds) and the sitting override
     let wSum = 0;
     let zx = 0;
     let zy = 0;
     let bars: number = PRESENT.bars.explore;
-    for (const z of this.zones) {
+    const zones = this.override ? [{ x0: -1e9, x1: 1e9, cx: this.override.cx, cy: this.override.cy, bars: this.override.bars, feather: 1 } as FramingZone] : this.zones;
+    for (const z of zones) {
       if (z.y0 !== undefined && ty < z.y0) continue;
       if (z.y1 !== undefined && ty > z.y1) continue;
+      if (z.hold !== undefined && this.still < z.hold) continue;
       const fe = z.feather ?? SCALE.H * 1.5;
       const k = Math.min(1, Math.max(0, Math.min((tx - z.x0) / fe, (z.x1 - tx) / fe)));
       if (k <= 0) continue;
@@ -74,8 +125,6 @@ export class WorldCamera {
       if (z.bars !== undefined) bars = Math.max(bars, PRESENT.bars.explore + (z.bars - PRESENT.bars.explore) * k);
     }
     this.barsTarget = bars;
-    void facing;
-    void bounds;
     if (wSum > 0) {
       const w = Math.min(1, wSum);
       this.zoneWeight = w;
@@ -87,7 +136,8 @@ export class WorldCamera {
 
   snapTo(tx: number, ty: number, facing: number, bounds: [number, number, number, number]): void {
     this.look = facing * this.vw * CAMERA.lookahead * 0.5;
-    const [gx, gy] = this.target(tx, ty, facing, bounds);
+    this.lookV = 0;
+    const [gx, gy] = this.target(tx, ty, bounds);
     this.x = gx;
     this.y = gy;
     this.clamp(bounds);
@@ -95,14 +145,16 @@ export class WorldCamera {
   }
 
   /** One real-time tick (runs through hitstop so shake keeps going). */
-  update(tx: number, ty: number, facing: number, bounds: [number, number, number, number], moving: boolean): void {
-    const wantLook = facing * this.vw * CAMERA.lookahead * (moving ? 1 : 0.5);
+  update(tx: number, ty: number, facing: number, bounds: [number, number, number, number], moving: boolean, vy = 0): void {
+    const wantLook = this.mode.mode === "locked" ? 0 : facing * this.vw * CAMERA.lookahead * (moving ? 1 : 0.5);
     this.look += (wantLook - this.look) * CAMERA.lookaheadRate;
-    const [gx, gy0] = this.target(tx, ty, facing, bounds);
+    const wantV = this.mode.mode === "free" && this.mode.lookY ? Math.sign(vy) * Math.min(1, Math.abs(vy) / 4) * this.mode.lookY * SCALE.H : 0;
+    this.lookV += (wantV - this.lookV) * CAMERA.lookaheadRate;
+    const [gx, gy0] = this.target(tx, ty, bounds);
     let gy = gy0;
     const dz = CAMERA.deadzoneY * SCALE.H;
     const dy = gy - this.y;
-    if (this.zoneWeight < 0.01) {
+    if (this.zoneWeight < 0.01 && this.mode.mode === "free") {
       if (Math.abs(dy) < dz) gy = this.y;
       else gy = this.y + (dy - Math.sign(dy) * dz);
     }
@@ -132,7 +184,12 @@ export class WorldCamera {
   }
 
   private clamp(b: [number, number, number, number]): void {
-    const [x0, y0, x1, y1] = b;
+    let [x0, y0, x1, y1] = b;
+    const a = this.mode.arena;
+    if (a && this.arenaActive) {
+      x0 = Math.max(x0, a.x0);
+      x1 = Math.min(x1, a.x1);
+    }
     this.x = x1 - x0 <= this.vw ? (x0 + x1 - this.vw) / 2 : Math.min(Math.max(this.x, x0), x1 - this.vw);
     this.y = y1 - y0 <= this.vh ? (y0 + y1 - this.vh) / 2 : Math.min(Math.max(this.y, y0), y1 - this.vh);
   }
@@ -158,7 +215,7 @@ export class WorldCamera {
 
   /** Current close-up world zoom (1..CLOSEUP_ZOOM). */
   get closeupZoom(): number {
-    return 1 + (CLOSEUP_ZOOM - 1) * this.closeup;
+    return 1 + (CAMERA_ZOOM - 1) * this.closeup;
   }
 
   /** Integer view origin for this frame. */
@@ -166,3 +223,5 @@ export class WorldCamera {
     return [Math.round(this.x) + this.offX, Math.round(this.y) + this.offY];
   }
 }
+
+const CAMERA_ZOOM = CLOSEUP_ZOOM;

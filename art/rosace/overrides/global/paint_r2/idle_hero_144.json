@@ -1,0 +1,144 @@
+{
+ "_doc": "Shading lane round 2 painted override (rosace_shade.paint, WF-P12) for idle_hero at 144, over preset shading_r2k.json's automatic pass. Tones (deep / shadow / lit / hi) of the material named, masked to it and to the listed current tones, so the strokes follow any ramp change. Painted on the render in authored_on; STALE (skipped) if the canvas, anchor or pose change. Why: the automatic pass leaves the skin with no highlight at all (S1 0 px; ref 04's thighs carry a near-white shine) and the stockings as one flat dark mass (ref 08's have a lit ridge).",
+ "authored_on": {
+  "canvas": [
+   86,
+   205
+  ],
+  "anchor": [
+   51,
+   195
+  ],
+  "pose_sha1": "cdac99efdacf"
+ },
+ "strokes": [
+  {
+   "note": "near thigh: highlight lens on the front plane, right of centre (the key side), 2-3 px wide, following the thigh's axis",
+   "mat": "skin",
+   "tone": "hi",
+   "only": [
+    "lit"
+   ],
+   "polys": [
+    [
+     [
+      42,
+      113
+     ],
+     [
+      43,
+      113
+     ],
+     [
+      44,
+      116
+     ],
+     [
+      44,
+      119
+     ],
+     [
+      43,
+      120
+     ],
+     [
+      42,
+      119
+     ],
+     [
+      41,
+      116
+     ]
+    ]
+   ]
+  },
+  {
+   "note": "far thigh: a shorter lens, the far form reads one step quieter",
+   "mat": "skin",
+   "tone": "hi",
+   "only": [
+    "lit"
+   ],
+   "polys": [
+    [
+     [
+      58,
+      116
+     ],
+     [
+      59,
+      116
+     ],
+     [
+      60,
+      118
+     ],
+     [
+      59,
+      121
+     ],
+     [
+      58,
+      120
+     ],
+     [
+      57,
+      118
+     ]
+    ]
+   ]
+  },
+  {
+   "note": "near stocking: sheen streak (I2) on the lit side under the knee band, 1 px, 4 px long, stepping with the leg's slant",
+   "mat": "stocking",
+   "tone": "hi",
+   "only": [
+    "lit"
+   ],
+   "px": [
+    [
+     45,
+     138
+    ],
+    [
+     45,
+     139
+    ],
+    [
+     46,
+     140
+    ],
+    [
+     46,
+     141
+    ]
+   ]
+  },
+  {
+   "note": "far stocking: sheen streak on its lit (right) side",
+   "mat": "stocking",
+   "tone": "hi",
+   "only": [
+    "lit"
+   ],
+   "px": [
+    [
+     60,
+     137
+    ],
+    [
+     60,
+     138
+    ],
+    [
+     61,
+     139
+    ],
+    [
+     61,
+     140
+    ]
+   ]
+  }
+ ]
+}

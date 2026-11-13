@@ -46,7 +46,17 @@ const REGION_MAT: Record<Region, string[]> = {
 
 export const stainedGlass = defineRecipe<WindowParams, Refs>({
   id: "stainedGlass",
+  breakage: "heal",
   reason: "The chapel of light's windows: they colour the light Rosace walks through, and show the place is kept (they mend).",
+  demo: {
+    w: 5, at: 1, indoor: true, params: { drop: 80 },
+    script: [
+      { label: "backlit", wait: 1 },
+      { label: "slash: panes shatter into shards", hit: "slash", from: -0.6, wait: 2 },
+      { label: "Q", hit: "q", from: 0, wait: 2 },
+      { label: "shards fly home one by one", wait: 9 },
+    ],
+  },
   defaults: { width: 2.1, height: 3.6, slant: -0.55, drop: 80 },
   build(b, p) {
     const u = (f: number): number => b.u(f);

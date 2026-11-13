@@ -1,0 +1,16 @@
+{
+ "_doc": "Collar cross at 80 px: the 144 cross cut to a 3-wide cross on a 1 px I3 backing (at 80 a 5 x 5 cross would be a third of the chest). Same key and rules as collar_cross_144.json.",
+ "rows": [
+  ".ooo.",
+  "oogoo",
+  "ohsgo",
+  "oogoo",
+  ".oho.",
+  ".ooo."
+ ],
+ "origin": [2, 2],
+ "key": {"o": "I3", "g": "G1", "h": "G3", "s": "G0"},
+ "on_parts": ["collar_cross", "collar_plate", "bodice", "collar", "body"],
+ "need_parts": ["collar_cross", "collar_plate"],
+ "min_facing": 0.25
+}

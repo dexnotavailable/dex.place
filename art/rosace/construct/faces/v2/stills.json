@@ -1,0 +1,8 @@
+{
+ "_doc": "Face lane v2: which face each key still wears (faces.v2_face reads this; face_v2_run.py too). Keyed by pose name, then px ('*' = every size, a px key overrides it). expr: confident | focused | smile | hurt | closed; params override the spec's (face_v2.py). Gaze targets: idle and back view at the viewer, N1 at the enemy (the way she faces), Q with closed smiling eyes. Picks from round F1 (ART-RULES learning log).",
+ "idle_hero": {"*": {"expr": "confident", "params": {"window": "brow_narrow"}}},
+ "n1_contact": {"*": {"expr": "focused", "params": {"window": "brow_narrow"}},
+                "144": {"expr": "focused", "params": {"window": "brow_narrow", "mouth": "shout"}}},
+ "q_stamp": {"*": {"expr": "smile", "params": {"window": "brow_narrow"}}},
+ "n2_pivot": {"*": {"expr": "confident", "params": {"window": "brow_narrow"}}}
+}

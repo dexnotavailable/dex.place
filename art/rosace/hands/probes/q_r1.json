@@ -1,0 +1,14 @@
+{"_doc":"glaive-hands round 1: Q stamp (Q5 contact, the butt driven into the floor) grip thumbnails. Control: the grip hand 11.6 cm off the haft (GR-N01): its target sat 0.41 m above the haft point nearest the shoulder. Joints (control): shoulders L (0.123, -0.416, 1.03) R (-0.054, -0.328, 1.119).",
+ "base":"art/rosace/poses/q_stamp.json","variants":{
+ "q0_control":{},
+ "q1_onehand":{"weapon":{"butt":[0.06,-0.60,0.0],"dir":[0.0,-0.15,1.0],"edge":[0,-1,0]},
+    "hands":{"L":{"grip":"grip_off","slide":0.06,"thumb":"butt"}}},
+ "q2_twohand":{"weapon":{"butt":[0.06,-0.60,0.0],"dir":[0.0,-0.15,1.0],"edge":[0,-1,0]},
+    "hands":{"L":{"grip":"grip_off","slide":0.02,"thumb":"butt"},
+             "R":{"__del__":["pos","fdir","palm"],"grip":"grip_off","slide":0.20,"thumb":"butt","back":[-0.7,-0.4,0.4]}},
+    "fingers":{"R":{"curl":88,"thumb":55}}},
+ "q3_twohand_lean":{"weapon":{"butt":[0.08,-0.62,0.0],"dir":[-0.12,-0.10,1.0],"edge":[0.3,-1,0]},
+    "hands":{"L":{"grip":"grip_off","slide":0.0,"thumb":"butt"},
+             "R":{"__del__":["pos","fdir","palm"],"grip":"grip_off","slide":0.19,"thumb":"butt","back":[-0.7,-0.4,0.4]}},
+    "fingers":{"R":{"curl":88,"thumb":55}}}
+}}

@@ -1,0 +1,21 @@
+{
+ "_doc": "front closed at 144 px: glyph names from lib_144.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "front",
+ "expr": "closed",
+ "px": 144,
+ "eye_near": "near_closed",
+ "eye_far": "far_closed",
+ "brow_near": "near_confident",
+ "brow_far": "far_confident",
+ "blush": "soft",
+ "mouth": "closed",
+ "gaze": "closed",
+ "nose": "q34",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": null
+ }
+}

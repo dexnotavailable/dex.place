@@ -7,7 +7,7 @@
 import { PartBuilder } from "./builder.ts";
 import { CellGrid } from "./cells.ts";
 import { damage, overlap, cutAlong, type PartReport } from "./break.ts";
-import type { Hit } from "./hits.ts";
+import { hitCentre, type Hit } from "./hits.ts";
 import { Cloth, Rope, type ClothSpec, type RopeSpec } from "./motion.ts";
 import { resolveMat } from "./materials.ts";
 import { Part, type PartOptions } from "./part.ts";
@@ -45,10 +45,72 @@ export interface StateDef<R> {
   sound?: string;
 }
 
+/**
+ * The breakage policy (WORLD-PLAN section 4), enforced by the engine:
+ * - `never`: service and story objects (donation boxes, plaques, counters,
+ *   the terminal, doors, shrine lanterns, the lamp board, the rose window,
+ *   artwork frames). Hits flash, shake, dent and spark, but no cell ever
+ *   leaves, no pane shatters and nothing tears; dents mend.
+ * - `heal`: breaks for real (glass outside the chapel, pillars, crates,
+ *   barrels, outdoor benches, plants) and every part mends in the room.
+ * - `cut`: its cords and cloth cut for good (saved via `persist`: the map
+ *   banner, the rope bridge); its solid parts mend.
+ * - `floor`: the ground: craters and scars heal slowly.
+ * A room can also switch every prop to sway-only (`world.breakage = "sway"`,
+ * the chapel nave): nothing fractures, tears or shatters there.
+ */
+export type Breakage = "never" | "heal" | "cut" | "floor";
+
+/** One step of a sandbox capture script (docs/props/ENGINE.md, "Kit"). */
+export interface DemoStep {
+  /** Caption for the capture log. */
+  label?: string;
+  /** Apply the step to a companion (`Demo.with`, by recipe id) instead of the prop. */
+  on?: string;
+  /** Apply the step to one of the demo's variants (by its `label`) instead of the prop. */
+  variant?: string;
+  /** Go to this state. */
+  go?: string;
+  /** Press E on it. */
+  use?: boolean;
+  /** Fire a hit from the H gauge; `from` is the gauge's x offset from the prop in H (default -0.9). */
+  hit?: "slash" | "heavy" | "q" | "r" | "point" | "wind";
+  from?: number;
+  face?: 1 | -1;
+  /** Run a recipe action (`actions`), with an optional argument. */
+  act?: string;
+  arg?: unknown;
+  /** Walk the gauge (an actor) from x0 to x1 (H, relative to the prop) over the wait. */
+  walk?: [number, number];
+  /** Steady wind (px/s^2) from here on. */
+  wind?: number;
+  /** Seconds to run after the step. */
+  wait: number;
+}
+
+export interface Demo {
+  /** Stage it indoors (the chapel wall and its light) instead of under the open sky. */
+  indoor?: boolean;
+  /** The origin's height above the floor in H (wall and ceiling props). Default 0 (on the floor). */
+  at?: number;
+  /** Param overrides for the sandbox. */
+  params?: Record<string, unknown>;
+  /** Width of the stage around it in H (default 6). */
+  w?: number;
+  /** Extra copies shown beside it (variants). `dx` in H from the main one. */
+  variants?: { label: string; params: Record<string, unknown>; dx: number; at?: number }[];
+  /** Other recipes placed with it on its stage (moths need a lamp). `dx` in H. */
+  with?: { id: string; params?: Record<string, unknown>; dx: number; at?: number }[];
+  /** Capture script through every state. */
+  script?: DemoStep[];
+}
+
 export interface Recipe<P extends object = Record<string, unknown>, R = unknown> {
   id: string;
   /** Why this prop is here (CANON: every prop has a reason). Required. */
   reason: string;
+  /** Breakage policy class (see Breakage). Required; the engine enforces it. */
+  breakage: Breakage;
   defaults: P;
   build(b: PropBuilder, p: P & BaseParams): R;
   states: Record<string, StateDef<R>>;
@@ -64,10 +126,47 @@ export interface Recipe<P extends object = Record<string, unknown>, R = unknown>
   use?: { reach: number; prompt?: string; zone?: [number, number, number, number] };
   /** Keys saved per visit (the cut stays cut). */
   persist?: string[];
+  /**
+   * Hits within this many H of the prop reach its hit handler even when they
+   * touch no cell (grass bows from a swing nearby, dust parts in a dash).
+   */
+  feel?: number;
+  /**
+   * Host actions (story and systems call these by name): a bell's `ring`, a
+   * lamp post's `light` (with a delay), a door's `open` or `release`. Return
+   * a state to go to.
+   */
+  actions?: Record<string, (c: Prop<R>, arg?: unknown) => string | void>;
+  /** Sound cues the recipe emits from code (state `sound` cues are collected automatically). */
+  cues?: string[];
+  /**
+   * How much of the prop is there, for matter drawn in code that the cell
+   * counts cannot see (dynamic parts are redrawn every frame): grass returns
+   * its total blade height, vines their strand points. The breakage policy
+   * holds it exactly in a sway-only room and wants it back at the built value
+   * once the room has healed; `src/pixel/tools/policy.mjs` checks both.
+   */
+  form?: (c: Prop<R>) => number;
+  /**
+   * Standard size from WORLD-PLAN section 1 in H, checked by the kit audit
+   * within 1 px: `w` is the drawn width, `h` how far the top sits above the
+   * origin (a seat top above the floor, a lantern's finial). `parts` limits
+   * the measure to those parts (default: every static part).
+   */
+  standard?: { w?: number; h?: number; parts?: string[]; note?: string };
+  /** Sandbox placement and capture script. */
+  demo?: Demo;
 }
+
+export const BREAKAGE: Breakage[] = ["never", "heal", "cut", "floor"];
 
 export function defineRecipe<P extends object, R>(r: Recipe<P, R>): Recipe<P, R> {
   if (!r.reason || r.reason.trim().length < 8) throw new Error(`recipe ${r.id}: a reason is required`);
+  if (!BREAKAGE.includes(r.breakage)) {
+    // enforced by the type; at runtime an unmarked recipe mends like "heal" and says so
+    console.warn(`pixel: recipe ${r.id} has no breakage class (never | heal | cut | floor); treating it as "heal"`);
+    (r as { breakage: Breakage }).breakage = "heal";
+  }
   if (!r.states[typeof r.initial === "string" ? r.initial : Object.keys(r.states)[0]!]) throw new Error(`recipe ${r.id}: unknown initial state`);
   return r;
 }
@@ -215,7 +314,7 @@ export class PropBuilder {
       if (rope.sleeping && p.tag["drawn"]) return;
       p.grid.clearAll();
       rope.rasterize(p.grid, p.x, p.y);
-      p.grid.computeNormals({ x0: 0, y0: 0, x1: p.grid.W - 1, y1: p.grid.Hh - 1 });
+      p.grid.computeNormals();
       p.tag["drawn"] = true;
     };
     this.ropes.push(rope);
@@ -259,7 +358,7 @@ export class PropBuilder {
       if (cloth.sleeping && p.tag["drawn"]) return;
       p.grid.clearAll();
       cloth.rasterize(p.grid, p.x, p.y);
-      p.grid.computeNormals({ x0: 0, y0: 0, x1: p.grid.W - 1, y1: p.grid.Hh - 1 });
+      p.grid.computeNormals();
       p.tag["drawn"] = true;
     };
     this.cloths.push(cloth);
@@ -342,6 +441,8 @@ export class Prop<R = any> {
       part.grid.computeNormals({ x0: 0, y0: 0, x1: part.grid.W - 1, y1: part.grid.Hh - 1 });
       part.grid.snapshot();
       part.grid.markAll();
+      // breakage policy: every drawn part mends in the room (only cords stay cut)
+      if (!part.dynamic && part.tag["heal"] === undefined) part.tag["heal"] = true;
       this.parts.push(part);
     }
     this.lights = b.lights;
@@ -419,7 +520,7 @@ export class Prop<R = any> {
     const ovs = this.parts.filter((p) => p.hittable && p.visible && p.grid.count > 0).map((p) => overlap(p, hit));
     const touched = ovs.filter((o) => o.cells.length);
     const cutTargets = this.ropes.length + this.cloths.length;
-    if (!touched.length && !cutTargets) return [];
+    if (!touched.length && !cutTargets && !this.recipe.feel) return [];
     const ctx: HitContext = {
       hit,
       parts: touched.map((o) => ({ part: o.part, covered: o.cells.length, contact: o.contact })),
@@ -444,12 +545,21 @@ export class Prop<R = any> {
   private pendingOverlaps: ReturnType<typeof overlap>[] = [];
   private lastReports: PartReport[] = [];
 
+  /**
+   * Does the breakage policy keep every cell of this prop in place? True for
+   * `never` props and for every prop in a sway-only room (the nave).
+   */
+  get keepsCells(): boolean {
+    return this.recipe.breakage === "never" || this.world.breakage === "sway";
+  }
+
   /** Default material response for the current hit (only parts the hit touched). */
   damage(hit: Hit, only?: string[]): PartReport[] {
     const out: PartReport[] = [];
+    const keep = this.keepsCells;
     for (const ov of this.pendingOverlaps) {
       if (only && !only.includes(ov.part.name)) continue;
-      const r = damage(this.world, ov, hit);
+      const r = damage(this.world, ov, hit, { keep });
       out.push(r);
       if (r.covered) {
         ov.part.flash = Math.max(ov.part.flash, hit.type === "slash" ? 0.5 : 0.8);
@@ -461,9 +571,28 @@ export class Prop<R = any> {
     return out;
   }
 
-  /** Cut this prop's ropes and tear its cloth along the hit. */
+  /**
+   * Cut this prop's ropes and tear its cloth along the hit. Under the
+   * breakage policy a `never` prop or a sway-only room only pushes them.
+   */
   cut(hit: Hit, o: { ropes?: boolean; cloth?: boolean } = {}): { cut: number; torn: number } {
+    if (this.keepsCells) {
+      const [x, y] = hitCentre(hit.shape);
+      const r = this.params.H * 1.4, f = Math.max(2, hit.force * 0.02);
+      for (const rp of this.ropes) rp.push(x, y, r, hit.dir[0] * f, hit.dir[1] * f);
+      for (const cl of this.cloths) cl.push(x, y, r, hit.dir[0] * f, hit.dir[1] * f, f * 0.5);
+      return { cut: 0, torn: 0 };
+    }
     return cutAlong(this.world, hit, o.ropes === false ? [] : this.ropes, o.cloth === false ? [] : this.cloths);
+  }
+
+  /** Run a host action by name (see Recipe.actions). Returns false if the recipe has none by that name. */
+  act(name: string, arg?: unknown): boolean {
+    const a = this.recipe.actions?.[name];
+    if (!a) return false;
+    const next = a(this, arg);
+    if (next && next !== this.state) this.go(next);
+    return true;
   }
 
   /** A prop-local rect in H as a world rect (mirrored with the prop). */
