@@ -9,38 +9,6 @@
 //
 // Everything is generated here at runtime. The ring comes from arrival/ring.ts
 // (adapted from ring-lake), the creature from colossus-plain/colossus.ts.
-//
-// The default export is the /scenes/ composition. arrivalScene() makes the
-// world's Ringwater backdrops from the same code (lane R-A): the dock room with
-// its lower boardwalk and red line (the room places its own lantern and
-// figure), Pier's End seen from further left (a camera bias, true parallax),
-// the cliff stair and the yard seen from higher up (rise), and the evening
-// after the round (a re-graded palette).
-
-/** How a Ringwater room sees the lake (see the header). */
-export interface ArrivalOpts {
-  /** Debug title. */
-  title?: string;
-  /** Camera bias at depth 1 in view px: positive = this view stands further left than the dock's. */
-  bias?: number;
-  /** Camera height above the dock's eye line, in view px (the cliff stair, the yard). */
-  rise?: number;
-  /**
-   * What stands on the player plane: "scene" the /scenes/ dock with its lantern and the
-   * stand-in; "world" the dock room (the room places its own lantern and figure) with the
-   * older boardwalk, the red line and the cliff foot; "pier" Pier's End; "none" nothing.
-   */
-  dock?: "scene" | "world" | "pier" | "none";
-  /** Near layers to leave out (the room stands somewhere else). */
-  without?: ("near-left" | "near-right" | "foreground" | "mid-left" | "mid-right")[];
-  /** The evening after the round (this session only): the last glow, lamps brighter. */
-  evening?: boolean;
-  /**
-   * The room's own near ground, drawn with the scene's palette and mirrored in its lake
-   * (the cliff stair): layers in the room's own layer space, added after the bias.
-   */
-  extra?: (ctx: BuildCtx, g: Geo, row: (name: string) => number) => LayerDef[];
-}
 
 import {
   f,
@@ -63,7 +31,6 @@ import {
   fbm1,
   hashInt,
   mulberry,
-  type BuildCtx,
   type LayerDef,
   type PointSystem,
   type SceneDef,
@@ -72,10 +39,8 @@ import type { PointSink, SimEnv } from "../engine/types.ts";
 import { EXTENT, LEGS, colossusGlsl, dustGlsl, type ColossusDef } from "./colossus-plain/colossus.ts";
 import { Debris, EyeGlint, Tracker, Wheelers } from "./colossus-plain/systems.ts";
 import { COL_DEPTH, GHOST_DEPTH, RING_DEPTH, SHAFT_DEPTH, geo, type Geo } from "./arrival/geo.ts";
-export type { Geo };
 import { cliffPlanes, cliffReflection, flankPlanes } from "./arrival/land.ts";
-import { buildDock, buildWorldDock, buildPier, dockPosts, pierPosts } from "./arrival/props.ts";
-import { biasGlsl, biasLayers, useBiasOff, withPan } from "./arrival/bias.ts";
+import { buildDock, dockPosts } from "./arrival/props.ts";
 import {
   beaconPos,
   beamBody,
@@ -140,7 +105,9 @@ export function mainCrossing(g: Geo): ColossusDef {
   return crossing(g, COL_DEPTH, { S: 0.5 * g.u, vd: 18, gap: 10, startAt: 0.78, T: 4.4, seed: 7, dendrites: true });
 }
 
-const MORNING: Record<string, string[]> = {
+const scene: SceneDef = {
+  title: "arrival",
+  palette: {
     ring: ["#0a1014", "#111a1f", "#19252a", "#253338", "#46504a", "#9a8458", "#e0bf7c"],
     ringlight: ["#7c5a32", "#c99a5a", "#f5dca2"],
     warm: ["#5f5540", "#a88f60", "#efd8a2"],
@@ -165,11 +132,8 @@ const MORNING: Record<string, string[]> = {
     vein: ["#46302c", "#6a3b33", "#8e4f40", "#ad6a50"],
     dust: ["#4a5a58", "#5f706c", "#798882", "#95a299", "#b6bcad"],
     standin: ["#06080a", "#0d1216", "#26303a", "#bba77a"],
-    red: ["#3a1512", "#5a221c", "#7a3226", "#93402e"],
-    moss: ["#0e140f", "#172216", "#22301d", "#34442a", "#4d5c38"],
-};
-
-const MORNING_FOG: SceneDef["fog"] = {
+  },
+  fog: {
     stops: [
       [0.0, "#152126"],
       [0.18, "#233439"],
@@ -184,53 +148,13 @@ const MORNING_FOG: SceneDef["fog"] = {
     density: 0.11,
     max: 0.8,
     glow: { x: 0.63, y: 0.19, r: 0.62, colour: "#e5d9ae", strength: 0.5, steps: 5, dither: 0.14 },
-};
+  },
+  span: (W) => Math.round(W * 0.45),
+  driftPeriod: 110,
 
-// The evening after the round: the sun low and amber in the ring's hole, the haze gone rose
-// and violet, the water darker, and the lamps (the same ramps) the brightest warm things left.
-const EVENING: Record<string, string[]> = {
-  ring: ["#0b0b12", "#12121b", "#1a1a26", "#262634", "#46404a", "#9a6e50", "#e4a870"],
-  ringlight: ["#7a4630", "#c0784a", "#f0b880"],
-  warm: ["#5a3a30", "#a06a48", "#eab27c"],
-  sun: ["#c88a5e", "#e8a870", "#f8d0a0"],
-  haze: ["#3e3848", "#5a4a5a", "#7c6068", "#a67c74", "#dca488"],
-  far: ["#2e2c3c", "#3a3848", "#4a4454", "#5c525e"],
-  strand: ["#16161e", "#1e1e28", "#2a2832", "#3e3840", "#5e5250"],
-  mid: ["#15161e", "#1d1f2a", "#282a36", "#3a3a44", "#5a5254"],
-  near: ["#07080c", "#0d0f15", "#15171f", "#20222c", "#3e3a3e"],
-  cliff: ["#06070b", "#0d0f14", "#171a21", "#262a30", "#46403e"],
-  water: ["#101520", "#161d2a", "#1e2736", "#2a3444", "#3e4858"],
-  glint: ["#6a5a6a", "#b4908a", "#f0c8a0"],
-  wood: ["#08090c", "#0f1115", "#191b20", "#2a2a2c", "#4c4238"],
-  beam: ["#5a4638", "#8e6a50", "#c89870", "#ecc494"],
-  flesh: ["#34303a", "#4a4450", "#665c64", "#8a7a7a", "#b8a296"],
-  dust: ["#44404a", "#5a5058", "#766a6c", "#948480", "#b4a292"],
-  bird: ["#16161c", "#22222a"],
-  red: ["#321215", "#4e1c1e", "#6c2a28", "#86382e"],
-  moss: ["#0e0f12", "#171a18", "#22261e", "#323626", "#4a4a32"],
-};
-
-const EVENING_FOG: SceneDef["fog"] = {
-  stops: [
-    [0.0, "#161624"],
-    [0.18, "#242334"],
-    [0.42, "#4a3e4c"],
-    [0.6, "#8a6868"],
-    [0.65, "#a47a6c"],
-    [0.71, "#6a5058"],
-    [1.0, "#2e2c3a"],
-  ],
-  bands: 16,
-  dither: 0.5,
-  density: 0.11,
-  max: 0.8,
-  glow: { x: 0.63, y: 0.19, r: 0.55, colour: "#e0a070", strength: 0.42, steps: 5, dither: 0.14 },
-};
-
-function prelude(ctx: BuildCtx, o: ArrivalOpts): string {
-  const g = geo(ctx, { rise: o.rise });
-  const lantern = o.dock === undefined || o.dock === "scene" || o.dock === "world";
-  const src = /* glsl */ `
+  prelude: (ctx) => {
+    const g = geo(ctx);
+    return /* glsl */ `
 ${shaftFn({
   fn: "beam",
   from: g.beamFrom,
@@ -240,32 +164,23 @@ ${shaftFn({
   streaks: 11,
   speed: 0.04,
   fadeStart: 0.72,
-  intensity: o.evening ? 0.45 : 1.0,
+  intensity: 1.0,
   fromShiftX: `layerOff(${f(SHAFT_DEPTH)})`,
 })}
 float sceneLight(vec2 s, float depth) {
   float b = beam(s + vec2(layerOff(${f(SHAFT_DEPTH)}), 0.0));
-  float l = b * smoothstep(2.2, 6.0, depth) * ${f(o.evening ? 0.2 : 0.42)};
-  ${
-    lantern
-      ? `// the lantern on the dock lights things near the player plane
+  float l = b * smoothstep(2.2, 6.0, depth) * 0.42;
+  // the lantern on the dock lights things near the player plane
   vec2 lp = vec2(${f(g.lantern[0])} - layerOff(1.0), ${f(g.lantern[1] + g.P * 0.08)});
   float ld = length((s - lp) * vec2(1.0, 1.25)) / ${f(g.P * 0.62)};
-  l += (1.0 - smoothstep(0.8, 3.0, depth)) * floor(max(0.0, 1.0 - ld) * 3.0) / 3.0 * ${f(o.evening ? 0.3 : 0.2)};`
-      : ""
-  }
+  l += (1.0 - smoothstep(0.8, 3.0, depth)) * floor(max(0.0, 1.0 - ld) * 3.0) / 3.0 * 0.2;
   return l;
 }`;
-  return o.bias ? `${biasGlsl(o.bias)}
-${useBiasOff(src)}` : src;
-}
+  },
 
-function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
-    const ctx = o.bias ? withPan(ctx0, o.bias) : ctx0;
-    const g = geo(ctx, { rise: o.rise });
+  build: (ctx) => {
+    const g = geo(ctx);
     const { W, H, u, hor, P } = g;
-    const dock = o.dock ?? "scene";
-    const without = new Set(o.without ?? []);
     const L: LayerDef[] = [];
     const R = (n: string): number => ctx.row(n);
     const wide = (d: number): { x: number; w: number } => {
@@ -376,16 +291,13 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
       fog: 0.1,
       blend: "add",
       system: new FlashAccents([
-        { kind: "glint", rate: 4, at: (rng) => glintPos(g, rng), size: [7, 13], row: R("ringlight"), shade: 0.99, duration: [0.3, 0.7] },
+        { kind: "glint", rate: 6, at: (rng) => glintPos(g, rng), size: [7, 13], row: R("ringlight"), shade: 0.99, duration: [0.3, 0.7] },
         { kind: "glow", rate: 4, at: () => beaconPos(g), size: 7, row: R("lamp"), shade: 0.7, duration: [0.9, 1.4], intensity: 0.8 },
       ]),
     });
 
     // --- the lake ------------------------------------------------------------------
-    // the player plane belongs to this room, not to the biased view: its layer x is
-    // pre-compensated so the bias (which moves every layer) leaves it where the room is
-    const bias = o.bias ?? 0;
-    const posts = dock === "scene" || dock === "world" ? dockPosts(g) : dock === "pier" ? pierPosts(g, ctx0.span) : [];
+    const posts = dockPosts(g);
     L.push(
       lake({
         horizon: hor,
@@ -401,7 +313,7 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
         glints: 0.004,
         u,
         pool: { x: g.beamTo[0], w: W * 0.055, strength: 0.45, depth: SHAFT_DEPTH, path: 0.35 },
-        rings: dock === "none" ? [] : (dock === "pier" ? posts.slice(0, 3) : posts.slice(-3)).map((px) => [px + 1 - bias, g.wl]),
+        rings: posts.slice(-3).map((px) => [px + 1, g.wl]),
         ringUnit: P / 70,
         dither: 0.5,
       }),
@@ -610,7 +522,7 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
     });
 
     // mid rocks: a leaning spire on the left, stepped cliffs on the right
-    if (!without.has("mid-left")) {
+    {
       const d = 4.6;
       const { x, w } = wide(d);
       const pix = new Pix(w, H);
@@ -642,7 +554,7 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
       flankPlanes(pix, x, g, { dir: 1, c: 1, ledges: [0.36, 0.45, 0.53], seed: 36 });
       L.push({ kind: "pix", name: "mid-left", depth: d, pix, x, y: 0, fog: 0.06, reflect: base, reflectFade: 70 * u, dither: 0.2 });
     }
-    if (!without.has("mid-right")) {
+    {
       const d = 3.4;
       const { x, w } = wide(d);
       const pix = new Pix(w, H);
@@ -697,7 +609,7 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
     );
 
     // the big dark cliff on the right, cropped by the frame
-    if (!without.has("near-right")) {
+    {
       const d = 1.8;
       const { x, w } = wide(d);
       const pix = new Pix(w, H);
@@ -730,7 +642,7 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
       L.push({ kind: "pix", name: "near-right", depth: d, pix, x, y: 0, reflect: base, dither: 0.15 });
     }
     // low rocks on the left shore where the dock starts
-    if (!without.has("near-left")) {
+    {
       const d = 1.3;
       const { x, w } = wide(d);
       const pix = new Pix(w, H);
@@ -758,24 +670,15 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
       L.push({ kind: "pix", name: "near-left", depth: d, pix, x, y: 0, reflect: base, reflectFade: 30 * u, dither: 0.2 });
     }
 
-    // the dock, its lantern, the figure at the locked player height (the /scenes/ composition);
-    // in the world the room places its own lantern and the player, and the dock goes on
-    if (dock === "scene" || dock === "world") {
+    // the dock, its lantern, the figure at the locked player height
+    {
       const { x, w } = wide(1);
       const pix = new Pix(w, H);
-      buildDock(pix, g, x, R("wood"), R("lamp"), R("iron"), posts, { lantern: dock === "scene" });
-      if (dock === "world") buildWorldDock(pix, g, x, ctx0.span, { wood: R("wood"), red: R("red"), rock: R("near") });
-      L.push({ kind: "pix", name: "dock", depth: 1, pix, x: x - bias, y: 0, reflect: g.wl, reflectFade: 36 * u, dither: 0 });
-    } else if (dock === "pier") {
-      const { x, w } = wide(1);
-      const pix = new Pix(w, H);
-      buildPier(pix, g, x, ctx0.span, R("wood"), R("iron"), posts);
-      L.push({ kind: "pix", name: "dock", depth: 1, pix, x: x - bias, y: 0, reflect: g.wl, reflectFade: 36 * u, dither: 0 });
+      buildDock(pix, g, x, R("wood"), R("lamp"), R("iron"), posts);
+      L.push({ kind: "pix", name: "dock", depth: 1, pix, x, y: 0, reflect: g.wl, reflectFade: 36 * u, dither: 0 });
     }
-    if (dock === "scene") {
-      L.push(glow({ name: "lantern-glow", depth: 1, x: g.lantern[0], y: g.lantern[1] + Math.round(P * 0.1), r: Math.round(P * 0.34), row: "lamp", flicker: 0.2, alpha: 0.5, reflect: g.wl }));
-      L.push({ kind: "character", name: "figure", depth: 1, x: g.figX, ground: g.deck, rimDir: [1, -1], height: P, reflect: g.wl, reflectFade: 40 * u });
-    }
+    L.push(glow({ name: "lantern-glow", depth: 1, x: g.lantern[0], y: g.lantern[1] + Math.round(P * 0.1), r: Math.round(P * 0.34), row: "lamp", flicker: 0.2, alpha: 0.5, reflect: g.wl }));
+    L.push({ kind: "character", name: "figure", depth: 1, x: g.figX, ground: g.deck, rimDir: [1, -1], height: P, reflect: g.wl, reflectFade: 40 * u });
 
     // birds, far out over the water
     L.push({
@@ -786,7 +689,7 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
     });
 
     // foreground: dark rocks in the bottom corners, moving faster than the camera
-    if (!without.has("foreground")) {
+    {
       const d = 0.72;
       const { x, w } = wide(d);
       const pix = new Pix(w, H);
@@ -810,24 +713,8 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
       });
       L.push({ kind: "pix", name: "foreground", depth: d, pix, x, y: 0, dither: 0 });
     }
-    const out = biasLayers(L, o.bias ?? 0);
-    if (o.extra) out.push(...o.extra(ctx0, g, (n) => ctx0.row(n)));
-    return out;
-}
-
-/** A Ringwater backdrop (see ArrivalOpts). */
-export function arrivalScene(o: ArrivalOpts = {}): SceneDef {
-  return {
-    title: o.title ?? "arrival",
-    palette: o.evening ? { ...MORNING, ...EVENING } : MORNING,
-    fog: o.evening ? EVENING_FOG : MORNING_FOG,
-    span: (W) => Math.round(W * 0.45),
-    driftPeriod: 110,
-    prelude: (ctx) => prelude(ctx, o),
-    build: (ctx) => build(ctx, o),
-  };
-}
-
-const scene: SceneDef = arrivalScene();
+    return L;
+  },
+};
 
 export default scene;

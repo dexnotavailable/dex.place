@@ -10,12 +10,6 @@ export const RING_DEPTH = 34;
 /** The colossus walks the far strand behind the lake; a second, fainter one further back. */
 export const COL_DEPTH = 20;
 export const GHOST_DEPTH = 27;
-/**
- * Where the player's feet (the dock's deck) sit, as a share of the view height.
- * WORLD-PLAN section 1 puts vast exteriors at 0.72-0.80 and the dock at 0.8; the
- * scenes lane first composed it at 0.91 (H - 0.8 P). Settled by lane R-A by looking at both.
- */
-export const DECK_AT = 0.8;
 
 // Ring in camera space: camera at the origin looking down +z, y up. The ring is
 // a thick band (inner radius R, radial thickness T, axial width WD) whose axis
@@ -50,19 +44,13 @@ export interface Geo {
   reach: (d: number, margin?: number) => [number, number];
 }
 
-/**
- * rise: how far above the dock's eye line this view stands, in view px (the cliff stair, the
- * yard). The horizon stays put; the lake is seen from higher, so everything standing in it
- * (hills, the strand, the colossus, the rocks) meets the water lower in the frame.
- */
-export function geo(ctx: BuildCtx, o: { rise?: number } = {}): Geo {
+export function geo(ctx: BuildCtx): Geo {
   const { W, H, u } = ctx;
   const P = ctx.player;
   const hor = Math.round(H * 0.64);
-  const deck = Math.round(H * DECK_AT);
+  const deck = H - Math.round(P * 0.8);
   const wl = deck + Math.round(P * 0.28);
-  // the water plane's projection: the row where depth d meets the water
-  const k1 = (wl + Math.round(o.rise ?? 0) - hor + 1) / (H - hor);
+  const k1 = (wl - hor + 1) / (H - hor);
   const figX = Math.round(W * 0.47);
   const dockEnd = figX + Math.round(P * 0.5);
   return {

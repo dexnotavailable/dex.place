@@ -71,10 +71,7 @@ function colourOf(g: CellGrid, i: number): RGB {
  * Apply material damage for an overlap. Removed cells become chunks and
  * particles; glass pieces shatter; metal dents and sparks; cracks spread.
  */
-export function damage(world: PixelWorld, ov: Overlap, hit: Hit, o: { keep?: boolean } = {}): PartReport {
-  // keep (breakage policy "never", or a sway-only room): nothing leaves, shatters or tears;
-  // cells only darken or dent, and the part mends
-  const keep = !!o.keep;
+export function damage(world: PixelWorld, ov: Overlap, hit: Hit): PartReport {
   const { part } = ov;
   const g = part.grid;
   const rep: PartReport = { part, covered: ov.cells.length, removed: 0, damaged: 0, dented: 0, shattered: 0, flame: 0, contact: ov.contact, mat: null };
@@ -99,17 +96,11 @@ export function damage(world: PixelWorld, ov: Overlap, hit: Hit, o: { keep?: boo
         g.height[i] = Math.max(0, g.height[i]! - Math.min(2.5, dmg / 55));
         g.markRaw(i);
         rep.dented++;
-        if (g.hp[i]! <= 0) {
-          if (keep) g.hp[i] = 1;
-          else removed.push(i);
-        }
+        if (g.hp[i]! <= 0) removed.push(i);
         break;
       }
       case "shatter":
-        if (keep) {
-          if (part.glintT < 0) part.glintT = 0;
-          rep.damaged++;
-        } else shatter.add(g.piece[i]!);
+        shatter.add(g.piece[i]!);
         break;
       case "gutter":
         rep.flame++;
@@ -117,7 +108,7 @@ export function damage(world: PixelWorld, ov: Overlap, hit: Hit, o: { keep?: boo
       case "splash":
         break;
       case "tear": {
-        const cut = !keep && (hit.type === "slash" || hit.type === "point" ? cov > 0.8 : true);
+        const cut = hit.type === "slash" || hit.type === "point" ? cov > 0.8 : true;
         if (cut) {
           g.hp[i] = g.hp[i]! - dmg * 2;
           if (g.hp[i]! <= 0) removed.push(i);
@@ -126,7 +117,6 @@ export function damage(world: PixelWorld, ov: Overlap, hit: Hit, o: { keep?: boo
       }
       default: {
         g.hp[i] = g.hp[i]! - dmg;
-        if (keep && g.hp[i]! <= 0) g.hp[i] = m.hardness * 0.2;
         if (g.hp[i]! <= 0) removed.push(i);
         else {
           rep.damaged++;
@@ -150,7 +140,7 @@ export function damage(world: PixelWorld, ov: Overlap, hit: Hit, o: { keep?: boo
   const cracked: number[] = [];
   if (crackFrom >= 0) {
     const m = matById(g.mat[crackFrom]!);
-    if (m && m.behaviour === "crumble" && !keep) cracked.push(...spreadCracks(g, crackFrom, Math.min(18, 3 + (crackBest / m.hardness) * 10), world.rand, hit.dir));
+    if (m && m.behaviour === "crumble") cracked.push(...spreadCracks(g, crackFrom, Math.min(18, 3 + (crackBest / m.hardness) * 10), world.rand, hit.dir));
   }
   if (rep.dented) sparks(world, contact, Math.min(14, 3 + (rep.dented >> 2)), hit);
   if (removed.length || rep.shattered || rep.dented || rep.damaged) world.wound(part, removed.concat(cracked, ov.cells));
